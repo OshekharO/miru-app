@@ -71,33 +71,35 @@ android {
 
     signingConfigs {
         release {
-            storeFile _storeFile
-            storePassword _storePassword
-            keyAlias _keyAlias
-            keyPassword _keyPassword
-            v1SigningEnabled true
-            v2SigningEnabled true
+            if (_storePassword != null && _storeFile.exists()) {
+                storeFile _storeFile
+                storePassword _storePassword
+                keyAlias _keyAlias
+                keyPassword _keyPassword
+                v1SigningEnabled true
+                v2SigningEnabled true
+            } else {
+                initWith debug
+            }
         }
         debug {
-            storeFile _storeFile
-            storePassword _storePassword
-            keyAlias _keyAlias
-            keyPassword _keyPassword
-            v1SigningEnabled true
-            v2SigningEnabled true
+            if (_storePassword != null && _storeFile.exists()) {
+                storeFile _storeFile
+                storePassword _storePassword
+                keyAlias _keyAlias
+                keyPassword _keyPassword
+                v1SigningEnabled true
+                v2SigningEnabled true
+            }
         }
     }
     
     buildTypes {
         release {
-            if (signingConfigs.release.storePassword != null){
-                signingConfig signingConfigs.release
-            }
+            signingConfig signingConfigs.release
         }
         debug {
-            if (signingConfigs.debug.storePassword != null){
-                signingConfig signingConfigs.release
-            }
+            signingConfig signingConfigs.debug
         }
     }
 }
