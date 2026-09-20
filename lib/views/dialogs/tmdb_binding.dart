@@ -36,17 +36,21 @@ class _TMDBBindingState extends State<TMDBBinding> {
   late String _keyWord = widget.title;
 
   Future<void> _onRefresh() async {
-    setState(() {
-      _page = 1;
-      _data.clear();
-    });
+    if (mounted) {
+      setState(() {
+        _page = 1;
+        _data.clear();
+      });
+    }
     await _onLoad();
   }
 
   Future<void> _onLoad() async {
     try {
       _isLoading = true;
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
       final data = await TmdbApi.search(_keyWord, page: _page);
       final result = data["results"] as List;
       if (result.isEmpty && mounted) {

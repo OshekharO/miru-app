@@ -37,17 +37,21 @@ class _AnilistBindingDialogState extends State<AnilistBindingDialog> {
   late String _keyWord = widget.title;
 
   Future<void> _onRefresh() async {
-    setState(() {
-      _page = 1;
-      _data.clear();
-    });
+    if (mounted) {
+      setState(() {
+        _page = 1;
+        _data.clear();
+      });
+    }
     await _onLoad();
   }
 
   Future<void> _onLoad() async {
     try {
       _isLoading = true;
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
       final result = await AniListProvider.mediaQuerypage(
         searchString: _keyWord,
         type: widget.type,
