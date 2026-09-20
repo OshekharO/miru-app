@@ -59,9 +59,11 @@ class _AnilistTrackingDialogState extends State<AnilistTrackingDialog> {
     } catch (e) {
       debugPrint(e.toString());
     } finally {
-      setState(() {
-        loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          loading = false;
+        });
+      }
     }
     if (res == null) {
       return;

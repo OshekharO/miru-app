@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:dlna_dart/dlna.dart';
 import 'package:miru_app/utils/i18n.dart';
@@ -18,6 +19,7 @@ class VideoPlayerCast extends StatefulWidget {
 class _VideoPlayerCastState extends State<VideoPlayerCast> {
   late DLNAManager searcher;
   Map<String, DLNADevice> deviceList = {};
+  StreamSubscription<Map<String, DLNADevice>>? _devicesSubscription;
 
   @override
   void initState() {
@@ -29,17 +31,20 @@ class _VideoPlayerCastState extends State<VideoPlayerCast> {
     searcher = DLNAManager();
     logger.info('DLNA searching devices...');
     final m = await searcher.start();
-    m.devices.stream.listen((deviceList) {
+    _devicesSubscription = m.devices.stream.listen((deviceList) {
       logger.info('DLNA devices: $deviceList');
-      setState(() {
-        this.deviceList = deviceList;
-      });
+      if (mounted) {
+        setState(() {
+          this.deviceList = deviceList;
+        });
+      }
     });
   }
 
   @override
   void dispose() {
     logger.info('DLNA stop searching devices...');
+    _devicesSubscription?.cancel();
     searcher.stop();
     super.dispose();
   }
