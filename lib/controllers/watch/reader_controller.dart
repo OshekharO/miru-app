@@ -80,4 +80,10 @@ class ReaderController<T> extends GetxController {
     );
     await Get.find<HomePageController>().onRefresh();
   }
+
+  @override
+  void onClose() {
+    _timer?.cancel();
+    super.onClose();
+  }
 }

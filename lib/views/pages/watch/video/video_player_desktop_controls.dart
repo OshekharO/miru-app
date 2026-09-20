@@ -38,9 +38,9 @@ class _VideoPlayerDesktopControlsState
     setState(() {
       _showControls = true;
     });
-    _timer = Timer.periodic(
+    _timer = Timer(
       const Duration(seconds: 3),
-      (_) {
+      () {
         if (mounted) {
           setState(() {
             _showControls = false;
