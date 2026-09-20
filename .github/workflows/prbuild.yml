@@ -58,7 +58,7 @@ jobs:
           name: Miru-pr-${{ github.event.pull_request.number }}-x86_64.apk
 
   build-and-release-windows:
-    runs-on: windows-latest
+    runs-on: windows-2022
 
     steps:
       - uses: actions/checkout@v4
