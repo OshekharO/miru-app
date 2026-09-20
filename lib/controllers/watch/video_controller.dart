@@ -606,9 +606,11 @@ class VideoPlayerController extends GetxController {
       Media(qualityUrl, httpHeaders: headers),
     );
     //跳轉到切換之前的時間
+    int attempts = 0;
     Timer.periodic(const Duration(seconds: 1), (timer) {
+      attempts++;
       player.seek(Duration(seconds: currentSecond));
-      if (player.state.position.inSeconds == currentSecond) {
+      if (player.state.position.inSeconds == currentSecond || attempts >= 15) {
         timer.cancel();
       }
     });

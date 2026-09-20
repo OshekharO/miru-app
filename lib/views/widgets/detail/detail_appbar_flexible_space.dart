@@ -24,19 +24,23 @@ class _DetailAppbarflexibleSpaceState extends State<DetailAppbarflexibleSpace> {
   late DetailPageController c = Get.find(tag: widget.tag);
 
   double _offset = 1;
-  // static const anlistExtensionMap = <ExtensionType, String>{
-  //   ExtensionType.bangumi: "ANIME",
-  //   ExtensionType.manga: "MANGA",
-  // };
 
   @override
   void initState() {
-    c.scrollController.addListener(() {
-      setState(() {
-        _offset = c.scrollController.offset;
-      });
-    });
     super.initState();
+    c.scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    setState(() {
+      _offset = c.scrollController.offset;
+    });
+  }
+
+  @override
+  void dispose() {
+    c.scrollController.removeListener(_onScroll);
+    super.dispose();
   }
 
   double _scrollListener() {
@@ -85,7 +89,6 @@ class _DetailAppbarflexibleSpaceState extends State<DetailAppbarflexibleSpace> {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      // 主题背景色
                       Theme.of(context).colorScheme.background.withOpacity(0.3),
                       Theme.of(context).colorScheme.background.withOpacity(0.9),
                       Theme.of(context).colorScheme.background,

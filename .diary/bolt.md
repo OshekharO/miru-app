@@ -1,0 +1,3 @@
+## 2024-09-20 - Memory leaks in ScrollControllers, listeners, and timers
+**Learning:** In Flutter and GetX applications, anonymous functions attached via `addListener` on `ScrollController` or `ValueNotifier`/`Listenable` objects inside `StatefulWidget` or `GetxController` prevent listeners from being unsubscribed, leading to memory leaks when widgets or controllers are disposed. Similarly, `Timer.periodic` without cancellation guards or `onClose()` teardown can continue executing in the background indefinitely.
+**Action:** Always extract `addListener` callbacks into named methods and remove them via `removeListener` in `dispose()` (for Widgets) or `onClose()` (for GetxControllers). Ensure all periodic timers have cancellation logic and upper bounds.

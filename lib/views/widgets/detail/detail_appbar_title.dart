@@ -18,12 +18,20 @@ class _DetailAppbarTitleState extends State<DetailAppbarTitle> {
 
   @override
   void initState() {
-    widget.controller.addListener(() {
-      setState(() {
-        _offset = widget.controller.offset;
-      });
-    });
     super.initState();
+    widget.controller.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    setState(() {
+      _offset = widget.controller.offset;
+    });
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_onScroll);
+    super.dispose();
   }
 
   double _scrollListener() {

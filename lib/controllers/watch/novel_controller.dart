@@ -28,13 +28,7 @@ class NovelController extends ReaderController<ExtensionFikushonWatch> {
     super.onInit();
     fontSize.value = MiruStorage.getSetting(SettingKey.novelFontSize);
 
-    itemPositionsListener.itemPositions.addListener(() {
-      if (itemPositionsListener.itemPositions.value.isEmpty) {
-        return;
-      }
-      final pos = itemPositionsListener.itemPositions.value.first;
-      positions.value = pos.index;
-    });
+    itemPositionsListener.itemPositions.addListener(_onItemPositionsChanged);
     ever(
       fontSize,
       (callback) => MiruStorage.setSetting(SettingKey.novelFontSize, callback),
@@ -63,8 +57,17 @@ class NovelController extends ReaderController<ExtensionFikushonWatch> {
     });
   }
 
+  void _onItemPositionsChanged() {
+    if (itemPositionsListener.itemPositions.value.isEmpty) {
+      return;
+    }
+    final pos = itemPositionsListener.itemPositions.value.first;
+    positions.value = pos.index;
+  }
+
   @override
   void onClose() {
+    itemPositionsListener.itemPositions.removeListener(_onItemPositionsChanged);
     if (super.watchData.value != null) {
       final totalProgress = watchData.value!.content.length.toString();
       super.addHistory(
