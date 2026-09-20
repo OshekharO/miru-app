@@ -38,12 +38,19 @@ class _CodeEditPageState extends State<CodeEditPage> {
     }
   }
 
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
   _save() async {
     final dir = ExtensionUtils.extensionsDir;
     final file = File('$dir/${widget.extension.package}.js');
     await file.writeAsString(controller.text);
-    // ignore: use_build_context_synchronously
-    showPlatformSnackbar(context: context, title: '保存代码', content: '保存成功');
+    if (mounted) {
+      showPlatformSnackbar(context: context, title: '保存代码', content: '保存成功');
+    }
   }
 
   @override

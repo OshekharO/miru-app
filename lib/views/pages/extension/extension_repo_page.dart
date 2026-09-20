@@ -20,6 +20,13 @@ class ExtensionRepoPage extends StatefulWidget {
 
 class _ExtensionRepoPageState extends State<ExtensionRepoPage> {
   late ExtensionRepoPageController c;
+  late final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -158,7 +165,7 @@ class _ExtensionRepoPageState extends State<ExtensionRepoPage> {
       () => Scaffold(
         appBar: SearchAppBar(
           title: 'common.extension-repo'.i18n,
-          textEditingController: TextEditingController(text: c.search.value),
+          textEditingController: _searchController..text = c.search.value,
           onSubmitted: (value) {
             c.search.value = value;
           },
@@ -236,7 +243,7 @@ class _ExtensionRepoPageState extends State<ExtensionRepoPage> {
                 width: 200,
                 child: Obx(
                   () => fluent.TextBox(
-                    controller: TextEditingController(text: c.search.value),
+                    controller: _searchController..text = c.search.value,
                     placeholder: 'common.search'.i18n,
                     onChanged: (value) {
                       if (value.isEmpty) {

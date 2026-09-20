@@ -28,6 +28,12 @@ class HorizontalList extends StatefulWidget {
 class _HorizontalListState extends State<HorizontalList> {
   final ScrollController _controller = ScrollController();
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   _horzontalMove(bool left) {
     _controller.animateTo(
       _controller.offset + (left ? -500 : 500),

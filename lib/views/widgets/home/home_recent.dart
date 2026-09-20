@@ -19,6 +19,12 @@ class HomeRecent extends StatefulWidget {
 class _HomeRecentState extends State<HomeRecent> {
   ScrollController horizontalController = ScrollController();
 
+  @override
+  void dispose() {
+    horizontalController.dispose();
+    super.dispose();
+  }
+
   _horzontalMove(bool left) {
     horizontalController.animateTo(
         horizontalController.offset + (left ? -350 : 350),

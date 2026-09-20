@@ -80,6 +80,13 @@ class _AnilistBindingDialogState extends State<AnilistBindingDialog> {
     }
   }
 
+  @override
+  void dispose() {
+    _textEditingController.dispose();
+    _easyRefreshController.dispose();
+    super.dispose();
+  }
+
   _onSearch(String keyWord) {
     _keyWord = keyWord;
     if (Platform.isAndroid) {
