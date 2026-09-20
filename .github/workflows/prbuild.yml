@@ -25,20 +25,11 @@ jobs:
         with:
           flutter-version:  3.16.8 
           channel: stable
-      - name: Decode keystore
-        run: |
-          echo $ENCODED_KEYSTORE | base64 -di > android/app/keystore.jks
-        env:
-          ENCODED_KEYSTORE: ${{ secrets.KEYSTORE }}
 
       - run: flutter pub get
-      # 打包apk
+      # 打包apk (unsigned for PR builds)
       - name: Collect Apks
         run: flutter build apk --release --split-per-abi
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD}}
 
       # 发布安装包
       - name: Upload Artifact - armeabi-v7a
@@ -46,16 +37,19 @@ jobs:
         with:
           path: "build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk"
           name: Miru-pr-${{ github.event.pull_request.number }}-armeabi-v7a.apk
+          compression-level: 0
       - name: Upload Artifact - arm64-v8a
         uses: actions/upload-artifact@v4
         with:
           path: "build/app/outputs/flutter-apk/app-arm64-v8a-release.apk"
           name: Miru-pr-${{ github.event.pull_request.number }}-arm64-v8a.apk
+          compression-level: 0
       - name: Upload Artifact - x86
         uses: actions/upload-artifact@v4
         with:
           path: "build/app/outputs/flutter-apk/app-x86_64-release.apk"
           name: Miru-pr-${{ github.event.pull_request.number }}-x86_64.apk
+          compression-level: 0
 
   build-and-release-windows:
     runs-on: windows-2022
