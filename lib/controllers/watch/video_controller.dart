@@ -178,6 +178,8 @@ class VideoPlayerController extends GetxController {
 
   // 定时器
   Timer? _dlnaTimer;
+  Timer? _switchQualityTimer;
+  final List<StreamSubscription> _subscriptions = [];
 
   @override
   void onInit() async {
@@ -271,114 +273,130 @@ class VideoPlayerController extends GetxController {
     });
 
     // 自动切换下一集
-    player.stream.completed.listen((event) {
-      if (!event || playMode.value == PlaylistMode.single) {
-        return;
-      }
-      if (playMode.value == PlaylistMode.loop) {
-        player.seek(Duration.zero);
-        player.play();
-        return;
-      }
+    _subscriptions.add(
+      player.stream.completed.listen((event) {
+        if (!event || playMode.value == PlaylistMode.single) {
+          return;
+        }
+        if (playMode.value == PlaylistMode.loop) {
+          player.seek(Duration.zero);
+          player.play();
+          return;
+        }
 
-      if (index.value == playList.length - 1) {
-        sendMessage(Message(Text('video.play-complete'.i18n)));
-        return;
-      }
-      if (!player.state.buffering) {
-        index.value++;
-      }
-    });
+        if (index.value == playList.length - 1) {
+          sendMessage(Message(Text('video.play-complete'.i18n)));
+          return;
+        }
+        if (!player.state.buffering) {
+          index.value++;
+        }
+      }),
+    );
 
     // 讀取現在的畫質
-    player.stream.height.listen((event) async {
-      if (player.state.width != null) {
-        final width = player.state.width;
-        currentQuality.value = "${width}x$event";
-      }
-    });
+    _subscriptions.add(
+      player.stream.height.listen((event) async {
+        if (player.state.width != null) {
+          final width = player.state.width;
+          currentQuality.value = "${width}x$event";
+        }
+      }),
+    );
 
     // 自动恢复上次播放进度
-    player.stream.duration.listen((event) async {
-      if (_isAutoSeekPosition || event.inSeconds == 0) {
-        return;
-      }
+    _subscriptions.add(
+      player.stream.duration.listen((event) async {
+        if (_isAutoSeekPosition || event.inSeconds == 0) {
+          return;
+        }
 
-      // 获取上次播放进度
-      final history = await DatabaseService.getHistoryByPackageAndUrl(
-        runtime.extension.package,
-        detailUrl,
-      );
+        // 获取上次播放进度
+        final history = await DatabaseService.getHistoryByPackageAndUrl(
+          runtime.extension.package,
+          detailUrl,
+        );
 
-      if (history != null &&
-          history.progress.isNotEmpty &&
-          history.episodeId == index.value &&
-          history.episodeGroupId == episodeGroupId) {
-        _isAutoSeekPosition = true;
-        player.seek(Duration(seconds: int.parse(history.progress)));
-        sendMessage(Message(Text('video.resume-last-playback'.i18n)));
-      }
-    });
+        if (history != null &&
+            history.progress.isNotEmpty &&
+            history.episodeId == index.value &&
+            history.episodeGroupId == episodeGroupId) {
+          _isAutoSeekPosition = true;
+          player.seek(Duration(seconds: int.parse(history.progress)));
+          sendMessage(Message(Text('video.resume-last-playback'.i18n)));
+        }
+      }),
+    );
 
     // 监听 track
-    player.stream.tracks.listen((event) {
-      if (event.subtitle.isEmpty) {
-        return;
-      }
+    _subscriptions.add(
+      player.stream.tracks.listen((event) {
+        if (event.subtitle.isEmpty) {
+          return;
+        }
 
-      final latestLanguageSelected = MiruStorage.getSetting(
-        SettingKey.subtitleLastLanguageSelected,
-      );
-      final latestTitleSelected = MiruStorage.getSetting(
-        SettingKey.subtitleLastTitleSelected,
-      );
-      if (latestLanguageSelected == null && latestTitleSelected == null) {
-        return;
-      }
+        final latestLanguageSelected = MiruStorage.getSetting(
+          SettingKey.subtitleLastLanguageSelected,
+        );
+        final latestTitleSelected = MiruStorage.getSetting(
+          SettingKey.subtitleLastTitleSelected,
+        );
+        if (latestLanguageSelected == null && latestTitleSelected == null) {
+          return;
+        }
 
-      final subtitle = [...event.subtitle, ...subtitles].firstWhereOrNull(
-        (element) {
-          if (element.id == "no" || element.id == "auto") {
-            return false;
-          }
-          return element.language == latestLanguageSelected ||
-              element.title == latestTitleSelected;
-        },
-      );
+        final subtitle = [...event.subtitle, ...subtitles].firstWhereOrNull(
+          (element) {
+            if (element.id == "no" || element.id == "auto") {
+              return false;
+            }
+            return element.language == latestLanguageSelected ||
+                element.title == latestTitleSelected;
+          },
+        );
 
-      if (subtitle != null) {
-        player.setSubtitleTrack(subtitle);
-      }
-    });
+        if (subtitle != null) {
+          player.setSubtitleTrack(subtitle);
+        }
+      }),
+    );
 
     // 总时长监听
-    player.stream.duration.listen((event) {
-      if (dlnaDevice.value != null) {
-        return;
-      }
-      duration.value = event;
-    });
+    _subscriptions.add(
+      player.stream.duration.listen((event) {
+        if (dlnaDevice.value != null) {
+          return;
+        }
+        duration.value = event;
+      }),
+    );
 
     // 监听播放状态
-    player.stream.playing.listen((event) {
-      if (dlnaDevice.value != null) {
-        return;
-      }
-      isPlaying.value = event;
-    });
+    _subscriptions.add(
+      player.stream.playing.listen((event) {
+        if (dlnaDevice.value != null) {
+          return;
+        }
+        isPlaying.value = event;
+      }),
+    );
 
     // 监听进度
-    player.stream.position.listen((event) {
-      if (dlnaDevice.value != null) {
-        return;
-      }
-      position.value = event;
-    });
+    _subscriptions.add(
+      player.stream.position.listen((event) {
+        if (dlnaDevice.value != null) {
+          return;
+        }
+        position.value = event;
+      }),
+    );
 
     // 错误监听
-    player.stream.error.listen((event) {
-      sendMessage(Message(Text(event)));
-    });
+    _subscriptions.add(
+      player.stream.error.listen((event) {
+        sendMessage(Message(Text(event)));
+      }),
+    );
   }
 
   // 播放
@@ -606,10 +624,16 @@ class VideoPlayerController extends GetxController {
       Media(qualityUrl, httpHeaders: headers),
     );
     //跳轉到切換之前的時間
-    Timer.periodic(const Duration(seconds: 1), (timer) {
+    _switchQualityTimer?.cancel();
+    int retries = 0;
+    _switchQualityTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      retries++;
       player.seek(Duration(seconds: currentSecond));
-      if (player.state.position.inSeconds == currentSecond) {
+      if (player.state.position.inSeconds == currentSecond || retries >= 10) {
         timer.cancel();
+        if (_switchQualityTimer == timer) {
+          _switchQualityTimer = null;
+        }
       }
     });
   }
@@ -826,6 +850,11 @@ class VideoPlayerController extends GetxController {
       }
     }
     _dlnaTimer?.cancel();
+    _switchQualityTimer?.cancel();
+    for (final sub in _subscriptions) {
+      sub.cancel();
+    }
+    _subscriptions.clear();
     player.pause();
     try {
       await _saveHistory();

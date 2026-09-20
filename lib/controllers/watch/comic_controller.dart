@@ -46,16 +46,18 @@ class ComicController extends ReaderController<ExtensionMangaWatch> {
 
   final isZoom = false.obs;
 
+  void _onPositionChange() {
+    if (itemPositionsListener.itemPositions.value.isEmpty) {
+      return;
+    }
+    final pos = itemPositionsListener.itemPositions.value.first;
+    currentPage.value = pos.index;
+  }
+
   @override
   void onInit() {
     _initSetting();
-    itemPositionsListener.itemPositions.addListener(() {
-      if (itemPositionsListener.itemPositions.value.isEmpty) {
-        return;
-      }
-      final pos = itemPositionsListener.itemPositions.value.first;
-      currentPage.value = pos.index;
-    });
+    itemPositionsListener.itemPositions.addListener(_onPositionChange);
 
     ever(readType, (callback) {
       _jumpPage(currentPage.value);
@@ -181,6 +183,7 @@ class ComicController extends ReaderController<ExtensionMangaWatch> {
 
   @override
   void onClose() {
+    itemPositionsListener.itemPositions.removeListener(_onPositionChange);
     if (super.watchData.value != null) {
       // 获取所有页数量
       final pages = super.watchData.value!.urls.length;
