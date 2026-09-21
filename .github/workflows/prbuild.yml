@@ -27,9 +27,17 @@ jobs:
           channel: stable
 
       - run: flutter pub get
-      # 打包apk (unsigned for PR builds)
+      - name: Generate test keystore for PR build signing
+        run: |
+          keytool -genkeypair -v -keystore android/app/pr_keystore.jks -alias pr_key -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=PR Build,O=Miru,C=US"
+      # 打包apk (signed with PR test key)
       - name: Collect Apks
         run: flutter build apk --release --split-per-abi
+        env:
+          KEYSTORE: pr_keystore.jks
+          KEYSTORE_PASSWORD: android
+          KEY_ALIAS: pr_key
+          KEY_PASSWORD: android
 
       # 发布安装包
       - name: Upload Artifact - armeabi-v7a
