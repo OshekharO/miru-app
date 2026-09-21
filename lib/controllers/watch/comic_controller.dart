@@ -80,15 +80,15 @@ class ComicController extends ReaderController<ExtensionMangaWatch> {
     'rightToLeft': MangaReadMode.rightToLeft,
     'webTonn': MangaReadMode.webTonn,
   };
-  final readType = MangaReadMode.standard.obs;
+  final readType = MangaReadMode.webTonn.obs;
 
   /// 全局默认阅读模式（懒读取；存储未就绪时退回 standard）。
   String get setting {
     try {
       return (MiruStorage.getSetting(SettingKey.readingMode) as String?) ??
-          'standard';
+          'webTonn';
     } catch (_) {
-      return 'standard';
+      return 'webTonn';
     }
   }
 
@@ -846,7 +846,7 @@ class ComicController extends ReaderController<ExtensionMangaWatch> {
 
   _initSetting() async {
     final base =
-        _initialReadMode ?? readmode[setting] ?? MangaReadMode.standard;
+        _initialReadMode ?? readmode[setting] ?? MangaReadMode.webTonn;
     readType.value = base;
     try {
       readType.value = await DatabaseService.getMnagaReaderType(
