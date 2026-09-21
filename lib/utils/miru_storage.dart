@@ -6,11 +6,19 @@ import 'package:hive_flutter/adapters.dart';
 import 'package:isar/isar.dart';
 import 'package:miru_app/models/index.dart';
 import 'package:miru_app/utils/miru_directory.dart';
+import 'package:miru_app/utils/comic_cache_config_store.dart';
 import 'package:path/path.dart' as p;
 
 class MiruStorage {
   static late final Isar database;
   static late final Box settings;
+
+  /// 漫画章节元数据缓存（「这一话有哪些图片 URL」）。
+  ///
+  /// 单独放一个 box：条目多、可随时丢弃，不和用户设置混在一起。
+  /// 打开后常驻内存，`get` 是同步的 —— 首屏读缓存不需要任何 IO 等待。
+  static late final Box comicChapterCache;
+
   static const int _lastDatabaseVersion = 2;
   static late String _path;
 
@@ -19,6 +27,7 @@ class MiruStorage {
     // 初始化设置
     await Hive.initFlutter(_path);
     settings = await Hive.openBox("settings");
+    comicChapterCache = await Hive.openBox("comicChapterCache");
     await _initSettings();
 
     // 初始化数据库
@@ -117,7 +126,7 @@ class MiruStorage {
     await _initSetting(SettingKey.keyJ, -10.0);
     await _initSetting(SettingKey.arrowLeft, -2.0);
     await _initSetting(SettingKey.arrowRight, 2.0);
-    await _initSetting(SettingKey.readingMode, "standard");
+    await _initSetting(SettingKey.readingMode, "webTonn");
     await _initSetting(SettingKey.aniListToken, '');
     await _initSetting(SettingKey.aniListUserId, '');
     await _initSetting(SettingKey.autoTracking, true);
@@ -135,6 +144,11 @@ class MiruStorage {
     await _initSetting(SettingKey.subtitleBackgroundColor, Colors.black.value);
     await _initSetting(SettingKey.subtitleBackgroundOpacity, 0.5);
     await _initSetting(SettingKey.subtitleTextAlign, TextAlign.center.index);
+    // 漫画缓存配置（生产者 / 消费者）
+    await _initSetting(
+      SettingKey.comicCacheConfig,
+      ComicCacheConfigStore.encode(const ComicCacheConfig()),
+    );
   }
 
   static _initSetting(String key, dynamic value) async {
@@ -201,4 +215,5 @@ class SettingKey {
   static const subtitleTextAlign = "SubtitleTextAlign";
   static const subtitleLastLanguageSelected = "SubtitleLastLanguageSelected";
   static const subtitleLastTitleSelected = "SubtitleLastTitleSelected";
+  static const comicCacheConfig = "ComicCacheConfig";
 }

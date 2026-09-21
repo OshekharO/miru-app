@@ -1,0 +1,255 @@
+name: Release Build Matrix
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+  workflow_dispatch:
+
+env:
+  APP_VERSION: v1.8.1
+
+jobs:
+  build:
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: android
+            os: ubuntu-22.04
+          - target: windows
+            os: windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ---------------- Android ----------------
+      - name: Set up Java 17
+        if: matrix.target == 'android'
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: '17'
+
+      - name: Set up Flutter 3.16.8
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.8'
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Create Android default debug keystore
+        if: matrix.target == 'android'
+        run: |
+          keytool -genkeypair -v \
+            -keystore android/app/debug.keystore \
+            -storetype JKS \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -alias androiddebugkey \
+            -storepass android -keypass android \
+            -dname "CN=Android Debug,O=Android,C=US"
+
+      - name: Build APKs (all ABIs)
+        if: matrix.target == 'android'
+        env:
+          KEYSTORE: debug.keystore
+          KEYSTORE_PASSWORD: android
+          KEY_ALIAS: androiddebugkey
+          KEY_PASSWORD: android
+        run: flutter build apk --release --split-per-abi
+
+      # APK 是已压缩的 zip，再压一遍只是白费 CPU 且可能让二次压缩的包更难增量下载。
+      # 统一改名为 miru-<版本>-<abi>.apk，便于用户识别是哪个应用、哪个版本。
+      - name: Rename APKs to miru-${{ env.APP_VERSION }}-<abi>.apk
+        if: matrix.target == 'android'
+        shell: bash
+        run: |
+          cd build/app/outputs/flutter-apk
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            mv "app-$abi-release.apk" "miru-${{ env.APP_VERSION }}-$abi.apk"
+          done
+          ls -l
+
+      - name: Upload miru-${{ env.APP_VERSION }}-arm64-v8a.apk
+        if: matrix.target == 'android'
+        uses: actions/upload-artifact@v4
+        with:
+          name: miru-${{ env.APP_VERSION }}-arm64-v8a.apk
+          path: build/app/outputs/flutter-apk/miru-${{ env.APP_VERSION }}-arm64-v8a.apk
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload miru-${{ env.APP_VERSION }}-armeabi-v7a.apk
+        if: matrix.target == 'android'
+        uses: actions/upload-artifact@v4
+        with:
+          name: miru-${{ env.APP_VERSION }}-armeabi-v7a.apk
+          path: build/app/outputs/flutter-apk/miru-${{ env.APP_VERSION }}-armeabi-v7a.apk
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload miru-${{ env.APP_VERSION }}-x86_64.apk
+        if: matrix.target == 'android'
+        uses: actions/upload-artifact@v4
+        with:
+          name: miru-${{ env.APP_VERSION }}-x86_64.apk
+          path: build/app/outputs/flutter-apk/miru-${{ env.APP_VERSION }}-x86_64.apk
+          if-no-files-found: error
+          compression-level: 0
+
+      # ---------------- Windows ----------------
+      - name: Build Windows release
+        if: matrix.target == 'windows'
+        run: flutter build windows --release
+
+      - name: Bundle up-to-date MSVC runtime DLLs
+        if: matrix.target == 'windows'
+        shell: pwsh
+        run: |
+          # 官方 v1.8.1 包内捆绑的是 2022 年的旧 MSVC 运行库 (MSVCP140 14.30)，
+          # 而 runner 的新编译器 (14.44) 生成的代码需要新版运行库，否则启动即崩
+          # (0xC0000005 in MSVCP140.dll)。这里用 VS 自带的 Redist 目录中的新版覆盖。
+          $dest = "build\windows\x64\runner\Release"
+          # Redist 目录下既有 v143 这类符号目录，也有 14.xx.xxxxx 版本目录，
+          # 直接按 msvcp140.dll 的实际 FileVersion 挑最新的 x64 CRT。
+          $root = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC"
+          # 只取桌面版 CRT（排除 onecore/uwp 变体，那些适用于 UWP/系统组件）
+          $best = Get-ChildItem $root -Recurse -File -Filter "msvcp140.dll" -ErrorAction SilentlyContinue |
+                  Where-Object {
+                    $_.DirectoryName -match '\\x64\\Microsoft\.VC143\.CRT$' -and
+                    $_.DirectoryName -notmatch 'onecore|uwp|store'
+                  } |
+                  Sort-Object { [version]($_.VersionInfo.FileVersion -replace '\s.*$','') } -Descending |
+                  Select-Object -First 1
+          if (-not $best) { throw "Microsoft.VC143.CRT (x64) not found under $root" }
+          $src = $best.DirectoryName
+          Write-Host "Using CRT dir: $src"
+          Write-Host "=== runtime versions in Redist ==="
+          Get-ChildItem $src -Filter *.dll | ForEach-Object {
+            "{0} => {1}" -f $_.Name, $_.VersionInfo.FileVersion
+          }
+          Copy-Item "$src\*.dll" -Destination $dest -Force
+          Write-Host "=== runtime versions in package after copy ==="
+          foreach ($f in @("msvcp140.dll","msvcp140_1.dll","msvcp140_2.dll","vcruntime140.dll","vcruntime140_1.dll","concrt140.dll")) {
+            $p = Join-Path $dest $f
+            if (Test-Path $p) { "{0} => {1}" -f $f, (Get-Item $p).VersionInfo.FileVersion }
+            else { "{0} => MISSING" -f $f }
+          }
+
+      - name: Build Inno Setup installer
+        if: matrix.target == 'windows'
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\iscc.exe" "/DMyAppVersion=${{ env.APP_VERSION }}" ".\inno_setup.iss"
+
+      - name: List Windows outputs
+        if: matrix.target == 'windows'
+        shell: pwsh
+        run: Get-ChildItem -Recurse -File .\Output, build\windows\x64\runner\Release | Select-Object FullName, Length
+
+      # 注意：不要在这里再手工打 zip。上传目录 artifact 时 GitHub 会自动打包，
+      # 下载即得到结构正确的包；手工再压一层会造成二重压缩。
+      - name: Upload Miru-${{ env.APP_VERSION }}-windows
+        if: matrix.target == 'windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Miru-${{ env.APP_VERSION }}-windows
+          path: build/windows/x64/runner/Release/
+          if-no-files-found: error
+
+      - name: Upload miru-setup-${{ env.APP_VERSION }}.exe
+        if: matrix.target == 'windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: miru-setup-${{ env.APP_VERSION }}.exe
+          path: Output/miru-setup-${{ env.APP_VERSION }}.exe
+          if-no-files-found: error
+          # 安装包内部已经是 lzma 压缩数据，再压一遍几乎不减小体积。
+          compression-level: 0
+
+  release:
+    name: Publish release assets
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: false
+
+      - name: Assemble release files
+        shell: bash
+        run: |
+          mkdir -p release_files
+          # upload-artifact 对单文件是原样保存；对目录才打包成 zip。
+          for a in "miru-${{ env.APP_VERSION }}-arm64-v8a.apk" "miru-${{ env.APP_VERSION }}-armeabi-v7a.apk" "miru-${{ env.APP_VERSION }}-x86_64.apk" "miru-setup-${{ env.APP_VERSION }}.exe"; do
+            cp "artifacts/$a/$a" release_files/
+          done
+          # 目录 artifact 下载后就是发布包内容；在目录内部执行 zip，
+          # 条目直接位于压缩包根级，不会多套一层目录。
+          (cd "artifacts/Miru-${{ env.APP_VERSION }}-windows" && zip -qr -X "$GITHUB_WORKSPACE/release_files/Miru-${{ env.APP_VERSION }}-windows.zip" .)
+          ls -lh release_files
+          echo "=== windows zip top-level ==="
+          unzip -l "release_files/Miru-${{ env.APP_VERSION }}-windows.zip" | awk '{print $4}' | grep -v '/' | grep -v '^$' | head -20
+
+      # 本次改了 APK 命名（app-<abi>-release.apk → miru-<版本>-<abi>.apk）。
+      # draft release 上还留着旧名字的资产，不清掉的话同一个 release 里会同时
+      # 出现两套 APK，用户不知道该下哪个。这里删掉所有「不在本次发布清单里」
+      # 的资产。
+      - name: Drop stale release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 这一步没有 `actions/checkout`（release job 里不需要源码），
+          # 不指定仓库的话 `gh` 会因「不是 git 仓库」直接报错。
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="${{ env.APP_VERSION }}"
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            echo "release $tag 还不存在，跳过"
+            exit 0
+          fi
+          ls release_files > /tmp/wanted.txt
+          echo "=== 本次发布清单 ==="
+          cat /tmp/wanted.txt
+          gh release view "$tag" --json assets --jq '.assets[].name' > /tmp/existing.txt
+          while IFS= read -r name; do
+            if [ -z "$name" ]; then
+              continue
+            fi
+            if grep -qxF "$name" /tmp/wanted.txt; then
+              continue
+            fi
+            echo "删除陈旧资产: $name"
+            gh release delete-asset "$tag" "$name" --yes
+          done < /tmp/existing.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.APP_VERSION }}
+          name: Miru ${{ env.APP_VERSION }} (custom build)
+          body: |
+            Custom build from fork `ilylty/miru-app` (branch dev).
+
+            - Webtoon 条漫相邻图片接缝修复
+            - 漫画缓存系统（生产者预缓存后 n 话 / 消费者阅读即缓存，话间隔 l、图间隔 m 可配置）+ 条漫无感切换
+            - 章节元数据持久化：再次进入漫画直接用本地缓存，秒开
+            - 恢复上次阅读位置精确到「第几话第几页」
+            - Android 阅读沉浸：阅读漫画/小说时隐藏状态栏与底部手势条
+            - Android: 默认调试签名（与官方签名不同，安装前需卸载官方版）
+            - Windows: 捆绑最新 MSVC 运行库，修复启动闪退 (0xC0000005)
+            - 产物不二次压缩：3 个 APK 与 setup exe 均为原样打包，APK 命名为 `miru-<版本>-<abi>.apk`
+          draft: true
+          files: release_files/*
+          fail_on_unmatched_files: true
