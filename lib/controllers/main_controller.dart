@@ -13,12 +13,15 @@ class MainController extends GetxController {
 
   List<Widget> actions = <Widget>[].obs;
 
-  setAcitons(List<Widget> list) async {
+  setActions(List<Widget> list) async {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       actions.clear();
       actions.addAll(list);
     });
   }
+
+  @Deprecated('Use setActions instead')
+  setAcitons(List<Widget> list) async => setActions(list);
 
   @override
   void onReady() {
