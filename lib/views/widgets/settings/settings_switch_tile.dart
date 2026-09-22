@@ -7,13 +7,16 @@ class SettingsSwitchTile extends StatefulWidget {
   const SettingsSwitchTile({
     super.key,
     this.icon,
+    this.iconBgColor,
     required this.title,
     required this.buildValue,
     required this.onChanged,
     this.buildSubtitle,
     this.isCard = false,
   });
+
   final Widget? icon;
+  final Color? iconBgColor;
   final String title;
   final String Function()? buildSubtitle;
   final bool Function() buildValue;
@@ -30,11 +33,13 @@ class _SettingsSwitchTileState extends State<SettingsSwitchTile> {
     return SettingsTile(
       isCard: widget.isCard,
       icon: widget.icon,
+      iconBgColor: widget.iconBgColor,
       title: widget.title,
       buildSubtitle: widget.buildSubtitle,
       trailing: PlatformWidget(
-        androidWidget: Switch(
+        androidWidget: Switch.adaptive(
           value: widget.buildValue(),
+          activeTrackColor: Colors.blue,
           onChanged: (value) {
             widget.onChanged(value);
             setState(() {});

@@ -8,14 +8,17 @@ class SettingsIntpuTile extends fluent.StatefulWidget {
   const SettingsIntpuTile({
     super.key,
     this.icon,
+    this.iconBgColor,
     required this.title,
     required this.onChanged,
     required this.buildText,
     required this.buildSubtitle,
-    this.trailing = const Icon(Icons.chevron_right),
+    this.trailing = const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
     this.isCard = false,
   });
+
   final Widget? icon;
+  final Color? iconBgColor;
   final String title;
   final String Function() buildSubtitle;
   final String Function() buildText;
@@ -43,10 +46,12 @@ class _SettingsIntpuTileState extends fluent.State<SettingsIntpuTile> {
   }
 
   Widget _buildAndroid(BuildContext context) {
-    return ListTile(
-      leading: widget.icon,
-      title: Text(widget.title),
-      subtitle: Text(widget.buildSubtitle()),
+    return SettingsTile(
+      isCard: widget.isCard,
+      icon: widget.icon,
+      iconBgColor: widget.iconBgColor,
+      title: widget.title,
+      buildSubtitle: widget.buildSubtitle,
       trailing: widget.trailing,
       onTap: () {
         showDialog(
@@ -80,15 +85,17 @@ class _SettingsIntpuTileState extends fluent.State<SettingsIntpuTile> {
     return SettingsTile(
       isCard: widget.isCard,
       icon: widget.icon,
+      iconBgColor: widget.iconBgColor,
       title: widget.title,
       buildSubtitle: widget.buildSubtitle,
       trailing: Expanded(
-          child: fluent.TextBox(
-        controller: _controller,
-        onChanged: (value) {
-          widget.onChanged(value);
-        },
-      )),
+        child: fluent.TextBox(
+          controller: _controller,
+          onChanged: (value) {
+            widget.onChanged(value);
+          },
+        ),
+      ),
     );
   }
 

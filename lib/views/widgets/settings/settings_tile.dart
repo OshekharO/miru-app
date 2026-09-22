@@ -6,13 +6,16 @@ class SettingsTile extends StatefulWidget {
   const SettingsTile({
     super.key,
     this.icon,
+    this.iconBgColor,
     required this.title,
     this.trailing,
     this.buildSubtitle,
     this.onTap,
     this.isCard = false,
   });
+
   final Widget? icon;
+  final Color? iconBgColor;
   final String title;
   final String Function()? buildSubtitle;
   final Function()? onTap;
@@ -24,27 +27,105 @@ class SettingsTile extends StatefulWidget {
 }
 
 class _SettingsTileState extends State<SettingsTile> {
+  Widget _buildLeadingIcon() {
+    if (widget.icon == null) return const SizedBox.shrink();
+
+    if (widget.iconBgColor != null) {
+      return Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: widget.iconBgColor,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        alignment: Alignment.center,
+        child: IconTheme(
+          data: const IconThemeData(color: Colors.white, size: 20),
+          child: widget.icon!,
+        ),
+      );
+    }
+
+    return widget.icon!;
+  }
+
   Widget _buildAndroid(BuildContext context) {
-    return ListTile(
-      leading: widget.icon,
-      title: Text(widget.title),
-      subtitle: widget.buildSubtitle != null
-          ? Text(widget.buildSubtitle!.call())
-          : null,
-      trailing: widget.trailing,
+    final hasSubtitle = widget.buildSubtitle != null;
+    final subtitleText = hasSubtitle ? widget.buildSubtitle!.call() : null;
+
+    final effectiveTrailing = widget.trailing ??
+        (widget.onTap != null
+            ? Icon(
+                Icons.chevron_right,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey[400]
+                    : Colors.grey[400],
+                size: 20,
+              )
+            : null);
+
+    return InkWell(
       onTap: widget.onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            if (widget.icon != null) ...[
+              _buildLeadingIcon(),
+              const SizedBox(width: 14),
+            ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    widget.title,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  if (subtitleText != null && subtitleText.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitleText,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.grey[400]
+                            : Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            if (effectiveTrailing != null) ...[
+              const SizedBox(width: 8),
+              effectiveTrailing,
+            ],
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildDesktop(BuildContext context) {
+    final effectiveTrailing = widget.trailing ??
+        (widget.onTap != null
+            ? const Icon(
+                fluent.FluentIcons.chevron_right,
+                size: 14,
+              )
+            : const SizedBox());
+
     Widget content = Row(
       children: [
         if (widget.icon != null) ...[
-          widget.icon!,
+          _buildLeadingIcon(),
           const SizedBox(width: 16),
         ],
-        // 用 Expanded 包裹：副标题较长的设置项（如漫画缓存）
-        // 在窄窗口下会被挤压而不是溢出。
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,6 +134,7 @@ class _SettingsTileState extends State<SettingsTile> {
               Text(
                 widget.title,
                 overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontWeight: FontWeight.w500),
               ),
               if (widget.buildSubtitle != null)
                 Text(
@@ -64,7 +146,7 @@ class _SettingsTileState extends State<SettingsTile> {
           ),
         ),
         const SizedBox(width: 12),
-        widget.trailing ?? const SizedBox(),
+        effectiveTrailing,
       ],
     );
 
@@ -85,7 +167,7 @@ class _SettingsTileState extends State<SettingsTile> {
       );
     }
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
       child: content,
     );
   }
