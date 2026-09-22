@@ -29,8 +29,8 @@ class SettingsCardGroup extends StatelessWidget {
         : Colors.white;
 
     final dividerColor = isDark
-        ? Colors.white.withValues(alpha: 0.1)
-        : Colors.black.withValues(alpha: 0.08);
+        ? Colors.white.withOpacity(0.1)
+        : Colors.black.withOpacity(0.08);
 
     final List<Widget> dividedChildren = [];
     for (int i = 0; i < validChildren.length; i++) {
@@ -56,7 +56,7 @@ class SettingsCardGroup extends StatelessWidget {
             ? []
             : [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
+                  color: Colors.black.withOpacity(0.03),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
