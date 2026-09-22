@@ -24,24 +24,41 @@ class ApplicationController extends GetxController {
           useMaterial3: true,
         ).copyWith(
           scaffoldBackgroundColor: Colors.black,
-          canvasColor: Colors.black,
-          cardColor: Colors.black,
-          dialogBackgroundColor: Colors.black,
+          canvasColor: const Color(0xFF161618),
+          cardColor: const Color(0xFF161618),
+          dialogBackgroundColor: const Color(0xFF1E1E22),
           primaryColor: Colors.black,
-          hintColor: Colors.black,
+          hintColor: Colors.grey,
           primaryColorDark: Colors.black,
           primaryColorLight: Colors.black,
-          colorScheme: const ColorScheme.dark(
+          dialogTheme: DialogTheme(
+            backgroundColor: const Color(0xFF1E1E22),
+            elevation: 8,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: Colors.white.withOpacity(0.12), width: 1),
+            ),
+          ),
+          bottomSheetTheme: BottomSheetThemeData(
+            backgroundColor: const Color(0xFF1E1E22),
+            modalBackgroundColor: const Color(0xFF1E1E22),
+            elevation: 8,
+            shape: RoundedRectangleBorder(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              side: BorderSide(color: Colors.white.withOpacity(0.12), width: 1),
+            ),
+          ),
+          colorScheme: ColorScheme.dark(
             primary: Colors.white,
             onBackground: Colors.white,
             onSecondary: Colors.white,
             onSurface: Colors.white,
             secondary: Colors.grey,
-            surface: Colors.black,
+            surface: const Color(0xFF161618),
             background: Colors.black,
             onPrimary: Colors.black,
-            primaryContainer: Color.fromARGB(255, 31, 31, 31),
-            surfaceTint: Colors.black,
+            primaryContainer: const Color(0xFF26262A),
+            surfaceTint: Colors.transparent,
           ),
         );
       default:
