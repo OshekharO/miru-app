@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:flutter_socks_proxy/socks_proxy.dart';
 import 'package:miru_app/utils/miru_directory.dart';
@@ -17,6 +19,14 @@ class MiruRequest {
 
   static Future<void> ensureInitialized() async {
     dio = Dio();
+    dio.httpClientAdapter = IOHttpClientAdapter(
+      createHttpClient: () {
+        final client = HttpClient();
+        client.badCertificateCallback =
+            (X509Certificate cert, String host, int port) => true;
+        return client;
+      },
+    );
     final cookieManager = CookieManager(_cookieJar);
     dio.interceptors.add(cookieManager);
     refreshProxy();
