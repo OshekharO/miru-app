@@ -359,7 +359,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     final map = {
                       'comic-settings.standard'.i18n: 'standard',
                       'comic-settings.right-to-left'.i18n: 'rightToLeft',
-                      'comic-settings.web-tonn'.i18n: 'webTonn',
+                      'comic-settings.web-toon'.i18n: 'webTonn',
                     };
                     return map;
                   }(),
