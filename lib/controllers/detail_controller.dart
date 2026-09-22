@@ -80,8 +80,11 @@ class DetailPageController extends GetxController {
         onPressed: () async {
           final webview = FlutterWindowsWebview();
           await webview.setUA(MiruStorage.getUASetting());
+          final targetUrl = url.startsWith('http://') || url.startsWith('https://')
+              ? url
+              : extension!.webSite + url;
           webview.launchWebview(
-            extension!.webSite + url,
+            targetUrl,
             WebviewOptions(
               onNavigation: (url) {
                 if (Uri.parse(url).host != Uri.parse(extension!.webSite).host) {

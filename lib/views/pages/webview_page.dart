@@ -18,7 +18,9 @@ class WebViewPage extends StatefulWidget {
 }
 
 class _WebViewPageState extends State<WebViewPage> {
-  late String url = widget.extensionRuntime.extension.webSite + widget.url;
+  late String url = widget.url.startsWith('http://') || widget.url.startsWith('https://')
+      ? widget.url
+      : widget.extensionRuntime.extension.webSite + widget.url;
   final cookieManager = WebviewCookieManager();
   late Uri loadUrl = Uri.parse(url);
 
