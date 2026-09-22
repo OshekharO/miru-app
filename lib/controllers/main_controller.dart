@@ -13,17 +13,20 @@ class MainController extends GetxController {
 
   List<Widget> actions = <Widget>[].obs;
 
-  setAcitons(List<Widget> list) async {
+  setActions(List<Widget> list) async {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       actions.clear();
       actions.addAll(list);
     });
   }
 
+  @Deprecated('Use setActions instead')
+  setAcitons(List<Widget> list) async => setActions(list);
+
   @override
   void onReady() {
     super.onReady();
-    SchedulerBinding.instance.addPersistentFrameCallback((_) async {
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
       // 判断 bt_server 是否已经安装
       final isInstalled = await BTServerUtils.isInstalled();
       if (isInstalled) {

@@ -763,6 +763,7 @@ class VideoPlayerController extends GetxController {
     await device.setUrl(url);
     await device.play();
     await player.stop();
+    _dlnaTimer?.cancel();
     _dlnaTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       _getDLNAStatus();
     });

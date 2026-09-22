@@ -53,7 +53,12 @@ class SettingsController extends GetxController {
           timer.cancel();
           return;
         }
-        await _handleMethods();
+        try {
+          await _handleMethods();
+        } catch (_) {
+          extensionLogWindowId.value = -1;
+          timer.cancel();
+        }
       });
 
       return;

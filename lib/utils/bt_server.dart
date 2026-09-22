@@ -118,6 +118,9 @@ class BTServerUtils {
 
   // 定时检测服务器是否运行的方法
   static Future<void> checkServer() async {
+    if (timer != null && timer!.isActive) {
+      return;
+    }
     final mainController = Get.find<MainController>();
     final isRunner = mainController.btServerisRunning;
     final version = mainController.btServerVersion;

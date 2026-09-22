@@ -74,7 +74,7 @@ class DetailPageController extends GetxController {
   @override
   void onInit() {
     onRefresh();
-    Get.find<MainController>().setAcitons([
+    Get.find<MainController>().setActions([
       fluent.IconButton(
         icon: const Icon(fluent.FluentIcons.pop_expand),
         onPressed: () async {
@@ -431,7 +431,7 @@ class DetailPageController extends GetxController {
   @override
   void onClose() {
     scrollController.dispose();
-    Get.find<MainController>().setAcitons([]);
+    Get.find<MainController>().setActions([]);
     super.onClose();
   }
 }
