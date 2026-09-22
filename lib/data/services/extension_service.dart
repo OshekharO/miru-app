@@ -375,7 +375,8 @@ class Extension {
     options.headers = options.headers || {};
     const miruUrl = options.headers["Miru-Url"] || "${extension.webSite}";
     options.method = options.method || "get";
-    const message = await handlePromise("request$className",JSON.stringify([miruUrl + url, options,"${extension.package}"]));
+    const reqUrl = (url.startsWith("http://") || url.startsWith("https://")) ? url : miruUrl + url;
+    const message = await handlePromise("request$className",JSON.stringify([reqUrl, options,"${extension.package}"]));
     try {
       return JSON.parse(message);
     }catch(e){
@@ -546,9 +547,10 @@ async function stringify(callback) {
               options.headers = options.headers || {};
               const miruUrl = options.headers["Miru-Url"] || "${extension.webSite}";
               options.method = options.method || "get";
+              const reqUrl = (url.startsWith("http://") || url.startsWith("https://")) ? url : miruUrl + url;
               const res = await sendMessage(
                 "request",
-                JSON.stringify([miruUrl + url, options])
+                JSON.stringify([reqUrl, options])
               );
               try {
                 return JSON.parse(res);
