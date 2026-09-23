@@ -25,16 +25,21 @@ class _WebViewPageState extends State<WebViewPage> {
   late Uri loadUrl = Uri.parse(url);
 
   _setCookie() async {
-    if (loadUrl.host != Uri.parse(url).host) {
+    final targetHost = Uri.parse(url).host;
+    if (loadUrl.host.isEmpty || (loadUrl.host != targetHost && !loadUrl.host.endsWith('.$targetHost'))) {
       return;
     }
-    final cookies = await cookieManager.getCookies(loadUrl.toString());
-    final cookieString =
-        cookies.map((e) => '${e.name}=${e.value}').toList().join(';');
-    debugPrint('$url $cookieString');
-    widget.extensionRuntime.setCookie(
-      cookieString,
-    );
+    try {
+      final cookies = await cookieManager.getCookies(loadUrl.toString());
+      if (cookies.isNotEmpty) {
+        final cookieString =
+            cookies.map((e) => '${e.name}=${e.value}').toList().join(';');
+        debugPrint('$url $cookieString');
+        await widget.extensionRuntime.setCookie(cookieString);
+      }
+    } catch (e) {
+      debugPrint('Error syncing cookies: $e');
+    }
   }
 
   @override
@@ -55,11 +60,24 @@ class _WebViewPageState extends State<WebViewPage> {
         ),
         initialSettings: InAppWebViewSettings(
           userAgent: MiruStorage.getUASetting(),
+          javaScriptEnabled: true,
+          domStorageEnabled: true,
         ),
         onLoadStart: (controller, url) {
-          setState(() {
-            loadUrl = url!;
-          });
+          if (url != null) {
+            setState(() {
+              loadUrl = url;
+            });
+            _setCookie();
+          }
+        },
+        onLoadStop: (controller, url) async {
+          if (url != null) {
+            setState(() {
+              loadUrl = url;
+            });
+            await _setCookie();
+          }
         },
       ),
     );
