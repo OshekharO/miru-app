@@ -978,6 +978,7 @@ class ComicController extends ReaderController<ExtensionMangaWatch> {
 
   @override
   void onClose() {
+    itemPositionsListener.itemPositions.removeListener(_onPositionsChanged);
     ComicCacheConfigStore.revision.removeListener(_onCacheConfigChanged);
     _positionThrottle?.cancel();
     cacheService.dispose();

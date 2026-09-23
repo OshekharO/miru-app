@@ -29,14 +29,24 @@ class _DetailAppbarflexibleSpaceState extends State<DetailAppbarflexibleSpace> {
   //   ExtensionType.manga: "MANGA",
   // };
 
-  @override
-  void initState() {
-    c.scrollController.addListener(() {
+  void _onScroll() {
+    if (mounted) {
       setState(() {
         _offset = c.scrollController.offset;
       });
-    });
+    }
+  }
+
+  @override
+  void initState() {
+    c.scrollController.addListener(_onScroll);
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    c.scrollController.removeListener(_onScroll);
+    super.dispose();
   }
 
   double _scrollListener() {
