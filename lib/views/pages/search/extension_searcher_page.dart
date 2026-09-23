@@ -355,7 +355,7 @@ class _ExtensionSearcherPageState extends fluent.State<ExtensionSearcherPage> {
     final extensionMissing = Text(
       FlutterI18n.translate(
         context,
-        'common-extension-missing',
+        'common.extension-missing',
         translationParams: {'package': widget.package},
       ),
     );

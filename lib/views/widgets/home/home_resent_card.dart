@@ -59,9 +59,13 @@ class _HomeRecentCardState extends State<HomeRecentCard> {
     if (_runtime == null) {
       return;
     }
-    _update = await _runtime!.checkUpdate(widget.history.url);
-    if (mounted) {
-      setState(() {});
+    try {
+      _update = await _runtime!.checkUpdate(widget.history.url);
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint("Error checking update for ${widget.history.title}: $e");
     }
   }
 
