@@ -218,30 +218,28 @@ class _ExtensionRepoPageState extends State<ExtensionRepoPage> {
   }
 
   Widget _buildAndroid(BuildContext context) {
-    return Obx(
-      () => Scaffold(
-        appBar: SearchAppBar(
-          title: 'common.extension-repo'.i18n,
-          textEditingController: _searchController,
-          onSubmitted: (value) {
-            c.search.value = value;
-          },
-        ),
-        body: Column(
-          children: [
-            Obx(() => _buildFilterChips(context)),
-            Expanded(
-              child: EasyRefresh(
-                onRefresh: c.onRefresh,
-                header: const ClassicHeader(
-                  showText: false,
-                  showMessage: false,
-                ),
-                child: Obx(_content),
+    return Scaffold(
+      appBar: SearchAppBar(
+        title: 'common.extension-repo'.i18n,
+        textEditingController: _searchController,
+        onSubmitted: (value) {
+          c.search.value = value;
+        },
+      ),
+      body: Column(
+        children: [
+          Obx(() => _buildFilterChips(context)),
+          Expanded(
+            child: EasyRefresh(
+              onRefresh: c.onRefresh,
+              header: const ClassicHeader(
+                showText: false,
+                showMessage: false,
               ),
+              child: Obx(_content),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
