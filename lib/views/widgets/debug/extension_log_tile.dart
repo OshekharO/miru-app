@@ -16,12 +16,12 @@ class ExtensionLogTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 6),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isError ? Colors.red.withOpacity(0.12) : Colors.grey[160],
+        color: isError ? Colors.red.withOpacity(0.12) : Colors.grey160,
         borderRadius: BorderRadius.circular(6),
         border: Border.all(
           color: isError
               ? Colors.red.withOpacity(0.4)
-              : Colors.grey[140]!.withOpacity(0.5),
+              : Colors.grey140.withOpacity(0.5),
           width: 1,
         ),
       ),

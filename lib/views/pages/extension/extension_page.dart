@@ -216,7 +216,7 @@ class _ExtensionPageState extends State<ExtensionPage> {
                     children: [
                       Row(
                         children: [
-                          const Icon(
+                          Icon(
                             fluent.FluentIcons.warning,
                             color: fluent.Colors.orange,
                             size: 16,
