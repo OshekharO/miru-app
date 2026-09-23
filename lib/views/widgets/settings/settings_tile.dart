@@ -110,10 +110,15 @@ class _SettingsTileState extends State<SettingsTile> {
     );
 
     if (widget.isCard) {
-      final cardBgColor = isDark
+      final isBlack = isDark && theme.scaffoldBackgroundColor == Colors.black;
+
+      final cardBgColor = isBlack
           ? Colors.black
-          : theme.colorScheme.surfaceVariant.withOpacity(0.3);
-      final borderColor = isDark
+          : isDark
+              ? theme.colorScheme.surfaceVariant.withOpacity(0.3)
+              : theme.colorScheme.surfaceVariant.withOpacity(0.3);
+
+      final borderColor = isBlack
           ? Colors.white.withOpacity(0.12)
           : theme.colorScheme.outline.withOpacity(0.15);
 

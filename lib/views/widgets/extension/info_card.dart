@@ -18,16 +18,25 @@ class InfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final isBlack = isDark && theme.scaffoldBackgroundColor == Colors.black;
+
+    final cardBgColor = isBlack
+        ? Colors.black
+        : isDark
+            ? theme.colorScheme.surfaceVariant.withOpacity(0.3)
+            : theme.colorScheme.surfaceVariant.withOpacity(0.4);
 
     return PlatformWidget(
       androidWidget: Container(
         width: fullWidth ? double.infinity : null,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceVariant.withOpacity(isDark ? 0.2 : 0.4),
+          color: cardBgColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: theme.colorScheme.outline.withOpacity(0.12),
+            color: isBlack
+                ? Colors.white.withOpacity(0.12)
+                : theme.colorScheme.outline.withOpacity(0.12),
           ),
         ),
         child: Column(
