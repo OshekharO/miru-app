@@ -129,6 +129,9 @@ class _ExtensionSettingsPageState extends State<ExtensionSettingsPage> {
   }
 
   Widget _buildAndroid(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Obx(() {
       if (c.runtime.value == null) {
         return const Center(
@@ -138,92 +141,157 @@ class _ExtensionSettingsPageState extends State<ExtensionSettingsPage> {
       final extension = c.runtime.value!.extension;
 
       final content = SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         child: Column(
           children: [
-            const SizedBox(height: 30),
+            // Header Card
             Center(
-              child: Container(
-                height: 100,
-                width: 100,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: CacheNetWorkImagePic(
-                  extension.icon ?? '',
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              extension.name,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            Text(
-              extension.package,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            const SizedBox(height: 30),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Wrap(
+              child: Column(
                 children: [
-                  InfoCard(
-                    icon: Icons.person,
-                    title: 'extension-info.author'.i18n,
-                    content: extension.author,
+                  Container(
+                    height: 88,
+                    width: 88,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: CacheNetWorkImagePic(
+                      extension.icon ?? '',
+                      fit: BoxFit.contain,
+                    ),
                   ),
-                  InfoCard(
-                    icon: Icons.info,
-                    title: 'extension-info.version'.i18n,
-                    content: extension.version,
+                  const SizedBox(height: 12),
+                  Text(
+                    extension.name,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  InfoCard(
-                    icon: Icons.language,
-                    title: 'extension-info.language'.i18n,
-                    content: extension.lang,
+                  const SizedBox(height: 4),
+                  SelectableText(
+                    extension.package,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.secondary,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  InfoCard(
-                    icon: Icons.description,
-                    title: 'extension-info.license'.i18n,
-                    content: extension.license,
-                  ),
-                  InfoCard(
-                    icon: Icons.link,
-                    title: 'extension-info.original-site'.i18n,
-                    content: extension.webSite,
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primaryContainer.withOpacity(0.6),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      ExtensionUtils.typeToString(extension.type),
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: theme.colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () async {
-                        await ExtensionUtils.uninstall(extension.package);
-                        Get.back();
-                      },
-                      child: Text('common.uninstall'.i18n),
+            const SizedBox(height: 24),
+
+            // Metadata Grid Section
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 2.3,
+              children: [
+                InfoCard(
+                  icon: Icons.person_outline,
+                  title: 'extension-info.author'.i18n,
+                  content: extension.author,
+                ),
+                InfoCard(
+                  icon: Icons.info_outline,
+                  title: 'extension-info.version'.i18n,
+                  content: extension.version,
+                ),
+                InfoCard(
+                  icon: Icons.language_outlined,
+                  title: 'extension-info.language'.i18n,
+                  content: extension.lang,
+                ),
+                InfoCard(
+                  icon: Icons.article_outlined,
+                  title: 'extension-info.license'.i18n,
+                  content: extension.license,
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            InfoCard(
+              icon: Icons.link,
+              title: 'extension-info.original-site'.i18n,
+              content: extension.webSite,
+              fullWidth: true,
+            ),
+            const SizedBox(height: 24),
+
+            // Action Buttons
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: theme.colorScheme.error,
+                      side: BorderSide(
+                        color: theme.colorScheme.error.withOpacity(0.5),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
+                    icon: const Icon(Icons.delete_outline, size: 18),
+                    label: Text('common.uninstall'.i18n),
+                    onPressed: () async {
+                      await ExtensionUtils.uninstall(extension.package);
+                      Get.back();
+                    },
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: FilledButton(
-                      onPressed: () {
-                        Get.to(CodeEditPage(extension: extension));
-                      },
-                      child: Text('extension.edit-code'.i18n),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                  )
-                ],
-              ),
+                    icon: const Icon(Icons.code, size: 18),
+                    label: Text('extension.edit-code'.i18n),
+                    onPressed: () {
+                      Get.to(CodeEditPage(extension: extension));
+                    },
+                  ),
+                ),
+              ],
             ),
             if (!LayoutUtils.isTablet) ...[
+              const SizedBox(height: 24),
               const Divider(),
+              const SizedBox(height: 12),
               SettingsTile(
                 isCard: true,
                 title: 'cookie-clean.title'.i18n,
@@ -239,6 +307,7 @@ class _ExtensionSettingsPageState extends State<ExtensionSettingsPage> {
                   },
                 ),
               ),
+              const SizedBox(height: 8),
               ...settingsContent(),
             ]
           ],
@@ -256,6 +325,10 @@ class _ExtensionSettingsPageState extends State<ExtensionSettingsPage> {
                   Expanded(child: content),
                   Expanded(
                     child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 20,
+                      ),
                       child: Column(
                         children: [
                           SettingsTile(
@@ -273,6 +346,7 @@ class _ExtensionSettingsPageState extends State<ExtensionSettingsPage> {
                               },
                             ),
                           ),
+                          const SizedBox(height: 8),
                           ...settingsContent(),
                         ],
                       ),
