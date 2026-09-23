@@ -109,15 +109,20 @@ class BTServerUtils {
       }
       throw StartServerException('Start bt-server failed');
     }
-    checkServer();
+    checkServer(maxFailures: 30);
   }
 
   static stopServer() async {
+    timer?.cancel();
+    timer = null;
     _process?.kill();
+    if (Get.isRegistered<MainController>()) {
+      Get.find<MainController>().btServerisRunning.value = false;
+    }
   }
 
   // 定时检测服务器是否运行的方法
-  static Future<void> checkServer() async {
+  static Future<void> checkServer({int maxFailures = 3}) async {
     if (timer != null && timer!.isActive) {
       return;
     }
@@ -125,12 +130,19 @@ class BTServerUtils {
     final isRunner = mainController.btServerisRunning;
     final version = mainController.btServerVersion;
     timer?.cancel();
-    timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+    int consecutiveFailures = 0;
+    timer = Timer.periodic(const Duration(seconds: 3), (t) async {
       try {
         version.value = await BTServerApi.getVersion();
         isRunner.value = true;
+        consecutiveFailures = 0;
       } catch (e) {
         isRunner.value = false;
+        consecutiveFailures++;
+        if (consecutiveFailures >= maxFailures) {
+          t.cancel();
+          timer = null;
+        }
       }
     });
   }
@@ -150,10 +162,13 @@ class BTServerUtils {
 
   // 卸载 bt-server
   static Future<void> uninstall() async {
-    stopServer();
+    await stopServer();
     final savePath = MiruDirectory.getDirectory;
     final btServerPath = path.join(savePath, _getBTServerFilename());
-    await File(btServerPath).delete();
+    final file = File(btServerPath);
+    if (file.existsSync()) {
+      await file.delete();
+    }
   }
 
   static Future<bool> isInstalled() async {

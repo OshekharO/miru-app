@@ -27,14 +27,18 @@ class MiruLog {
   }
 
   // 写入日志到文件
-  static void writeLogToFile(String log) {
+  static void writeLogToFile(String log) async {
     if (!MiruStorage.getSetting(SettingKey.saveLog)) {
       return;
     }
-    final file = File(logFilePath);
-    file.writeAsStringSync('$log\n', mode: FileMode.append);
-    if (file.lengthSync() > 1024 * 1024 * 10) {
-      file.deleteSync();
+    try {
+      final file = File(logFilePath);
+      await file.writeAsString('$log\n', mode: FileMode.append);
+      if (await file.length() > 1024 * 1024 * 10) {
+        await file.delete();
+      }
+    } catch (e) {
+      debugPrint("Error writing log to file: $e");
     }
   }
 }

@@ -192,5 +192,54 @@
     "cache-on-read-subtitle": "消費者：正在閱讀的這一話也快取",
     "seamless-switch": "條漫無感切換章節",
     "seamless-switch-subtitle": "捲動時把相鄰章節拼成一條連續流，翻下一話／回上一話無感"
+  },
+  "languages": {
+    "be": "Беларуская",
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "hu": "Magyar",
+    "hi": "हिंदी",
+    "id": "Indonesia",
+    "ja": "日本語",
+    "pl": "Polski",
+    "ru": "Русский",
+    "ryu": "うちなーぐち",
+    "uk": "Українська",
+    "zh": "中文",
+    "zhHant": "繁體中文"
+  },
+  "bugreport": {
+    "auto-remove-subtitle": "delete in ~ days",
+    "show-report-dialog": "Show Report Dialog",
+    "show-report-dialog-subtitle": "Show error report dialog when app starts"
+  },
+  "report": {
+    "copied": "Copied to clipboard",
+    "github-bug-report": "Report to GitHub issue",
+    "title": "Bug Report",
+    "copy-message": "Copy error message",
+    "show-report-checkbox": "Show report dialog when app starts"
+  },
+  "anilist": {
+    "title": "Anilist 追踪",
+    "login-hint-1": "你需要登录 AniList 才能使用此功能",
+    "login-hint-2": "请登录后重试",
+    "status": "状态",
+    "score": "评分",
+    "watching": "观看中",
+    "reading": "阅读中",
+    "completed": "已完成",
+    "dropped": "已放弃",
+    "planning": "计划中",
+    "hold-on": "搁置中",
+    "re-watching": "重看中",
+    "re-reading": "重读中",
+    "start-date": "开始日期",
+    "end-date": "结束日期",
+    "unbind": "取消绑定",
+    "episodes": "进度",
+    "manga-chapter-read": "看过的漫画章节: {chapters}",
+    "anime-episode-watch": "看过的动画剧集: {episodes}"
   }
 }

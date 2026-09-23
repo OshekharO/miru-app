@@ -306,5 +306,33 @@
     "cache-on-read-subtitle": "消费者：正在阅读的这一话也缓存",
     "seamless-switch": "条漫无感切换章节",
     "seamless-switch-subtitle": "滚动时把相邻章节拼成一条连续流，翻下一话/回上一话无感"
+  },
+  "languages": {
+    "be": "Беларуская",
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "hu": "Magyar",
+    "hi": "हिंदी",
+    "id": "Indonesia",
+    "ja": "日本語",
+    "pl": "Polski",
+    "ru": "Русский",
+    "ryu": "うちなーぐち",
+    "uk": "Українська",
+    "zh": "中文",
+    "zhHant": "繁體中文"
+  },
+  "bugreport": {
+    "auto-remove-subtitle": "delete in ~ days",
+    "show-report-dialog": "Show Report Dialog",
+    "show-report-dialog-subtitle": "Show error report dialog when app starts"
+  },
+  "report": {
+    "copied": "Copied to clipboard",
+    "github-bug-report": "Report to GitHub issue",
+    "title": "Bug Report",
+    "copy-message": "Copy error message",
+    "show-report-checkbox": "Show report dialog when app starts"
   }
 }
