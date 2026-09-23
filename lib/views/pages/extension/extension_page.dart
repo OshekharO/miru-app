@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
+import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:miru_app/controllers/extension/extension_controller.dart';
@@ -158,14 +159,14 @@ class _ExtensionPageState extends State<ExtensionPage> {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     child: Text(
-                      "${e.key}: ${e.value}",
+                      "${path.basename(e.key)}: ${e.value}",
                     ),
                   ),
                 ),
                 desktopWidget: fluent.Card(
                   margin: const EdgeInsets.only(bottom: 8),
                   child: Text(
-                    "${e.key}: ${e.value}",
+                    "${path.basename(e.key)}: ${e.value}",
                   ),
                 ),
               ),
