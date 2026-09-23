@@ -98,7 +98,7 @@ class _ExtensionSearcherPageState extends fluent.State<ExtensionSearcherPage> {
       // ignore: use_build_context_synchronously
       showPlatformSnackbar(
         context: context,
-        content: e.toString(),
+        content: e.toString().split('\n')[0].replaceFirst(RegExp(r'^Exception:\s*'), ''),
         severity: fluent.InfoBarSeverity.error,
       );
       rethrow;
