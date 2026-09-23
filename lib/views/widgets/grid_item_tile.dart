@@ -133,7 +133,8 @@ class _GridItemTileState extends State<GridItemTile> {
                   clipBehavior: Clip.antiAlias,
                   child: AnimatedScale(
                     scale: _isHover ? 1.05 : 1,
-                    duration: const Duration(milliseconds: 80),
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeOutCubic,
                     child: Cover(
                       alt: widget.title,
                       url: widget.cover,

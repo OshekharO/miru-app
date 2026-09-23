@@ -120,9 +120,15 @@ final router = GoRouter(
 _animation(Widget child) {
   return Animate(
     child: child,
-  ).moveY(
-    begin: 40,
-    end: 0,
-    curve: Curves.easeOutCubic,
-  );
+  )
+      .fade(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+      )
+      .moveY(
+        begin: 20,
+        end: 0,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+      );
 }
