@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:miru_app/controllers/extension/extension_controller.dart';
+import 'package:miru_app/models/extension.dart';
 import 'package:miru_app/views/widgets/extension/extension_tile.dart';
 import 'package:miru_app/views/pages/extension/extension_repo_page.dart';
 import 'package:miru_app/router/router.dart';
@@ -27,6 +28,8 @@ class ExtensionPage extends StatefulWidget {
 
 class _ExtensionPageState extends State<ExtensionPage> {
   late ExtensionPageController c;
+  bool _isSearching = false;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -41,6 +44,7 @@ class _ExtensionPageState extends State<ExtensionPage> {
   @override
   void dispose() {
     c.isPageOpen = false;
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -81,7 +85,6 @@ class _ExtensionPageState extends State<ExtensionPage> {
                     icon: const Icon(fluent.FluentIcons.fabric_folder),
                     onPressed: () async {
                       RouterUtils.pop();
-                      // 定位目录
                       final dir = ExtensionUtils.extensionsDir;
                       final uri = Uri.directory(dir);
                       await launchUrl(uri);
@@ -275,115 +278,340 @@ class _ExtensionPageState extends State<ExtensionPage> {
     );
   }
 
-  Widget _buildAndroid(BuildContext context) {
-    return Obx(() {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text('common.extension'.i18n),
-          actions: [
-            if (c.errors.isNotEmpty)
-              IconButton(
-                icon: const Icon(Icons.error),
-                onPressed: () => _loadErrorDialog(),
+  List get _filteredExtensions {
+    return c.runtimes.values.where((ext) {
+      final matchesSearch = c.search.value.isEmpty ||
+          ext.extension.name
+              .toLowerCase()
+              .contains(c.search.value.toLowerCase()) ||
+          ext.extension.package
+              .toLowerCase()
+              .contains(c.search.value.toLowerCase());
+      final matchesType = c.filterType.value == null ||
+          ext.extension.type == c.filterType.value;
+      return matchesSearch && matchesType;
+    }).toList();
+  }
+
+  Widget _buildFilterChips(BuildContext context) {
+    final theme = Theme.of(context);
+    final categories = [
+      {'type': null, 'label': 'common.show-all'.i18n, 'icon': Icons.apps},
+      {
+        'type': ExtensionType.bangumi,
+        'label': 'extension-type.video'.i18n,
+        'icon': Icons.movie_outlined
+      },
+      {
+        'type': ExtensionType.manga,
+        'label': 'extension-type.comic'.i18n,
+        'icon': Icons.menu_book_outlined
+      },
+      {
+        'type': ExtensionType.fikushon,
+        'label': 'extension-type.novel'.i18n,
+        'icon': Icons.book_outlined
+      },
+    ];
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        children: categories.map((cat) {
+          final isSelected = c.filterType.value == cat['type'];
+          final type = cat['type'] as ExtensionType?;
+          final label = cat['label'] as String;
+          final iconData = cat['icon'] as IconData;
+
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilterChip(
+              showCheckmark: false,
+              avatar: Icon(
+                iconData,
+                size: 16,
+                color: isSelected
+                    ? theme.colorScheme.onPrimary
+                    : theme.colorScheme.onSurfaceVariant,
               ),
-            IconButton(
-              onPressed: () => _importDialog(),
-              icon: const Icon(Icons.add),
-            ),
-            IconButton(
-              onPressed: () {
-                Get.to(
-                  () => const ExtensionRepoPage(),
-                );
+              label: Text(label),
+              selected: isSelected,
+              selectedColor: theme.colorScheme.primary,
+              backgroundColor:
+                  theme.colorScheme.surfaceVariant.withOpacity(0.5),
+              labelStyle: TextStyle(
+                color: isSelected
+                    ? theme.colorScheme.onPrimary
+                    : theme.colorScheme.onSurface,
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+              onSelected: (_) {
+                c.filterType.value = type;
               },
-              icon: const Icon(Icons.download),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context, {required bool isDesktop}) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.extension_off_outlined,
+            size: 64,
+            color: Theme.of(context).disabledColor,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            c.runtimes.isEmpty
+                ? 'common.no-extension'.i18n
+                : 'common.no-result'.i18n,
+            style: TextStyle(
+              fontSize: 16,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (isDesktop)
+            fluent.FilledButton(
+              child: Text('common.extension-repo'.i18n),
+              onPressed: () {
+                router.push('/extension_repo');
+              },
             )
-          ],
-        ),
-        body: ListView(
-          children: [
-            if (c.runtimes.isEmpty)
-              SizedBox(
-                height: 300,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('common.no-extension'.i18n),
-                  ],
+          else
+            ElevatedButton.icon(
+              icon: const Icon(Icons.download),
+              label: Text('common.extension-repo'.i18n),
+              onPressed: () {
+                Get.to(() => const ExtensionRepoPage());
+              },
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAndroid(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: _isSearching
+            ? TextField(
+                controller: _searchController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: 'common.search'.i18n,
+                  border: InputBorder.none,
                 ),
-              ),
-            for (final ext in c.runtimes.values) ExtensionTile(ext.extension),
+                onChanged: (val) {
+                  c.search.value = val;
+                },
+              )
+            : Text('common.extension'.i18n),
+        actions: [
+          if (_isSearching)
+            IconButton(
+              icon: const Icon(Icons.clear),
+              onPressed: () {
+                _searchController.clear();
+                c.search.value = '';
+                setState(() {
+                  _isSearching = false;
+                });
+              },
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () {
+                setState(() {
+                  _isSearching = true;
+                });
+              },
+            ),
+          Obx(
+            () => c.errors.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.warning_amber_rounded,
+                        color: Colors.orange),
+                    onPressed: () => _loadErrorDialog(),
+                  )
+                : const SizedBox.shrink(),
+          ),
+          IconButton(
+            onPressed: () => _importDialog(),
+            icon: const Icon(Icons.add),
+          ),
+          IconButton(
+            onPressed: () {
+              Get.to(() => const ExtensionRepoPage());
+            },
+            icon: const Icon(Icons.shopping_bag_outlined),
+          ),
+        ],
+      ),
+      body: Obx(() {
+        final list = _filteredExtensions;
+
+        return Column(
+          children: [
+            if (c.runtimes.isNotEmpty) _buildFilterChips(context),
+            Expanded(
+              child: list.isEmpty
+                  ? _buildEmptyState(context, isDesktop: false)
+                  : ListView.builder(
+                      itemCount: list.length,
+                      padding: const EdgeInsets.only(bottom: 16),
+                      itemBuilder: (context, index) {
+                        return ExtensionTile(list[index].extension);
+                      },
+                    ),
+            ),
           ],
-        ),
-      );
-    });
+        );
+      }),
+    );
   }
 
   Widget _buildDesktop(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: Obx(
-        () => Column(
-          children: [
-            Row(
-              children: [
-                Text(
-                  'common.extension'.i18n,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+      child: Column(
+        children: [
+          // Header Controls
+          Row(
+            children: [
+              Text(
+                'common.extension'.i18n,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
-                const Spacer(),
-                // 错误按钮
-                if (c.errors.isNotEmpty)
-                  fluent.IconButton(
-                    icon: const Icon(fluent.FluentIcons.error),
-                    onPressed: () {
-                      _loadErrorDialog();
-                    },
+              ),
+              const SizedBox(width: 24),
+              // Search Bar
+              SizedBox(
+                width: 220,
+                child: fluent.TextBox(
+                  controller: _searchController,
+                  placeholder: 'common.search'.i18n,
+                  prefix: const Padding(
+                    padding: EdgeInsets.only(left: 8.0),
+                    child: Icon(fluent.FluentIcons.search, size: 14),
                   ),
-                // 导入按钮
-                fluent.IconButton(
+                  onChanged: (val) {
+                    c.search.value = val;
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Filter Category Dropdown
+              Obx(
+                () => fluent.ComboBox<String>(
+                  items: [
+                    fluent.ComboBoxItem(
+                      value: "all",
+                      child: Text('common.show-all'.i18n),
+                    ),
+                    fluent.ComboBoxItem(
+                      value: ExtensionType.bangumi.toString(),
+                      child: Text('extension-type.video'.i18n),
+                    ),
+                    fluent.ComboBoxItem(
+                      value: ExtensionType.manga.toString(),
+                      child: Text('extension-type.comic'.i18n),
+                    ),
+                    fluent.ComboBoxItem(
+                      value: ExtensionType.fikushon.toString(),
+                      child: Text('extension-type.novel'.i18n),
+                    ),
+                  ],
+                  value: c.filterType.value?.toString() ?? "all",
+                  onChanged: (value) {
+                    if (value == "all" || value == null) {
+                      c.filterType.value = null;
+                      return;
+                    }
+                    c.filterType.value = ExtensionType.values.firstWhere(
+                      (element) => element.toString() == value,
+                    );
+                  },
+                ),
+              ),
+              const Spacer(),
+              // Error button
+              Obx(
+                () => c.errors.isNotEmpty
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          fluent.Tooltip(
+                            message: 'extension.error-dialog'.i18n,
+                            child: fluent.IconButton(
+                              icon: Icon(fluent.FluentIcons.warning,
+                                  color: fluent.Colors.orange),
+                              onPressed: () {
+                                _loadErrorDialog();
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                      )
+                    : const SizedBox.shrink(),
+              ),
+              // Import button
+              fluent.Tooltip(
+                message: 'extension.import.title'.i18n,
+                child: fluent.IconButton(
                   icon: const Icon(fluent.FluentIcons.add_space_before),
                   onPressed: () {
                     _importDialog();
                   },
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            if (c.runtimes.isEmpty)
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+              ),
+              const SizedBox(width: 8),
+              // Extension Repo Button
+              fluent.FilledButton(
+                child: Row(
                   children: [
-                    Text('common.no-extension'.i18n),
-                    const SizedBox(height: 8),
-                    fluent.FilledButton(
-                      child: Text(
-                        'common.extension-repo'.i18n,
-                      ),
-                      onPressed: () {
-                        router.push('/extension_repo');
-                      },
-                    )
+                    const Icon(fluent.FluentIcons.shopping_cart, size: 14),
+                    const SizedBox(width: 6),
+                    Text('common.extension-repo'.i18n),
                   ],
                 ),
+                onPressed: () {
+                  router.push('/extension_repo');
+                },
               ),
-            Expanded(
-              child: ListView(
-                children: [
-                  for (final ext in c.runtimes.values)
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      child: ExtensionTile(ext.extension),
-                    ),
-                ],
-              ),
-            )
-          ],
-        ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Content
+          Expanded(
+            child: Obx(() {
+              final list = _filteredExtensions;
+
+              return list.isEmpty
+                  ? _buildEmptyState(context, isDesktop: true)
+                  : ListView.builder(
+                      itemCount: list.length,
+                      itemBuilder: (context, index) {
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          child: ExtensionTile(list[index].extension),
+                        );
+                      },
+                    );
+            }),
+          ),
+        ],
       ),
     );
   }

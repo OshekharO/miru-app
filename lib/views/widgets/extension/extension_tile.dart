@@ -24,133 +24,295 @@ class _ExtensionTileState extends State<ExtensionTile> {
   final fluent.FlyoutController moreFlyoutController =
       fluent.FlyoutController();
 
+  Widget _buildTypeBadge(BuildContext context, ExtensionType type) {
+    Color color;
+    IconData iconData;
+    switch (type) {
+      case ExtensionType.bangumi:
+        color = Colors.blue;
+        iconData = Icons.movie_outlined;
+        break;
+      case ExtensionType.manga:
+        color = Colors.orange;
+        iconData = Icons.menu_book_outlined;
+        break;
+      case ExtensionType.fikushon:
+        color = Colors.purple;
+        iconData = Icons.book_outlined;
+        break;
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withOpacity(0.3), width: 0.8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(iconData, size: 12, color: color),
+          const SizedBox(width: 4),
+          Text(
+            ExtensionUtils.typeToString(type),
+            style: TextStyle(
+              fontSize: 11,
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildAndroid(BuildContext context) {
-    return ListTile(
-      leading: SizedBox(
-        width: 35,
-        height: 35,
-        child: CacheNetWorkImagePic(
-          widget.extension.icon ?? '',
-          key: ValueKey(widget.extension.icon),
-          fit: BoxFit.contain,
-          fallback: const Icon(Icons.extension),
+    final theme = Theme.of(context);
+    return Card(
+      elevation: 0,
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: theme.dividerColor.withOpacity(0.1),
         ),
       ),
-      title: Text(widget.extension.name),
-      subtitle: Text(
-        '${widget.extension.version}  ${ExtensionUtils.typeToString(widget.extension.type)} ',
-        style: const TextStyle(fontSize: 12),
-      ),
-      onTap: () {
-        Get.to(ExtensionSettingsPage(package: widget.extension.package));
-      },
-      trailing: IconButton(
-        onPressed: () {
-          // 弹出菜单
-          showModalBottomSheet(
-            context: context,
-            builder: (context) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ListTile(
-                    leading: const Icon(Icons.code),
-                    title: Text('extension.edit-code'.i18n),
-                    onTap: () async {
-                      Get.back();
-                      Get.to(CodeEditPage(extension: widget.extension));
-                    },
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.delete),
-                    title: Text('common.uninstall'.i18n),
-                    onTap: () {
-                      ExtensionUtils.uninstall(widget.extension.package);
-                      Get.back();
-                    },
-                  ),
-                ],
-              );
-            },
-          );
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          Get.to(() => ExtensionSettingsPage(package: widget.extension.package));
         },
-        icon: const Icon(Icons.more_vert),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              // Icon
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: theme.colorScheme.surfaceVariant.withOpacity(0.4),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: CacheNetWorkImagePic(
+                  widget.extension.icon ?? '',
+                  key: ValueKey(widget.extension.icon),
+                  fit: BoxFit.contain,
+                  fallback: const Icon(Icons.extension_outlined, size: 28),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Main content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.extension.name,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 6,
+                      runSpacing: 4,
+                      children: [
+                        _buildTypeBadge(context, widget.extension.type),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 1.5),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.onSurface.withOpacity(0.06),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            widget.extension.version,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: theme.textTheme.bodySmall?.color,
+                            ),
+                          ),
+                        ),
+                        if (widget.extension.author.isNotEmpty)
+                          Text(
+                            widget.extension.author,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: theme.textTheme.bodySmall?.color
+                                  ?.withOpacity(0.7),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        if (widget.extension.nsfw)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 4, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text(
+                              '18+',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              // Actions
+              IconButton(
+                icon: const Icon(Icons.settings_outlined, size: 20),
+                tooltip: 'settings.general'.i18n,
+                onPressed: () {
+                  Get.to(() => ExtensionSettingsPage(
+                      package: widget.extension.package));
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.more_vert, size: 20),
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(16)),
+                    ),
+                    builder: (context) {
+                      return SafeArea(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(height: 8),
+                            ListTile(
+                              leading: const Icon(Icons.code),
+                              title: Text('extension.edit-code'.i18n),
+                              onTap: () async {
+                                Get.back();
+                                Get.to(() =>
+                                    CodeEditPage(extension: widget.extension));
+                              },
+                            ),
+                            ListTile(
+                              leading: const Icon(Icons.delete_outline,
+                                  color: Colors.red),
+                              title: Text(
+                                'common.uninstall'.i18n,
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                              onTap: () {
+                                ExtensionUtils.uninstall(
+                                    widget.extension.package);
+                                Get.back();
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildDesktop(BuildContext context) {
     return fluent.Card(
+      padding: const EdgeInsets.all(12),
       child: Row(
         children: [
+          // Icon
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: CacheNetWorkImagePic(
+              widget.extension.icon ?? '',
+              key: ValueKey(widget.extension.icon),
+              fit: BoxFit.contain,
+              fallback: const Icon(fluent.FluentIcons.add_in, size: 24),
+            ),
+          ),
+          const SizedBox(width: 14),
+          // Name & Author
           Expanded(
             flex: 3,
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // extension icon
-                Container(
-                  clipBehavior: Clip.antiAlias,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
+                Text(
+                  widget.extension.name,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
                   ),
-                  child: SizedBox(
-                    width: 45,
-                    height: 45,
-                    child: CacheNetWorkImagePic(
-                      widget.extension.icon ?? '',
-                      key: ValueKey(widget.extension.icon),
-                      fit: BoxFit.contain,
-                      fallback: const Icon(fluent.FluentIcons.add_in),
-                    ),
-                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.extension.name,
-                        style: const TextStyle(
-                          fontSize: 17,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      Text(
-                        widget.extension.author,
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                    ],
+                const SizedBox(height: 2),
+                Text(
+                  widget.extension.author.isNotEmpty
+                      ? widget.extension.author
+                      : widget.extension.package,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: fluent.FluentTheme.of(context)
+                        .typography
+                        .caption
+                        ?.color
+                        ?.withOpacity(0.7),
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
-          Expanded(child: Text(widget.extension.version)),
-          Expanded(
-            child: Text(ExtensionUtils.typeToString(widget.extension.type)),
+          const SizedBox(width: 8),
+          // Type badge
+          _buildTypeBadge(context, widget.extension.type),
+          const SizedBox(width: 16),
+          // Version
+          Text(
+            widget.extension.version,
+            style: const TextStyle(fontSize: 12),
           ),
           const Spacer(),
+          // Settings action button
           fluent.IconButton(
-              // child: Padding(
-              //   padding: const EdgeInsets.symmetric(
-              //     horizontal: 20,
-              //     vertical: 2,
-              //   ),
-              //   child: Text('common.settings'.i18n),
-              // ),
-              icon: const Icon(fluent.FluentIcons.settings),
-              onPressed: () {
-                router.push(Uri(
-                  path: '/extension_settings',
-                  queryParameters: {'package': widget.extension.package},
-                ).toString());
-              }),
+            icon: const Icon(fluent.FluentIcons.settings, size: 16),
+            onPressed: () {
+              router.push(Uri(
+                path: '/extension_settings',
+                queryParameters: {'package': widget.extension.package},
+              ).toString());
+            },
+          ),
           const SizedBox(width: 8),
+          // More flyout action button
           fluent.FlyoutTarget(
             controller: moreFlyoutController,
             child: fluent.IconButton(
-              icon: const Icon(fluent.FluentIcons.more),
+              icon: const Icon(fluent.FluentIcons.more, size: 16),
               onPressed: () {
                 moreFlyoutController.showFlyout(
                   autoModeConfiguration: fluent.FlyoutAutoConfiguration(
@@ -185,7 +347,7 @@ class _ExtensionTileState extends State<ExtensionTile> {
                 );
               },
             ),
-          )
+          ),
         ],
       ),
     );
