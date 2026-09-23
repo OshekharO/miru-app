@@ -58,6 +58,15 @@ class ComicImageCache {
     }
   }
 
+  static HttpClient? _sharedHttpClient;
+
+  static HttpClient get _client {
+    _sharedHttpClient ??= HttpClient()
+      ..autoUncompress = false
+      ..connectionTimeout = const Duration(seconds: 20);
+    return _sharedHttpClient!;
+  }
+
   /// 下载并写入磁盘缓存；已存在时直接返回 true。
   ///
   /// 返回是否成功。失败不会抛异常，交给调用方决定是否重试。
@@ -76,9 +85,7 @@ class ComicImageCache {
       return true;
     }
 
-    final client = HttpClient()
-      ..autoUncompress = false
-      ..connectionTimeout = timeout;
+    final client = _client;
     try {
       final request = await client.getUrl(uri).timeout(timeout);
       headers?.forEach((name, value) {
@@ -103,8 +110,6 @@ class ComicImageCache {
     } catch (e) {
       debugPrint('comic cache download failed: $url $e');
       return false;
-    } finally {
-      client.close(force: true);
     }
   }
 

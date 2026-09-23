@@ -37,7 +37,8 @@ class ExtensionUtils {
       if (path.extension(event.path) == '.js') {
         final package = path.basenameWithoutExtension(event.path);
         debugPrint('extension event: ${event.path} ${event.type}');
-        runtimes.remove(package);
+        final existing = runtimes.remove(package);
+        existing?.dispose();
         extensionErrorMap.remove(event.path);
         switch (event.type) {
           case FileSystemEvent.delete:
@@ -68,6 +69,8 @@ class ExtensionUtils {
     if (file.existsSync()) {
       file.deleteSync();
     }
+    final existing = runtimes.remove(package);
+    existing?.dispose();
   }
 
   static install(String url, BuildContext context) async {
@@ -108,6 +111,7 @@ class ExtensionUtils {
       final savePath = path.join(extensionsDir, '${ext.package}.js');
       // 保存文件
       File(savePath).writeAsStringSync(script);
+      runtimes.remove(ext.package)?.dispose();
       runtimes[ext.package] = await ExtensionService().initRuntime(ext);
       _reloadPage();
     } catch (e) {
@@ -140,6 +144,7 @@ class ExtensionUtils {
         if (path.basenameWithoutExtension(p) != ext.package) {
           throw Exception("Inconsistency between file name and package name");
         }
+        runtimes.remove(ext.package)?.dispose();
         runtimes[ext.package] = await ExtensionService().initRuntime(ext);
       } catch (e) {
         extensionErrorMap[p] = e.toString();

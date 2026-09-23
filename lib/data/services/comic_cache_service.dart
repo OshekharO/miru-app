@@ -403,6 +403,8 @@ class ComicCacheService {
     return true;
   }
 
+  DateTime? _lastTrimTime;
+
   /// 按 [ComicCacheConfig.maxDiskSizeMB] 回收磁盘缓存。
   ///
   /// [protectedUrls] 是刚刚缓存的那一话：即使它让总量超限也不删，
@@ -413,6 +415,12 @@ class ComicCacheService {
     if (trimmer == null || limitMB <= 0) {
       return;
     }
+    final now = _clock();
+    if (_lastTrimTime != null &&
+        now.difference(_lastTrimTime!) < const Duration(seconds: 10)) {
+      return;
+    }
+    _lastTrimTime = now;
     try {
       lastTrimmedFiles = await trimmer(
         limitMB * 1024 * 1024,
