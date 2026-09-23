@@ -34,55 +34,67 @@ class _ExtensionRepoPageState extends State<ExtensionRepoPage> {
     super.initState();
   }
 
-  // 筛选 dialog
-  _filterDialog() {
-    showModalBottomSheet(
-      context: context,
-      showDragHandle: true,
-      useSafeArea: true,
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                width: double.infinity,
-                child: Obx(
-                  () => SegmentedButton<ExtensionType?>(
-                    segments: [
-                      ButtonSegment(
-                        value: null,
-                        label: Text('common.show-all'.i18n),
-                      ),
-                      ButtonSegment(
-                        value: ExtensionType.bangumi,
-                        label: Text('extension-type.video'.i18n),
-                      ),
-                      ButtonSegment(
-                        value: ExtensionType.manga,
-                        label: Text('extension-type.comic'.i18n),
-                      ),
-                      ButtonSegment(
-                        value: ExtensionType.fikushon,
-                        label: Text('extension-type.novel'.i18n),
-                      ),
-                    ],
-                    selected: <ExtensionType?>{c.searchType.value},
-                    onSelectionChanged: (value) {
-                      debugPrint(value.first.toString());
-                      c.searchType.value = value.first;
-                      Get.back();
-                    },
-                    showSelectedIcon: false,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
+  Widget _buildFilterChips(BuildContext context) {
+    final theme = Theme.of(context);
+    final categories = [
+      {'type': null, 'label': 'common.show-all'.i18n, 'icon': Icons.apps},
+      {
+        'type': ExtensionType.bangumi,
+        'label': 'extension-type.video'.i18n,
+        'icon': Icons.movie_outlined
       },
+      {
+        'type': ExtensionType.manga,
+        'label': 'extension-type.comic'.i18n,
+        'icon': Icons.menu_book_outlined
+      },
+      {
+        'type': ExtensionType.fikushon,
+        'label': 'extension-type.novel'.i18n,
+        'icon': Icons.book_outlined
+      },
+    ];
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        children: categories.map((cat) {
+          final isSelected = c.searchType.value == cat['type'];
+          final type = cat['type'] as ExtensionType?;
+          final label = cat['label'] as String;
+          final iconData = cat['icon'] as IconData;
+
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilterChip(
+              showCheckmark: false,
+              avatar: Icon(
+                iconData,
+                size: 16,
+                color: isSelected
+                    ? theme.colorScheme.onPrimary
+                    : theme.colorScheme.onSurfaceVariant,
+              ),
+              label: Text(label),
+              selected: isSelected,
+              selectedColor: theme.colorScheme.primary,
+              backgroundColor:
+                  theme.colorScheme.surfaceVariant.withOpacity(0.5),
+              labelStyle: TextStyle(
+                color: isSelected
+                    ? theme.colorScheme.onPrimary
+                    : theme.colorScheme.onSurface,
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+              onSelected: (_) {
+                c.searchType.value = type;
+              },
+            ),
+          );
+        }).toList(),
+      ),
     );
   }
 
@@ -92,27 +104,44 @@ class _ExtensionRepoPageState extends State<ExtensionRepoPage> {
     }
     if (c.isError.value) {
       return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
           child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text('extension-repo.error'.i18n),
-          const SizedBox(height: 8),
-          fluent.Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              'extension-repo.error-tips'.i18n,
-              style: const TextStyle(fontSize: 12),
-            ),
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.cloud_off_rounded,
+                size: 64,
+                color: Colors.grey,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'extension-repo.error'.i18n,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'extension-repo.error-tips'.i18n,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).textTheme.bodySmall?.color,
+                ),
+              ),
+              const SizedBox(height: 20),
+              PlatformFilledButton(
+                child: Text('common.retry'.i18n),
+                onPressed: () {
+                  c.onRefresh();
+                },
+              )
+            ],
           ),
-          const SizedBox(height: 13),
-          PlatformFilledButton(
-            child: Text('common.retry'.i18n),
-            onPressed: () {
-              c.onRefresh();
-            },
-          )
-        ],
-      ));
+        ),
+      );
     }
 
     final extensionCards = c.extensions
@@ -128,10 +157,12 @@ class _ExtensionRepoPageState extends State<ExtensionRepoPage> {
               (element) => element.toString() == 'ExtensionType.${e['type']}',
             )))
         .toList();
-    // 过滤
+
+    // Filtering
     if (c.search.value.isNotEmpty) {
       extensionCards.removeWhere((element) =>
-          !element.name.toLowerCase().contains(c.search.value.toLowerCase()));
+          !element.name.toLowerCase().contains(c.search.value.toLowerCase()) &&
+          !element.package.toLowerCase().contains(c.search.value.toLowerCase()));
     }
     if (c.searchType.value != null) {
       extensionCards.removeWhere(
@@ -140,20 +171,46 @@ class _ExtensionRepoPageState extends State<ExtensionRepoPage> {
     }
 
     if (extensionCards.isEmpty) {
-      return Center(child: Text('extension-repo.empty'.i18n));
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.extension_off_outlined,
+              size: 56,
+              color: Colors.grey,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'extension-repo.empty'.i18n,
+              style: TextStyle(
+                fontSize: 14,
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+              ),
+            ),
+          ],
+        ),
+      );
     }
 
     return PlatformBuildWidget(
-      androidBuilder: (context) => ListView(
-        children: extensionCards,
+      androidBuilder: (context) => ListView.builder(
+        padding: const EdgeInsets.only(bottom: 16),
+        itemCount: extensionCards.length,
+        itemBuilder: (context, index) => extensionCards[index],
       ),
       desktopBuilder: (context) => LayoutBuilder(
         builder: (context, constraints) {
-          return GridView.count(
-            crossAxisCount: constraints.maxWidth ~/ 220,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            children: extensionCards,
+          final crossAxisCount = (constraints.maxWidth / 320).floor().clamp(1, 6);
+          return GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              mainAxisExtent: 130,
+            ),
+            itemCount: extensionCards.length,
+            itemBuilder: (context, index) => extensionCards[index],
           );
         },
       ),
@@ -165,26 +222,25 @@ class _ExtensionRepoPageState extends State<ExtensionRepoPage> {
       () => Scaffold(
         appBar: SearchAppBar(
           title: 'common.extension-repo'.i18n,
-          textEditingController: _searchController..text = c.search.value,
+          textEditingController: _searchController,
           onSubmitted: (value) {
             c.search.value = value;
           },
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.filter_list),
-              onPressed: () {
-                _filterDialog();
-              },
+        ),
+        body: Column(
+          children: [
+            Obx(() => _buildFilterChips(context)),
+            Expanded(
+              child: EasyRefresh(
+                onRefresh: c.onRefresh,
+                header: const ClassicHeader(
+                  showText: false,
+                  showMessage: false,
+                ),
+                child: Obx(_content),
+              ),
             ),
           ],
-        ),
-        body: EasyRefresh(
-          onRefresh: c.onRefresh,
-          header: const ClassicHeader(
-            showText: false,
-            showMessage: false,
-          ),
-          child: Obx(_content),
         ),
       ),
     );
@@ -192,7 +248,7 @@ class _ExtensionRepoPageState extends State<ExtensionRepoPage> {
 
   Widget _buildDesktop(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
+      padding: const EdgeInsets.all(16),
       child: Column(
         children: [
           Row(
@@ -205,7 +261,7 @@ class _ExtensionRepoPageState extends State<ExtensionRepoPage> {
                 ),
               ),
               const Spacer(),
-              // 选择框
+              // Category ComboBox Filter
               Obx(
                 () => fluent.ComboBox<String>(
                   items: [
@@ -228,7 +284,7 @@ class _ExtensionRepoPageState extends State<ExtensionRepoPage> {
                   ],
                   value: c.searchType.value?.toString() ?? "all",
                   onChanged: (value) {
-                    if (value == "all") {
+                    if (value == "all" || value == null) {
                       c.searchType.value = null;
                       return;
                     }
@@ -238,18 +294,20 @@ class _ExtensionRepoPageState extends State<ExtensionRepoPage> {
                   },
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
+              // Search Input Box
               SizedBox(
-                width: 200,
+                width: 220,
                 child: Obx(
                   () => fluent.TextBox(
-                    controller: _searchController..text = c.search.value,
+                    controller: _searchController,
                     placeholder: 'common.search'.i18n,
+                    prefix: const Padding(
+                      padding: EdgeInsets.only(left: 8.0),
+                      child: Icon(fluent.FluentIcons.search, size: 14),
+                    ),
                     onChanged: (value) {
-                      if (value.isEmpty) {
-                        c.onRefresh();
-                        c.search.value = '';
-                      }
+                      c.search.value = value;
                     },
                     onSubmitted: (value) {
                       c.search.value = value;
@@ -257,7 +315,7 @@ class _ExtensionRepoPageState extends State<ExtensionRepoPage> {
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               fluent.IconButton(
                 icon: const Icon(fluent.FluentIcons.refresh),
                 onPressed: () {

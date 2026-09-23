@@ -70,183 +70,319 @@ class _ExtensionCardState extends State<ExtensionCard> {
     }
   }
 
-  Widget _buildAndroid(BuildContext context) {
-    return ListTile(
-      leading: SizedBox(
-        width: 35,
-        height: 35,
-        child: CacheNetWorkImagePic(
-          icon,
-          fit: BoxFit.contain,
-          fallback: const Icon(Icons.extension),
-        ),
+  Widget _buildTypeBadge(BuildContext context, ExtensionType type) {
+    Color color;
+    IconData iconData;
+    switch (type) {
+      case ExtensionType.bangumi:
+        color = Colors.blue;
+        iconData = Icons.movie_outlined;
+        break;
+      case ExtensionType.manga:
+        color = Colors.orange;
+        iconData = Icons.menu_book_outlined;
+        break;
+      case ExtensionType.fikushon:
+        color = Colors.purple;
+        iconData = Icons.book_outlined;
+        break;
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withOpacity(0.3), width: 0.8),
       ),
-      title: Text(widget.name),
-      subtitle: DefaultTextStyle(
-          style: TextStyle(
-            fontSize: 12,
-            color: Theme.of(context).textTheme.bodySmall!.color,
-          ),
-          child: Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: Text(widget.version),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: Text(ExtensionUtils.typeToString(widget.type)),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: Text(widget.lang),
-              ),
-              if (widget.nsfw)
-                const Padding(
-                  padding: EdgeInsets.only(right: 8),
-                  child: Text(
-                    '18+',
-                    style: TextStyle(
-                      color: Colors.redAccent,
-                    ),
-                  ),
-                ),
-            ],
-          )),
-      trailing: Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (isLoading)
-            const SizedBox(
-              width: 25,
-              height: 25,
-              child: ProgressRing(),
-            )
-          else if (isInstall) ...[
-            if (hasUpgrade)
+          Icon(iconData, size: 11, color: color),
+          const SizedBox(width: 3),
+          Text(
+            ExtensionUtils.typeToString(type),
+            style: TextStyle(
+              fontSize: 11,
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAndroid(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      elevation: 0,
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: theme.dividerColor.withOpacity(0.1),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            // Icon Container
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: theme.colorScheme.surfaceVariant.withOpacity(0.4),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: CacheNetWorkImagePic(
+                icon,
+                fit: BoxFit.contain,
+                fallback: const Icon(Icons.extension_outlined, size: 28),
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Information Section
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.name,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: [
+                      _buildTypeBadge(context, widget.type),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 1.5),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.onSurface.withOpacity(0.06),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          widget.version,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: theme.textTheme.bodySmall?.color,
+                          ),
+                        ),
+                      ),
+                      if (widget.lang.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 1.5),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.onSurface.withOpacity(0.06),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            widget.lang,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: theme.textTheme.bodySmall?.color,
+                            ),
+                          ),
+                        ),
+                      if (widget.nsfw)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text(
+                            '18+',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Actions
+            if (isLoading)
+              const SizedBox(
+                width: 24,
+                height: 24,
+                child: ProgressRing(),
+              )
+            else if (isInstall) ...[
+              if (hasUpgrade)
+                FilledButton.tonal(
+                  style: FilledButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                  ),
+                  onPressed: () async {
+                    await _install();
+                  },
+                  child: Text('extension-repo.upgrade'.i18n),
+                )
+              else
+                OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                  ),
+                  onPressed: () async {
+                    await ExtensionUtils.uninstall(widget.package);
+                    setState(() {
+                      isInstall = false;
+                    });
+                  },
+                  child: Text('common.uninstall'.i18n),
+                ),
+            ] else
               FilledButton(
-                child: Text('extension-repo.upgrade'.i18n),
+                style: FilledButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                ),
                 onPressed: () async {
                   await _install();
-                  setState(() {});
                 },
+                child: Text('common.install'.i18n),
               ),
-            const SizedBox(width: 8),
-            if (isInstall)
-              TextButton(
-                child: Text('common.uninstall'.i18n),
-                onPressed: () async {
-                  await ExtensionUtils.uninstall(widget.package);
-                  setState(() {
-                    isInstall = false;
-                  });
-                },
-              )
-          ] else
-            TextButton(
-              onPressed: () async {
-                await _install();
-              },
-              child: Text('common.install'.i18n),
-            )
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildDesktop(BuildContext context) {
     return fluent.Card(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: CacheNetWorkImagePic(
-              icon,
-              width: 64,
-              height: 64,
-              fit: BoxFit.contain,
-              fallback: const Icon(fluent.FluentIcons.add_in, size: 32),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(widget.name, style: const TextStyle(fontSize: 17)),
-          DefaultTextStyle(
-            style: TextStyle(
-              fontSize: 12,
-              color: fluent.FluentTheme.of(context).inactiveColor,
-            ),
-            child: Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: Text(ExtensionUtils.typeToString(widget.type)),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: Text(widget.lang),
-                ),
-                if (widget.nsfw)
-                  const Padding(
-                    padding: EdgeInsets.only(right: 8),
-                    child: Text(
-                      '18+',
-                      style: TextStyle(
-                        color: Colors.redAccent,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: Text(
-                  widget.version,
-                  style: const TextStyle(fontSize: 12),
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: fluent.FluentTheme.of(context)
+                      .resources
+                      .subtleFillColorSecondary,
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: CacheNetWorkImagePic(
+                  icon,
+                  fit: BoxFit.contain,
+                  fallback: const Icon(fluent.FluentIcons.add_in, size: 28),
                 ),
               ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.name,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    _buildTypeBadge(context, widget.type),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const Spacer(),
+          Row(
+            children: [
+              Text(
+                'v${widget.version}',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: fluent.FluentTheme.of(context).inactiveColor,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                '(${widget.lang})',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: fluent.FluentTheme.of(context).inactiveColor,
+                ),
+              ),
+              if (widget.nsfw) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Text(
+                    '18+',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
               const Spacer(),
               if (isLoading)
                 const SizedBox(
-                  width: 25,
-                  height: 25,
+                  width: 22,
+                  height: 22,
                   child: ProgressRing(),
                 )
               else if (isInstall) ...[
                 if (hasUpgrade)
                   fluent.FilledButton(
-                    child: Text('extension-repo.upgrade'.i18n),
                     onPressed: () async {
                       await _install();
-                      setState(() {});
                     },
-                  ),
-                const SizedBox(width: 8),
-                if (isInstall)
-                  fluent.FilledButton(
-                    child: Text('common.uninstall'.i18n),
+                    child: Text('extension-repo.upgrade'.i18n),
+                  )
+                else
+                  fluent.Button(
                     onPressed: () async {
                       await ExtensionUtils.uninstall(widget.package);
                       setState(() {
                         isInstall = false;
                       });
                     },
-                  )
+                    child: Text('common.uninstall'.i18n),
+                  ),
               ] else
                 fluent.FilledButton(
                   onPressed: () async {
                     await _install();
                   },
                   child: Text('common.install'.i18n),
-                )
+                ),
             ],
           ),
         ],
