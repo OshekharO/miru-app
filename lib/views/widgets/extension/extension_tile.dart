@@ -119,7 +119,7 @@ class _ExtensionTileState extends State<ExtensionTile> {
                     ),
                     const SizedBox(height: 4),
                     Wrap(
-                      cross: WrapCrossAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       spacing: 6,
                       runSpacing: 4,
                       children: [
