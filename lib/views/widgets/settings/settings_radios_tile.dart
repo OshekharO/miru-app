@@ -7,15 +7,18 @@ class SettingsRadiosTile<T> extends StatefulWidget {
   const SettingsRadiosTile({
     super.key,
     this.icon,
+    this.iconBgColor,
     required this.title,
     this.buildSubtitle,
     required this.itemNameValue,
     required this.applyValue,
     required this.buildGroupValue,
-    this.trailing = const Icon(Icons.chevron_right),
+    this.trailing = const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
     this.isCard = false,
   });
+
   final Widget? icon;
+  final Color? iconBgColor;
   final String title;
   final String Function()? buildSubtitle;
   final Function(T value) applyValue;
@@ -33,6 +36,7 @@ class _SettingsRadiosTileState<T> extends State<SettingsRadiosTile<T>> {
     return SettingsTile(
       isCard: widget.isCard,
       icon: widget.icon,
+      iconBgColor: widget.iconBgColor,
       title: widget.title,
       buildSubtitle: widget.buildSubtitle,
       trailing: widget.trailing,
@@ -43,6 +47,7 @@ class _SettingsRadiosTileState<T> extends State<SettingsRadiosTile<T>> {
             title: Text(widget.title),
             scrollable: true,
             content: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 for (final item in widget.itemNameValue.entries)
                   RadioListTile<T>(
@@ -51,8 +56,10 @@ class _SettingsRadiosTileState<T> extends State<SettingsRadiosTile<T>> {
                     groupValue: widget.buildGroupValue(),
                     onChanged: (value) {
                       Navigator.pop(context);
-                      widget.applyValue(value as T);
-                      setState(() {});
+                      if (value != null) {
+                        widget.applyValue(value);
+                        setState(() {});
+                      }
                     },
                   ),
               ],
@@ -67,6 +74,7 @@ class _SettingsRadiosTileState<T> extends State<SettingsRadiosTile<T>> {
     return SettingsTile(
       isCard: widget.isCard,
       icon: widget.icon,
+      iconBgColor: widget.iconBgColor,
       title: widget.title,
       buildSubtitle: widget.buildSubtitle,
       trailing: fluent.ComboBox<T>(
@@ -79,8 +87,10 @@ class _SettingsRadiosTileState<T> extends State<SettingsRadiosTile<T>> {
         ],
         value: widget.buildGroupValue(),
         onChanged: (value) {
-          widget.applyValue(value as T);
-          setState(() {});
+          if (value != null) {
+            widget.applyValue(value);
+            setState(() {});
+          }
         },
       ),
     );

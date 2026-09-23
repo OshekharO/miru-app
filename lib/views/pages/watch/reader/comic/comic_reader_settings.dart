@@ -41,7 +41,7 @@ class _ComicReaderSettingsState extends State<ComicReaderSettings> {
                 ),
                 ButtonSegment<MangaReadMode>(
                   value: MangaReadMode.webTonn,
-                  label: Text('comic-settings.web-tonn'.i18n),
+                  label: Text('comic-settings.web-toon'.i18n),
                 ),
               ],
               selected: <MangaReadMode>{_c.readType.value},
@@ -106,7 +106,7 @@ class _ComicReaderSettingsState extends State<ComicReaderSettings> {
                       });
                     }
                   },
-                  child: Text('comic-settings.web-tonn'.i18n),
+                  child: Text('comic-settings.web-toon'.i18n),
                 )
               ],
             )

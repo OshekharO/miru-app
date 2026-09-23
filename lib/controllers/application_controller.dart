@@ -26,12 +26,29 @@ class ApplicationController extends GetxController {
           scaffoldBackgroundColor: Colors.black,
           canvasColor: Colors.black,
           cardColor: Colors.black,
-          dialogBackgroundColor: Colors.black,
+          dialogBackgroundColor: const Color(0xFF1E1E22),
           primaryColor: Colors.black,
           hintColor: Colors.black,
           primaryColorDark: Colors.black,
           primaryColorLight: Colors.black,
-          colorScheme: const ColorScheme.dark(
+          dialogTheme: DialogTheme(
+            backgroundColor: const Color(0xFF1E1E22),
+            elevation: 8,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: Colors.white.withOpacity(0.12), width: 1),
+            ),
+          ),
+          bottomSheetTheme: BottomSheetThemeData(
+            backgroundColor: const Color(0xFF1E1E22),
+            modalBackgroundColor: const Color(0xFF1E1E22),
+            elevation: 8,
+            shape: RoundedRectangleBorder(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              side: BorderSide(color: Colors.white.withOpacity(0.12), width: 1),
+            ),
+          ),
+          colorScheme: ColorScheme.dark(
             primary: Colors.white,
             onBackground: Colors.white,
             onSecondary: Colors.white,
@@ -40,8 +57,8 @@ class ApplicationController extends GetxController {
             surface: Colors.black,
             background: Colors.black,
             onPrimary: Colors.black,
-            primaryContainer: Color.fromARGB(255, 31, 31, 31),
-            surfaceTint: Colors.black,
+            primaryContainer: const Color(0xFF1F1F1F),
+            surfaceTint: Colors.transparent,
           ),
         );
       default:
