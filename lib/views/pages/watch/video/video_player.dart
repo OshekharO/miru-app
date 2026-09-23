@@ -70,7 +70,8 @@ class _VideoPlayerState extends State<VideoPlayer> {
             width: _c.showSidebar.value
                 ? MediaQuery.of(context).size.width - 300
                 : maxWidth,
-            duration: const Duration(milliseconds: 120),
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOutCubic,
             child: Stack(
               children: [
                 VideoPlayerConten(tag: widget.title),

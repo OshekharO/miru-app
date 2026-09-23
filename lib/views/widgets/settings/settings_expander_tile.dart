@@ -33,9 +33,6 @@ class SettingsExpanderTile extends StatelessWidget {
   Widget _buildSubPageBody(BuildContext context) {
     if (content is Column) {
       final col = content as Column;
-      final filteredChildren = col.children
-          .where((child) => child is! SizedBox || (child.height != null && child.height! > 15))
-          .toList();
 
       List<Widget> groupItems = [];
       List<Widget> cardGroups = [];
@@ -52,10 +49,6 @@ class SettingsExpanderTile extends StatelessWidget {
       }
       if (groupItems.isNotEmpty) {
         cardGroups.add(SettingsCardGroup(children: List.from(groupItems)));
-      }
-
-      if (cardGroups.isEmpty && filteredChildren.isNotEmpty) {
-        return SettingsCardGroup(children: filteredChildren);
       }
 
       return Column(
