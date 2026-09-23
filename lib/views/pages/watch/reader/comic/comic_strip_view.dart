@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:miru_app/controllers/watch/comic_controller.dart';
@@ -65,14 +67,24 @@ class ComicStripViewState extends State<ComicStripView> {
   /// 已应用的主动跳章请求序号。
   int _appliedJumpRequest = -1;
 
+  StreamSubscription? _stripRevisionSub;
+  StreamSubscription? _jumpRequestSub;
+
   @override
   void initState() {
     super.initState();
     _windowSignature = _c.strip.layoutSignature;
     _renderedItems = _c.strip.items;
     _appliedJumpRequest = _c.jumpChapterRequest.value;
-    _c.stripRevision.listen((_) => _onStripChanged());
-    _c.jumpChapterRequest.listen((_) => _onJumpRequested());
+    _stripRevisionSub = _c.stripRevision.listen((_) => _onStripChanged());
+    _jumpRequestSub = _c.jumpChapterRequest.listen((_) => _onJumpRequested());
+  }
+
+  @override
+  void dispose() {
+    _stripRevisionSub?.cancel();
+    _jumpRequestSub?.cancel();
+    super.dispose();
   }
 
   /// 窗口内容变化。

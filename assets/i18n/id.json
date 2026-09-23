@@ -323,5 +323,21 @@
     "cache-on-read-subtitle": "Consumer: also cache the chapter being read",
     "seamless-switch": "Seamless webtoon chapter switching",
     "seamless-switch-subtitle": "Merge adjacent chapters into one continuous strip when scrolling"
+  },
+  "languages": {
+    "be": "Беларуская",
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "hu": "Magyar",
+    "hi": "हिंदी",
+    "id": "Indonesia",
+    "ja": "日本語",
+    "pl": "Polski",
+    "ru": "Русский",
+    "ryu": "うちなーぐち",
+    "uk": "Українська",
+    "zh": "中文",
+    "zhHant": "繁體中文"
   }
 }

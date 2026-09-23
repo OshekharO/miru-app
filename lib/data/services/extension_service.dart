@@ -23,12 +23,12 @@ import 'package:flutter_js/javascriptcore/jscore_runtime.dart';
 class ExtensionService {
   late JavascriptRuntime runtime;
   late Extension extension;
-  String _cuurentRequestUrl = '';
+  String _currentRequestUrl = '';
   String evalString = '';
   late JsBridge jsBridge;
   static Map<dynamic, dynamic> evalMap = {};
   String className = '';
-  bool isinit = false;
+  bool isInit = false;
   initRuntime(Extension ext) async {
     extension = ext;
     className = extension.package.replaceAll('.', '');
@@ -66,7 +66,7 @@ class ExtensionService {
     }
 
     jsRequest(dynamic args) async {
-      _cuurentRequestUrl = args[0];
+      _currentRequestUrl = args[0];
       final headers = args[1]['headers'] ?? {};
       if (headers['User-Agent'] == null) {
         headers['User-Agent'] = MiruStorage.getUASetting();
@@ -329,28 +329,28 @@ class XPathNode {
     this.selector = selector;
   }
 
-  async excute(fun) {
+  async execute(fun) {
     return await handlePromise("queryXPath$className",JSON.stringify([this.content, this.selector, fun]));
   }
 
   get attr() {
-    return this.excute("attr");
+    return this.execute("attr");
   }
 
   get attrs() {
-    return this.excute("attrs");
+    return this.execute("attrs");
   }
 
   get text() {
-    return this.excute("text");
+    return this.execute("text");
   }
   
   get allHTML() {
-    return this.excute("allHTML");
+    return this.execute("allHTML");
   }
 
   get outerHTML() {
-    return this.excute("outerHTML");
+    return this.execute("outerHTML");
   }
 }
 
@@ -459,10 +459,10 @@ async function stringify(callback) {
             }
 
             async querySelector(selector) {
-              return new Element(await this.excute(), selector);
+              return new Element(await this.execute(), selector);
             }
 
-            async excute(fun) {
+            async execute(fun) {
               return await sendMessage(
                 "querySelector",
                 JSON.stringify([this.content, this.selector, fun])
@@ -485,15 +485,15 @@ async function stringify(callback) {
             }
 
             get text() {
-              return this.excute("text");
+              return this.execute("text");
             }
 
             get outerHTML() {
-              return this.excute("outerHTML");
+              return this.execute("outerHTML");
             }
 
             get innerHTML() {
-              return this.excute("innerHTML");
+              return this.execute("innerHTML");
             }
           }
           class XPathNode {
@@ -502,7 +502,7 @@ async function stringify(callback) {
               this.selector = selector;
             }
 
-            async excute(fun) {
+            async execute(fun) {
               return await sendMessage(
                 "queryXPath",
                 JSON.stringify([this.content, this.selector, fun])
@@ -510,23 +510,23 @@ async function stringify(callback) {
             }
 
             get attr() {
-              return this.excute("attr");
+              return this.execute("attr");
             }
 
             get attrs() {
-              return this.excute("attrs");
+              return this.execute("attrs");
             }
 
             get text() {
-              return this.excute("text");
+              return this.execute("text");
             }
             
             get allHTML() {
-              return this.excute("allHTML");
+              return this.execute("allHTML");
             }
 
             get outerHTML() {
-              return this.excute("outerHTML");
+              return this.execute("outerHTML");
             }
           }
 
@@ -633,7 +633,7 @@ async function stringify(callback) {
         sendMessage("cleanSettings", JSON.stringify([extension.settingKeys]));
       });
     ''');
-    isinit = true;
+    isInit = true;
   }
 
   // 清理 cookie
@@ -667,7 +667,7 @@ async function stringify(callback) {
 
   Future<Map<String, String>> get _defaultHeaders async {
     return {
-      "Referer": _cuurentRequestUrl,
+      "Referer": _currentRequestUrl,
       "User-Agent": MiruStorage.getUASetting(),
       "Cookie": await listCookie(),
     };

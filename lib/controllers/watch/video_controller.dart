@@ -626,10 +626,14 @@ class VideoPlayerController extends GetxController {
     //跳轉到切換之前的時間
     _switchQualityTimer?.cancel();
     int retries = 0;
-    _switchQualityTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    bool seekDone = false;
+    _switchQualityTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
       retries++;
-      player.seek(Duration(seconds: currentSecond));
-      if (player.state.position.inSeconds == currentSecond || retries >= 10) {
+      if (!seekDone && (player.state.duration > Duration.zero || retries >= 3)) {
+        player.seek(Duration(seconds: currentSecond));
+        seekDone = true;
+      }
+      if (seekDone || retries >= 10) {
         timer.cancel();
         if (_switchQualityTimer == timer) {
           _switchQualityTimer = null;

@@ -608,8 +608,8 @@ class _VolumeState extends State<_Volume> {
 
   @override
   void dispose() {
-    super.dispose();
     _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -705,9 +705,9 @@ class _EpisodeState extends State<_Episode> {
   final controller = FlyoutController();
 
   @override
-  dispose() {
-    super.dispose();
+  void dispose() {
     controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -771,9 +771,9 @@ class _QualityState extends State<_Quality> {
   final controller = FlyoutController();
 
   @override
-  dispose() {
-    super.dispose();
+  void dispose() {
     controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -843,9 +843,9 @@ class _TrackState extends State<_Track> {
   final controller = FlyoutController();
 
   @override
-  dispose() {
-    super.dispose();
+  void dispose() {
     controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -988,9 +988,9 @@ class _TorrentFilesState extends State<_TorrentFiles> {
   final controller = FlyoutController();
 
   @override
-  dispose() {
-    super.dispose();
+  void dispose() {
     controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -1060,9 +1060,9 @@ class _SpeedState extends State<_Speed> {
   final controller = FlyoutController();
 
   @override
-  dispose() {
-    super.dispose();
+  void dispose() {
     controller.dispose();
+    super.dispose();
   }
 
   @override

@@ -10,6 +10,8 @@ import 'package:miru_app/utils/request.dart';
 class SettingsController extends GetxController {
   final contributors = [].obs;
   final extensionLogWindowId = (-1).obs;
+  Timer? _logStateTimer;
+  Timer? _logMethodTimer;
 
   final links = {
     'Github': 'https://github.com/miru-project/miru-app',
@@ -24,7 +26,15 @@ class SettingsController extends GetxController {
     _getContributors();
   }
 
+  void _stopTimers() {
+    _logStateTimer?.cancel();
+    _logStateTimer = null;
+    _logMethodTimer?.cancel();
+    _logMethodTimer = null;
+  }
+
   void toggleExtensionLogWindow(bool open) async {
+    _stopTimers();
     if (open && extensionLogWindowId.value == -1) {
       final window = await DesktopMultiWindow.createWindow(jsonEncode({
         "name": 'debug',
@@ -36,7 +46,7 @@ class SettingsController extends GetxController {
         ..show();
 
       // 用于检测窗口是否关闭
-      Timer.periodic(const Duration(seconds: 1), (timer) async {
+      _logStateTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
         try {
           await DesktopMultiWindow.invokeMethod(
             extensionLogWindowId.value,
@@ -44,20 +54,20 @@ class SettingsController extends GetxController {
           );
         } catch (e) {
           extensionLogWindowId.value = -1;
-          timer.cancel();
+          _stopTimers();
         }
       });
       // 轮询带执行的方法并执行方法
-      Timer.periodic(const Duration(milliseconds: 500), (timer) async {
+      _logMethodTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) async {
         if (extensionLogWindowId.value == -1) {
-          timer.cancel();
+          _stopTimers();
           return;
         }
         try {
           await _handleMethods();
         } catch (_) {
           extensionLogWindowId.value = -1;
-          timer.cancel();
+          _stopTimers();
         }
       });
 
@@ -65,6 +75,12 @@ class SettingsController extends GetxController {
     }
     WindowController.fromWindowId(extensionLogWindowId.value).close();
     extensionLogWindowId.value = -1;
+  }
+
+  @override
+  void onClose() {
+    _stopTimers();
+    super.onClose();
   }
 
   // 返回执行结果

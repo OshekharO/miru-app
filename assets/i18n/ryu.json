@@ -209,5 +209,55 @@
     "cache-on-read-subtitle": "Consumer: also cache the chapter being read",
     "seamless-switch": "Seamless webtoon chapter switching",
     "seamless-switch-subtitle": "Merge adjacent chapters into one continuous strip when scrolling"
+  },
+  "languages": {
+    "be": "Беларуская",
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "hu": "Magyar",
+    "hi": "हिंदी",
+    "id": "Indonesia",
+    "ja": "日本語",
+    "pl": "Polski",
+    "ru": "Русский",
+    "ryu": "うちなーぐち",
+    "uk": "Українська",
+    "zh": "中文",
+    "zhHant": "繁體中文"
+  },
+  "bugreport": {
+    "auto-remove-subtitle": "delete in ~ days",
+    "show-report-dialog": "Show Report Dialog",
+    "show-report-dialog-subtitle": "Show error report dialog when app starts"
+  },
+  "report": {
+    "copied": "Copied to clipboard",
+    "github-bug-report": "Report to GitHub issue",
+    "title": "Bug Report",
+    "copy-message": "Copy error message",
+    "show-report-checkbox": "Show report dialog when app starts"
+  },
+  "anilist": {
+    "title": "AniList Tracking",
+    "login-hint-1": "Seems you haven't logged into AniList yet",
+    "login-hint-2": "Please log into AniList first",
+    "status": "Status",
+    "score": "Score",
+    "watching": "Watching",
+    "reading": "Reading",
+    "completed": "Completed",
+    "paused": "Paused",
+    "dropped": "Dropped",
+    "planning": "Planning",
+    "hold-on": "Hold on",
+    "re-watching": "Re-watching",
+    "re-reading": "Re-reading",
+    "start-date": "Start Date",
+    "end-date": "End Date",
+    "unbind": "Unbind",
+    "episodes": "Episodes",
+    "manga-chapter-read": "Manga Chapter Read: {chapters}",
+    "anime-episode-watch": "Anime Episode Watched: {episodes}"
   }
 }
