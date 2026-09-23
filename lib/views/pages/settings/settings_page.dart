@@ -363,8 +363,18 @@ class _SettingsPageState extends State<SettingsPage> {
                     };
                     return map;
                   }(),
-                  buildSubtitle: () =>
-                      '${MiruStorage.getSetting(SettingKey.readingMode)}'.i18n,
+                  buildSubtitle: () {
+                    final mode = MiruStorage.getSetting(SettingKey.readingMode);
+                    switch (mode) {
+                      case 'rightToLeft':
+                        return 'comic-settings.right-to-left'.i18n;
+                      case 'webTonn':
+                        return 'comic-settings.web-toon'.i18n;
+                      case 'standard':
+                      default:
+                        return 'comic-settings.standard'.i18n;
+                    }
+                  },
                   applyValue: (value) {
                     MiruStorage.setSetting(SettingKey.readingMode, value);
                   },

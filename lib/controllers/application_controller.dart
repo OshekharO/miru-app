@@ -24,11 +24,11 @@ class ApplicationController extends GetxController {
           useMaterial3: true,
         ).copyWith(
           scaffoldBackgroundColor: Colors.black,
-          canvasColor: const Color(0xFF161618),
-          cardColor: const Color(0xFF161618),
+          canvasColor: Colors.black,
+          cardColor: Colors.black,
           dialogBackgroundColor: const Color(0xFF1E1E22),
           primaryColor: Colors.black,
-          hintColor: Colors.grey,
+          hintColor: Colors.black,
           primaryColorDark: Colors.black,
           primaryColorLight: Colors.black,
           dialogTheme: DialogTheme(
@@ -54,10 +54,10 @@ class ApplicationController extends GetxController {
             onSecondary: Colors.white,
             onSurface: Colors.white,
             secondary: Colors.grey,
-            surface: const Color(0xFF161618),
+            surface: Colors.black,
             background: Colors.black,
             onPrimary: Colors.black,
-            primaryContainer: const Color(0xFF26262A),
+            primaryContainer: const Color(0xFF1F1F1F),
             surfaceTint: Colors.transparent,
           ),
         );
