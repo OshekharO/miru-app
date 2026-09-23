@@ -136,6 +136,8 @@ class BTServerUtils {
         version.value = await BTServerApi.getVersion();
         isRunner.value = true;
         consecutiveFailures = 0;
+        t.cancel();
+        timer = null;
       } catch (e) {
         isRunner.value = false;
         consecutiveFailures++;

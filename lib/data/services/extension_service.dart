@@ -794,4 +794,10 @@ async function stringify(callback) {
       return jsResult.stringResult;
     });
   }
+
+  void dispose() {
+    try {
+      runtime.dispose();
+    } catch (_) {}
+  }
 }
