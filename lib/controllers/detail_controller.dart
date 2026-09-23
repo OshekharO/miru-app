@@ -232,7 +232,7 @@ class DetailPageController extends GetxController {
         showPlatformSnackbar(
           context: currentContext,
           title: 'detail.get-lastest-data-error'.i18n,
-          content: e.toString().split('\n')[0],
+          content: e.toString().split('\n')[0].replaceFirst(RegExp(r'^Exception:\s*'), ''),
           severity: fluent.InfoBarSeverity.error,
         );
       }
@@ -324,7 +324,7 @@ class DetailPageController extends GetxController {
     } catch (e) {
       showPlatformSnackbar(
         context: currentContext,
-        content: e.toString().split('\n')[0],
+        content: e.toString().split('\n')[0].replaceFirst(RegExp(r'^Exception:\s*'), ''),
         severity: fluent.InfoBarSeverity.error,
       );
       rethrow;
@@ -375,7 +375,7 @@ class DetailPageController extends GetxController {
         } catch (e) {
           showPlatformSnackbar(
             context: currentContext,
-            content: e.toString().split('\n')[0],
+            content: e.toString().split('\n')[0].replaceFirst(RegExp(r'^Exception:\s*'), ''),
             severity: fluent.InfoBarSeverity.error,
           );
           return;
@@ -391,7 +391,7 @@ class DetailPageController extends GetxController {
         } catch (e) {
           showPlatformSnackbar(
             context: currentContext,
-            content: e.toString().split('\n')[0],
+            content: e.toString().split('\n')[0].replaceFirst(RegExp(r'^Exception:\s*'), ''),
             severity: fluent.InfoBarSeverity.error,
           );
         }

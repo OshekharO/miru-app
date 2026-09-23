@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:miru_app/controllers/extension/extension_controller.dart';
 import 'package:miru_app/views/widgets/extension/extension_tile.dart';
@@ -147,26 +148,116 @@ class _ExtensionPageState extends State<ExtensionPage> {
     showPlatformDialog(
       context: context,
       title: 'extension.error-dialog'.i18n,
+      maxWidth: 540,
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 输出key 和 value
             for (final e in c.errors.entries)
               PlatformWidget(
                 androidWidget: Card(
                   margin: const EdgeInsets.only(bottom: 8),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      "${path.basename(e.key)}: ${e.value}",
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.warning_amber_rounded,
+                              color: Colors.orange,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                path.basename(e.key),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.copy, size: 16),
+                              onPressed: () {
+                                Clipboard.setData(
+                                  ClipboardData(text: e.value),
+                                );
+                                showPlatformSnackbar(
+                                  context: context,
+                                  content: 'common.copy-success'.i18n,
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        SelectableText(
+                          e.value,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.color
+                                ?.withOpacity(0.8),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
                 desktopWidget: fluent.Card(
                   margin: const EdgeInsets.only(bottom: 8),
-                  child: Text(
-                    "${path.basename(e.key)}: ${e.value}",
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            fluent.FluentIcons.warning,
+                            color: fluent.Colors.orange,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              path.basename(e.key),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                          fluent.IconButton(
+                            icon: const Icon(fluent.FluentIcons.copy, size: 14),
+                            onPressed: () {
+                              Clipboard.setData(
+                                ClipboardData(text: e.value),
+                              );
+                              showPlatformSnackbar(
+                                context: context,
+                                content: 'common.copy-success'.i18n,
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      SelectableText(
+                        e.value,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: fluent.FluentTheme.of(context)
+                              .typography
+                              .body
+                              ?.color
+                              ?.withOpacity(0.8),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
