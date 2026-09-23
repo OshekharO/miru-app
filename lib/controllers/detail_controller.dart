@@ -21,6 +21,7 @@ import 'package:miru_app/data/services/extension_service.dart';
 import 'package:miru_app/utils/external_player.dart';
 import 'package:miru_app/utils/i18n.dart';
 import 'package:miru_app/utils/miru_storage.dart';
+import 'package:miru_app/views/pages/webview_page.dart';
 import 'package:miru_app/views/widgets/messenger.dart';
 
 class DetailPageController extends GetxController {
@@ -78,34 +79,43 @@ class DetailPageController extends GetxController {
       fluent.IconButton(
         icon: const Icon(fluent.FluentIcons.pop_expand),
         onPressed: () async {
-          final webview = FlutterWindowsWebview();
-          await webview.setUA(MiruStorage.getUASetting());
           final targetUrl = url.startsWith('http://') || url.startsWith('https://')
               ? url
               : extension!.webSite + url;
-          webview.launchWebview(
-            targetUrl,
-            WebviewOptions(
-              onNavigation: (url) {
-                if (Uri.parse(url).host != Uri.parse(extension!.webSite).host) {
-                  return false;
-                }
-                webview.getCookies(url).then((value) async {
-                  if (value.containsKey("cf_clearance")) {
-                    debugPrint("验证通过");
+          if (Platform.isWindows) {
+            final webview = FlutterWindowsWebview();
+            await webview.setUA(MiruStorage.getUASetting());
+            webview.launchWebview(
+              targetUrl,
+              WebviewOptions(
+                onNavigation: (url) {
+                  if (Uri.parse(url).host != Uri.parse(extension!.webSite).host) {
+                    return false;
                   }
-                  runtime.value!.setCookie(
-                    value.entries
-                        .map((e) => '${e.key}=${e.value}')
-                        .toList()
-                        .join(';'),
-                  );
-                });
+                  webview.getCookies(url).then((value) async {
+                    if (value.containsKey("cf_clearance")) {
+                      debugPrint("验证通过");
+                    }
+                    runtime.value!.setCookie(
+                      value.entries
+                          .map((e) => '${e.key}=${e.value}')
+                          .toList()
+                          .join(';'),
+                    );
+                  });
 
-                return false;
-              },
-            ),
-          );
+                  return false;
+                },
+              ),
+            );
+          } else {
+            Get.to(
+              () => WebViewPage(
+                extensionRuntime: runtime.value!,
+                url: targetUrl,
+              ),
+            );
+          }
         },
       ),
       fluent.FlyoutTarget(

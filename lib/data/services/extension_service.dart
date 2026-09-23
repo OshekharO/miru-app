@@ -15,9 +15,11 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_js/flutter_js.dart';
+import 'package:flutter_windows_webview/flutter_windows_webview.dart';
 import 'package:miru_app/models/index.dart';
 import 'package:miru_app/data/services/database_service.dart';
 import 'package:miru_app/utils/extension.dart';
+import 'package:miru_app/views/pages/webview_page.dart';
 import 'package:flutter_js/javascriptcore/jscore_runtime.dart';
 
 class ExtensionService {
@@ -236,7 +238,49 @@ class ExtensionService {
       return elements;
     }
 
+    jsOpenWebView(dynamic args) async {
+      final reqUrl = args[0] as String;
+      final targetUrl = (reqUrl.startsWith("http://") || reqUrl.startsWith("https://"))
+          ? reqUrl
+          : extension.webSite + reqUrl;
+
+      if (Platform.isWindows) {
+        final webview = FlutterWindowsWebview();
+        await webview.setUA(MiruStorage.getUASetting());
+        webview.launchWebview(
+          targetUrl,
+          WebviewOptions(
+            onNavigation: (navUrl) {
+              if (Uri.parse(navUrl).host != Uri.parse(extension.webSite).host) {
+                return false;
+              }
+              webview.getCookies(navUrl).then((value) async {
+                if (value.isNotEmpty) {
+                  await setCookie(
+                    value.entries
+                        .map((e) => '${e.key}=${e.value}')
+                        .toList()
+                        .join(';'),
+                  );
+                }
+              });
+              return false;
+            },
+          ),
+        );
+        return;
+      }
+
+      await Get.to(
+        () => WebViewPage(
+          extensionRuntime: this,
+          url: targetUrl,
+        ),
+      );
+    }
+
     runtime.onMessage('getSetting', (dynamic args) => jsGetMessage(args));
+    runtime.onMessage('openWebView', (args) => jsOpenWebView(args));
     // 日志
     runtime.onMessage('log', (args) => jsLog(args));
     // 请求
@@ -274,6 +318,7 @@ class ExtensionService {
       handleDartBridge('querySelector$className', jsQuerySelector);
       handleDartBridge('registerSetting$className', jsRegisterSetting);
       handleDartBridge('getSetting$className', jsGetMessage);
+      handleDartBridge('openWebView$className', jsOpenWebView);
     }
     // 初始化运行扩展
     await _initRunExtension(content);
@@ -428,6 +473,9 @@ class Extension {
     console.log(JSON.stringify([settings]));
     this.settingKeys.push(settings.key);
     return await handlePromise("registerSetting$className",JSON.stringify([settings]));
+  }
+  async openWebView(url) {
+    return await handlePromise("openWebView$className", JSON.stringify([url]));
   }
   async load() {}
 }
@@ -607,6 +655,12 @@ async function stringify(callback) {
               console.log(JSON.stringify([settings]));
               this.settingKeys.push(settings.key);
               return sendMessage("registerSetting", JSON.stringify([settings]));
+            }
+            async openWebView(url) {
+              return await sendMessage(
+                "openWebView",
+                JSON.stringify([url])
+              );
             }
             async load() {}
           }
