@@ -191,14 +191,24 @@ class _ExtensionSettingsPageState extends State<ExtensionSettingsPage> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.primaryContainer.withOpacity(0.6),
+                      color: isDark
+                          ? theme.colorScheme.primary.withOpacity(0.2)
+                          : theme.colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isDark
+                            ? theme.colorScheme.primary.withOpacity(0.4)
+                            : theme.colorScheme.primary.withOpacity(0.2),
+                        width: 1,
+                      ),
                     ),
                     child: Text(
                       ExtensionUtils.typeToString(extension.type),
                       style: theme.textTheme.labelMedium?.copyWith(
-                        color: theme.colorScheme.onPrimaryContainer,
-                        fontWeight: FontWeight.w600,
+                        color: isDark
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -291,12 +301,32 @@ class _ExtensionSettingsPageState extends State<ExtensionSettingsPage> {
             if (!LayoutUtils.isTablet) ...[
               const SizedBox(height: 24),
               const Divider(),
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'common.settings'.i18n,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
               const SizedBox(height: 12),
               SettingsTile(
                 isCard: true,
+                icon: const Icon(Icons.cleaning_services_outlined, size: 20),
                 title: 'cookie-clean.title'.i18n,
                 buildSubtitle: () => 'cookie-clean.subtitle'.i18n,
-                trailing: TextButton(
+                trailing: FilledButton.tonal(
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
                   child: Text('cookie-clean.clean'.i18n),
                   onPressed: () {
                     c.runtime.value!.cleanCookie();
@@ -307,7 +337,7 @@ class _ExtensionSettingsPageState extends State<ExtensionSettingsPage> {
                   },
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               ...settingsContent(),
             ]
           ],
@@ -330,12 +360,30 @@ class _ExtensionSettingsPageState extends State<ExtensionSettingsPage> {
                         vertical: 20,
                       ),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Text(
+                            'common.settings'.i18n,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
                           SettingsTile(
                             isCard: true,
+                            icon: const Icon(Icons.cleaning_services_outlined, size: 20),
                             title: 'cookie-clean.title'.i18n,
                             buildSubtitle: () => 'cookie-clean.subtitle'.i18n,
-                            trailing: TextButton(
+                            trailing: FilledButton.tonal(
+                              style: FilledButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
                               child: Text('cookie-clean.clean'.i18n),
                               onPressed: () {
                                 c.runtime.value!.cleanCookie();
@@ -346,7 +394,7 @@ class _ExtensionSettingsPageState extends State<ExtensionSettingsPage> {
                               },
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 10),
                           ...settingsContent(),
                         ],
                       ),

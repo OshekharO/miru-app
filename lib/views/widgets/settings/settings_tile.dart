@@ -50,6 +50,8 @@ class _SettingsTileState extends State<SettingsTile> {
   }
 
   Widget _buildAndroid(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final hasSubtitle = widget.buildSubtitle != null;
     final subtitleText = hasSubtitle ? widget.buildSubtitle!.call() : null;
 
@@ -57,14 +59,13 @@ class _SettingsTileState extends State<SettingsTile> {
         (widget.onTap != null
             ? Icon(
                 Icons.chevron_right,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.grey[400]
-                    : Colors.grey[400],
+                color: isDark ? Colors.grey[400] : Colors.grey[400],
                 size: 20,
               )
             : null);
 
-    return InkWell(
+    Widget tileContent = InkWell(
+      borderRadius: widget.isCard ? BorderRadius.circular(12) : null,
       onTap: widget.onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -92,9 +93,7 @@ class _SettingsTileState extends State<SettingsTile> {
                       subtitleText,
                       style: TextStyle(
                         fontSize: 12,
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? Colors.grey[400]
-                            : Colors.grey[600],
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
                       ),
                     ),
                   ],
@@ -109,6 +108,30 @@ class _SettingsTileState extends State<SettingsTile> {
         ),
       ),
     );
+
+    if (widget.isCard) {
+      final cardBgColor = isDark
+          ? Colors.black
+          : theme.colorScheme.surfaceVariant.withOpacity(0.3);
+      final borderColor = isDark
+          ? Colors.white.withOpacity(0.12)
+          : theme.colorScheme.outline.withOpacity(0.15);
+
+      return Container(
+        decoration: BoxDecoration(
+          color: cardBgColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: borderColor,
+            width: 1,
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: tileContent,
+      );
+    }
+
+    return tileContent;
   }
 
   Widget _buildDesktop(BuildContext context) {
