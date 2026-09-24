@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_code_editor/flutter_code_editor.dart';
 import 'package:miru_app/models/extension.dart';
 import 'package:miru_app/utils/extension.dart';
+import 'package:miru_app/utils/i18n.dart';
 import 'package:miru_app/views/widgets/messenger.dart';
 import 'package:highlight/languages/javascript.dart';
 import 'package:flutter_highlight/themes/monokai-sublime.dart';
@@ -60,6 +61,7 @@ class _CodeEditPageState extends State<CodeEditPage> {
         title: Text(widget.extension.name),
         actions: [
           IconButton(
+            tooltip: 'common.save'.i18n,
             onPressed: () async {
               _save();
             },

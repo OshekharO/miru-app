@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:miru_app/utils/i18n.dart';
 
 class SearchAppBar extends StatefulWidget implements PreferredSizeWidget {
   SearchAppBar({
@@ -39,6 +40,7 @@ class _SearchAppBarState extends State<SearchAppBar> {
     return AppBar(
       leading: _showSearch
           ? IconButton(
+              tooltip: 'common.clear'.i18n,
               onPressed: () {
                 setState(() {
                   widget.textEditingController.clear();
@@ -76,6 +78,7 @@ class _SearchAppBarState extends State<SearchAppBar> {
           : Text(widget.title),
       actions: [
         IconButton(
+          tooltip: (_showSearch ? 'common.clear' : 'common.search').i18n,
           onPressed: () {
             setState(() {
               if (_showSearch) {

@@ -113,6 +113,7 @@ class _DetailPageState extends State<DetailPage> {
 
                     // webview
                     IconButton(
+                      tooltip: 'extension-info.original-site'.i18n,
                       onPressed: () {
                         Get.to(
                           WebViewPage(
