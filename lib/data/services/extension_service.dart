@@ -23,6 +23,9 @@ import 'package:miru_app/views/pages/webview_page.dart';
 import 'package:flutter_js/javascriptcore/jscore_runtime.dart';
 
 class ExtensionService {
+  // Pre-compiled RegExps for JS runtime initialization
+  static final RegExp _nonAlphabetRegExp = RegExp(r'[^a-zA-z]');
+  static final RegExp _exportDefaultClassRegExp = RegExp(r'export default class.*');
   late JavascriptRuntime runtime;
   late Extension extension;
   String _currentRequestUrl = '';
@@ -38,7 +41,7 @@ class ExtensionService {
     // but if  the package name is 9anime.to the class name will be animetoRenamed
 
     if (!className.isAlphabetOnly) {
-      className = "${className.replaceAll(RegExp(r'[^a-zA-z]'), '')}Renamed";
+      className = "${className.replaceAll(_nonAlphabetRegExp, '')}Renamed";
     }
     // 读取文件
     final file =
@@ -671,7 +674,7 @@ async function stringify(callback) {
           }
     ''');
 
-    final ext = extScript.replaceAll(RegExp(r'export default class.*'),
+    final ext = extScript.replaceAll(_exportDefaultClassRegExp,
         'class $className extends Extension {');
 
     runtime.evaluate('''
