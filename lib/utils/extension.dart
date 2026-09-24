@@ -19,6 +19,8 @@ import 'package:miru_app/views/widgets/messenger.dart';
 import 'package:path/path.dart' as path;
 
 class ExtensionUtils {
+  // Pre-compiled RegExp for parsing extension metadata header comments
+  static final RegExp _extensionHeaderRegExp = RegExp(r'@(\w+)\s+(.*)');
   static Map<String, ExtensionService> runtimes = {};
   static Map<String, String> extensionErrorMap = {};
 
@@ -245,8 +247,7 @@ class ExtensionUtils {
   // 解析扩展为元数据
   static Extension parseExtension(String extension) {
     Map<String, dynamic> result = {};
-    RegExp exp = RegExp(r'@(\w+)\s+(.*)');
-    Iterable<RegExpMatch> matches = exp.allMatches(extension);
+    Iterable<RegExpMatch> matches = _extensionHeaderRegExp.allMatches(extension);
     for (RegExpMatch match in matches) {
       result[match.group(1)!] = match.group(2);
     }

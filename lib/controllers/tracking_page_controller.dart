@@ -7,6 +7,8 @@ import 'package:miru_app/utils/miru_storage.dart';
 import 'package:miru_app/views/pages/tracking/anilist_webview.dart';
 
 class TrackingPageController extends GetxController {
+  // Pre-compiled RegExp for extracting access token from AniList auth callback URL
+  static final RegExp _anilistTokenRegex = RegExp(r'(?<=access_token=).+(?=&token_type)');
   final anilistIsLogin = false.obs;
   final anilistOauthUrl = "".obs;
   final anilistUserData = {}.obs;
@@ -22,8 +24,7 @@ class TrackingPageController extends GetxController {
   }
 
   _saveAnilistToken(String result) {
-    RegExp tokenRegex = RegExp(r'(?<=access_token=).+(?=&token_type)');
-    Match? re = tokenRegex.firstMatch(result);
+    Match? re = _anilistTokenRegex.firstMatch(result);
     if (re != null) {
       String token = re.group(0)!;
       updateAniListToken(token);

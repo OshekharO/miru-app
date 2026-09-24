@@ -25,6 +25,8 @@ import 'package:miru_app/views/pages/webview_page.dart';
 import 'package:miru_app/views/widgets/messenger.dart';
 
 class DetailPageController extends GetxController {
+  // Pre-compiled RegExp for stripping Exception: prefix from error messages
+  static final RegExp _exceptionPrefixRegExp = RegExp(r'^Exception:\s*');
   DetailPageController({
     required this.package,
     required this.url,
@@ -242,7 +244,7 @@ class DetailPageController extends GetxController {
         showPlatformSnackbar(
           context: currentContext,
           title: 'detail.get-lastest-data-error'.i18n,
-          content: e.toString().split('\n')[0].replaceFirst(RegExp(r'^Exception:\s*'), ''),
+          content: e.toString().split('\n')[0].replaceFirst(_exceptionPrefixRegExp, ''),
           severity: fluent.InfoBarSeverity.error,
         );
       }
@@ -334,7 +336,7 @@ class DetailPageController extends GetxController {
     } catch (e) {
       showPlatformSnackbar(
         context: currentContext,
-        content: e.toString().split('\n')[0].replaceFirst(RegExp(r'^Exception:\s*'), ''),
+        content: e.toString().split('\n')[0].replaceFirst(_exceptionPrefixRegExp, ''),
         severity: fluent.InfoBarSeverity.error,
       );
       rethrow;
@@ -385,7 +387,7 @@ class DetailPageController extends GetxController {
         } catch (e) {
           showPlatformSnackbar(
             context: currentContext,
-            content: e.toString().split('\n')[0].replaceFirst(RegExp(r'^Exception:\s*'), ''),
+            content: e.toString().split('\n')[0].replaceFirst(_exceptionPrefixRegExp, ''),
             severity: fluent.InfoBarSeverity.error,
           );
           return;
@@ -401,7 +403,7 @@ class DetailPageController extends GetxController {
         } catch (e) {
           showPlatformSnackbar(
             context: currentContext,
-            content: e.toString().split('\n')[0].replaceFirst(RegExp(r'^Exception:\s*'), ''),
+            content: e.toString().split('\n')[0].replaceFirst(_exceptionPrefixRegExp, ''),
             severity: fluent.InfoBarSeverity.error,
           );
         }
