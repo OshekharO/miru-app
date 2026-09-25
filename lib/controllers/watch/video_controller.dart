@@ -509,7 +509,7 @@ class VideoPlayerController extends GetxController {
     await dio.download(watchData!.url, torrentFile);
 
     final file = File(torrentFile);
-    _torrenHash = await BTServerApi.addTorrent(file.readAsBytesSync());
+    _torrenHash = await BTServerApi.addTorrent(await file.readAsBytes());
     final files = await BTServerApi.getFileList(_torrenHash);
 
     torrentMediaFileList.clear();
@@ -747,7 +747,7 @@ class VideoPlayerController extends GetxController {
     if (file == null) {
       return;
     }
-    final data = File(file.files.first.path!).readAsStringSync();
+    final data = await File(file.files.first.path!).readAsString();
     subtitles.add(
       SubtitleTrack.data(
         data,

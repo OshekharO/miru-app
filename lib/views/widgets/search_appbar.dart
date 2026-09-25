@@ -52,14 +52,14 @@ class _SearchAppBarState extends State<SearchAppBar> {
       title: _showSearch
           ? PopScope(
               canPop: false,
-              onPopInvoked: (_) async {
+              onPopInvokedWithResult: (didPop, result) async {
+                if (didPop) return;
                 if (_showSearch) {
                   setState(() {
                     widget.textEditingController.clear();
                     widget.onSubmitted?.call('');
                     _showSearch = false;
                   });
-                  return;
                 }
               },
               child: TextField(
