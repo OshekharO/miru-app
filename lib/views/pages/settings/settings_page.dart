@@ -267,6 +267,38 @@ class _SettingsPageState extends State<SettingsPage> {
                     return MiruStorage.getSetting(SettingKey.videoPlayer);
                   },
                 ),
+                SettingsRadiosTile(
+                  title: 'settings.controls-timeout'.i18n,
+                  itemNameValue: const {
+                    '3s': 3,
+                    '5s': 5,
+                    '10s': 10,
+                    '15s': 15,
+                  },
+                  buildSubtitle: () => 'settings.controls-timeout-subtitle'.i18n,
+                  applyValue: (value) {
+                    MiruStorage.setSetting(SettingKey.controlsTimeout, value);
+                  },
+                  buildGroupValue: () {
+                    return MiruStorage.getSetting(SettingKey.controlsTimeout) ?? 3;
+                  },
+                ),
+                SettingsRadiosTile(
+                  title: 'settings.double-tap-seek'.i18n,
+                  itemNameValue: const {
+                    '5s': 5,
+                    '10s': 10,
+                    '15s': 15,
+                    '30s': 30,
+                  },
+                  buildSubtitle: () => 'settings.double-tap-seek-subtitle'.i18n,
+                  applyValue: (value) {
+                    MiruStorage.setSetting(SettingKey.doubleTapSeekDuration, value);
+                  },
+                  buildGroupValue: () {
+                    return MiruStorage.getSetting(SettingKey.doubleTapSeekDuration) ?? 10;
+                  },
+                ),
                 if (!Platform.isAndroid) ...[
                   const SizedBox(height: 10),
                   Text("settings.skip-interval".i18n),

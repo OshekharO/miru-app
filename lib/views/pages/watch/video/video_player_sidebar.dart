@@ -17,7 +17,7 @@ enum SidebarTab {
   settings,
 }
 
-_sidebarTabToString(SidebarTab tab) {
+String _sidebarTabToString(SidebarTab tab) {
   return "video.sidebar.tab.${tab.name}".i18n;
 }
 
@@ -49,7 +49,7 @@ class _VideoPlayerSidebarState extends State<VideoPlayerSidebar> {
 
   Widget _buildAndroid(BuildContext context) {
     return Container(
-      color: ThemeData.dark().colorScheme.background,
+      color: Theme.of(context).colorScheme.surface,
       child: DefaultTabController(
         length: _tabs.length,
         initialIndex: !_tabs.keys.toList().contains(_c.initSidebarTab.value)
@@ -83,7 +83,7 @@ class _VideoPlayerSidebarState extends State<VideoPlayerSidebar> {
       child: Container(
         color: fluent.FluentThemeData.dark().micaBackgroundColor,
         child: ListView(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(12),
           children: [
             Row(
               children: [
@@ -100,7 +100,7 @@ class _VideoPlayerSidebarState extends State<VideoPlayerSidebar> {
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             _tabs[SidebarTab.settings]!
           ],
         ),
@@ -169,8 +169,11 @@ class _SideBarSettingsState extends State<_SideBarSettings> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('video.sidebar.subtitle.title'.i18n),
-              const SizedBox(height: 10),
+              Text(
+                'video.sidebar.subtitle.title'.i18n,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   Text('video.sidebar.subtitle.font-size'.i18n),
@@ -326,7 +329,6 @@ class _SideBarSettingsState extends State<_SideBarSettings> {
                 ],
               ),
               const SizedBox(height: 10),
-              // textAlign
               Row(
                 children: [
                   Text('video.sidebar.subtitle.text-align'.i18n),
@@ -453,11 +455,11 @@ class _SideBarSettingsState extends State<_SideBarSettings> {
               ),
               const SizedBox(height: 10),
               Text('video.sidebar.subtitle.font-weight'.i18n),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               Obx(
                 () => Wrap(
-                  spacing: 5,
-                  runSpacing: 5,
+                  spacing: 6,
+                  runSpacing: 6,
                   children: [
                     fluent.ToggleButton(
                       checked: _c.subtitleFontWeight.value == FontWeight.normal,
@@ -483,21 +485,24 @@ class _SideBarSettingsState extends State<_SideBarSettings> {
             ],
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
         fluent.Card(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('video.sidebar.play-mode.title'.i18n),
+              Text(
+                'video.sidebar.play-mode.title'.i18n,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(
                 height: 10,
                 width: double.infinity,
               ),
               Obx(
                 () => Wrap(
-                  spacing: 5,
-                  runSpacing: 5,
+                  spacing: 6,
+                  runSpacing: 6,
                   children: [
                     fluent.ToggleButton(
                       checked: _c.playMode.value == PlaylistMode.loop,
@@ -532,15 +537,19 @@ class _SideBarSettingsState extends State<_SideBarSettings> {
 
   Widget _buildAndroid(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       children: [
         Text(
           'video.sidebar.subtitle.title'.i18n,
-          style: TextStyle(color: Theme.of(context).colorScheme.primary),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.primary,
+            fontWeight: FontWeight.bold,
+            fontSize: 15,
+          ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
         Text('video.sidebar.subtitle.font-size'.i18n),
-        const SizedBox(height: 10),
+        const SizedBox(height: 6),
         Row(
           children: [
             Expanded(
@@ -560,6 +569,7 @@ class _SideBarSettingsState extends State<_SideBarSettings> {
                 ),
               ),
             ),
+            const SizedBox(width: 8),
             Obx(
               () => Text(
                 _c.subtitleFontSize.value.toStringAsFixed(0),
@@ -567,9 +577,9 @@ class _SideBarSettingsState extends State<_SideBarSettings> {
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         Text('video.sidebar.subtitle.font-color'.i18n),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         Obx(
           () {
             final selectColor = _c.subtitleFontColor.value;
@@ -586,7 +596,7 @@ class _SideBarSettingsState extends State<_SideBarSettings> {
                         decoration: BoxDecoration(
                           border: selectColor == color
                               ? Border.all(
-                                  color: Colors.grey,
+                                  color: Colors.white,
                                   width: 2,
                                 )
                               : null,
@@ -606,9 +616,9 @@ class _SideBarSettingsState extends State<_SideBarSettings> {
             );
           },
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         Text('video.sidebar.subtitle.background-color'.i18n),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         Obx(
           () {
             final selectColor = _c.subtitleBackgroundColor.value;
@@ -625,7 +635,7 @@ class _SideBarSettingsState extends State<_SideBarSettings> {
                         decoration: BoxDecoration(
                           border: selectColor == color
                               ? Border.all(
-                                  color: Colors.grey,
+                                  color: Colors.white,
                                   width: 2,
                                 )
                               : null,
@@ -645,11 +655,11 @@ class _SideBarSettingsState extends State<_SideBarSettings> {
             );
           },
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         Text(
           'video.sidebar.subtitle.background-opacity'.i18n,
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 6),
         Row(
           children: [
             Expanded(
@@ -669,6 +679,7 @@ class _SideBarSettingsState extends State<_SideBarSettings> {
                 ),
               ),
             ),
+            const SizedBox(width: 8),
             Obx(
               () => Text(
                 _c.subtitleBackgroundOpacity.value.toStringAsFixed(2),
@@ -676,13 +687,13 @@ class _SideBarSettingsState extends State<_SideBarSettings> {
             ),
           ],
         ),
-        const SizedBox(height: 10),
-        // textAlign
+        const SizedBox(height: 12),
         Text('video.sidebar.subtitle.text-align'.i18n),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
 
         Obx(
           () => Wrap(
+            spacing: 8,
             children: [
               for (final align in TextAlign.values) ...[
                 GestureDetector(
@@ -693,17 +704,17 @@ class _SideBarSettingsState extends State<_SideBarSettings> {
                     decoration: BoxDecoration(
                       border: _c.subtitleTextAlign.value == align
                           ? Border.all(
-                              color: Colors.grey,
+                              color: Theme.of(context).colorScheme.primary,
                               width: 2,
                             )
                           : null,
-                      color: Colors.transparent,
+                      color: Colors.white10,
                       borderRadius: const BorderRadius.all(
-                        Radius.circular(5),
+                        Radius.circular(8),
                       ),
                     ),
-                    height: 32,
-                    width: 32,
+                    height: 36,
+                    width: 36,
                     child: Icon(
                       align == TextAlign.justify
                           ? Icons.format_align_justify
@@ -713,30 +724,30 @@ class _SideBarSettingsState extends State<_SideBarSettings> {
                                   ? Icons.format_align_right
                                   : Icons.format_align_center,
                       color: Colors.white,
+                      size: 20,
                     ),
                   ),
                 ),
-                const SizedBox(width: 10)
               ],
             ],
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 16),
         Text(
           'video.sidebar.subtitle.font-weight'.i18n,
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         Obx(
-          () => SegmentedButton(
+          () => SegmentedButton<FontWeight>(
             showSelectedIcon: false,
             segments: [
-              ButtonSegment(
+              ButtonSegment<FontWeight>(
                 value: FontWeight.normal,
                 label: Text(
                   'video.sidebar.subtitle.font-weight-normal'.i18n,
                 ),
               ),
-              ButtonSegment(
+              ButtonSegment<FontWeight>(
                 value: FontWeight.bold,
                 label: Text(
                   'video.sidebar.subtitle.font-weight-bold'.i18n,
@@ -749,29 +760,33 @@ class _SideBarSettingsState extends State<_SideBarSettings> {
             },
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 24),
         Text(
           'video.sidebar.play-mode.title'.i18n,
-          style: TextStyle(color: Theme.of(context).colorScheme.primary),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.primary,
+            fontWeight: FontWeight.bold,
+            fontSize: 15,
+          ),
         ),
         const SizedBox(height: 10),
         Obx(
-          () => SegmentedButton(
+          () => SegmentedButton<PlaylistMode>(
             showSelectedIcon: false,
             segments: [
-              ButtonSegment(
+              ButtonSegment<PlaylistMode>(
                 value: PlaylistMode.loop,
                 label: Text(
                   'video.sidebar.play-mode.loop'.i18n,
                 ),
               ),
-              ButtonSegment(
+              ButtonSegment<PlaylistMode>(
                 value: PlaylistMode.single,
                 label: Text(
                   'video.sidebar.play-mode.single'.i18n,
                 ),
               ),
-              ButtonSegment(
+              ButtonSegment<PlaylistMode>(
                 value: PlaylistMode.none,
                 label: Text(
                   'video.sidebar.play-mode.auto-next'.i18n,
@@ -861,7 +876,6 @@ class _TrackSelector extends StatelessWidget {
             controller.showSidebar.value = false;
           },
         ),
-        // 来自扩展的字幕
         for (final subtitle in controller.subtitles)
           ListTile(
             selected: subtitle == controller.player.state.track.subtitle,
@@ -874,7 +888,6 @@ class _TrackSelector extends StatelessWidget {
               controller.showSidebar.value = false;
             },
           ),
-        // 来自视频本身的字幕
         for (final subtitle in controller.player.state.tracks.subtitle)
           if (subtitle != SubtitleTrack.no() &&
               (subtitle.language != null || subtitle.title != null))
