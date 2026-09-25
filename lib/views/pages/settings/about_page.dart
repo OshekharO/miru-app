@@ -105,22 +105,10 @@ class _AboutPageState extends State<AboutPage> {
             title: 'Telegram',
             buildSubtitle: () => 'Community chat',
             onTap: () {
-              final url = c.links['Telegram'];
-              if (url != null) {
-                launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-              }
-            },
-          ),
-          SettingsTile(
-            icon: const Icon(Icons.forum_outlined, size: 20),
-            iconBgColor: const Color(0xFF6366F1),
-            title: 'Discord',
-            buildSubtitle: () => 'Join the server',
-            onTap: () {
-              final url = c.links['Discord'];
-              if (url != null) {
-                launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-              }
+              launchUrl(
+                Uri.parse('https://t.me/MiruChat'),
+                mode: LaunchMode.externalApplication,
+              );
             },
           ),
           SettingsTile(
@@ -129,10 +117,10 @@ class _AboutPageState extends State<AboutPage> {
             title: 'GitHub',
             buildSubtitle: () => 'View the source code',
             onTap: () {
-              final url = c.links['GitHub'];
-              if (url != null) {
-                launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-              }
+              launchUrl(
+                Uri.parse('https://github.com/OshekharO/miru-app'),
+                mode: LaunchMode.externalApplication,
+              );
             },
           ),
         ],

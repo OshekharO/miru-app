@@ -32,22 +32,34 @@ class _ContributorsPageState extends State<ContributorsPage> {
 
   static const List<ContributorItem> teamMembers = [
     ContributorItem(
-      name: 'Krishna Vishwakarma',
-      role: 'Lead Developer',
-      avatarUrl: 'https://github.com/Krishna-Vishwakarma.png',
-      profileUrl: 'https://github.com/Krishna-Vishwakarma',
+      name: 'MiaoMint',
+      role: 'Founder',
+      avatarUrl: 'https://github.com/MiaoMint.png',
+      profileUrl: 'https://github.com/MiaoMint',
     ),
     ContributorItem(
-      name: 'NeighborhoodNerd',
-      role: 'Contributor',
-      avatarUrl: 'https://github.com/NeighborhoodNerd.png',
-      profileUrl: 'https://github.com/NeighborhoodNerd',
+      name: 'OshekharO',
+      role: 'App / Extension',
+      avatarUrl: 'https://github.com/OshekharO.png',
+      profileUrl: 'https://github.com/OshekharO',
     ),
     ContributorItem(
-      name: 'Ombryal',
-      role: 'Discord Head Admin · Contributor',
-      avatarUrl: 'https://github.com/Ombryal.png',
-      profileUrl: 'https://github.com/Ombryal',
+      name: 'appdevelpo',
+      role: 'App / Extension',
+      avatarUrl: 'https://github.com/appdevelpo.png',
+      profileUrl: 'https://github.com/appdevelpo',
+    ),
+    ContributorItem(
+      name: 'hualiong',
+      role: 'Extension Dev',
+      avatarUrl: 'https://github.com/hualiong.png',
+      profileUrl: 'https://github.com/hualiong',
+    ),
+    ContributorItem(
+      name: 'bethropolis',
+      role: 'Extension Dev',
+      avatarUrl: 'https://github.com/bethropolis.png',
+      profileUrl: 'https://github.com/bethropolis',
     ),
   ];
 
