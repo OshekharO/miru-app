@@ -144,33 +144,9 @@ class _ExtensionRepoPageState extends State<ExtensionRepoPage> {
       );
     }
 
-    final extensionCards = c.extensions
-        .map((e) => ExtensionCard(
-            key: ValueKey(e['package']),
-            name: e['name'],
-            icon: e['icon'],
-            version: e['version'],
-            package: e['package'],
-            lang: e['lang'],
-            nsfw: e['nsfw'] == 'true',
-            type: ExtensionType.values.firstWhere(
-              (element) => element.toString() == 'ExtensionType.${e['type']}',
-            )))
-        .toList();
+    final displayExtensions = c.displayExtensions;
 
-    // Filtering
-    if (c.search.value.isNotEmpty) {
-      extensionCards.removeWhere((element) =>
-          !element.name.toLowerCase().contains(c.search.value.toLowerCase()) &&
-          !element.package.toLowerCase().contains(c.search.value.toLowerCase()));
-    }
-    if (c.searchType.value != null) {
-      extensionCards.removeWhere(
-        (element) => element.type != c.searchType.value,
-      );
-    }
-
-    if (extensionCards.isEmpty) {
+    if (displayExtensions.isEmpty) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -193,11 +169,30 @@ class _ExtensionRepoPageState extends State<ExtensionRepoPage> {
       );
     }
 
+    Widget buildCard(BuildContext context, int index) {
+      final e = displayExtensions[index];
+      return ExtensionCard(
+        key: ValueKey(e['package']),
+        name: e['name'] ?? '',
+        icon: e['icon'],
+        version: e['version'] ?? '',
+        package: e['package'] ?? '',
+        lang: e['lang'] ?? '',
+        nsfw: e['nsfw'] == 'true',
+        type: ExtensionType.values.firstWhere(
+          (element) =>
+              element.name == e['type'] ||
+              element.toString() == 'ExtensionType.${e['type']}',
+          orElse: () => ExtensionType.bangumi,
+        ),
+      );
+    }
+
     return PlatformBuildWidget(
       androidBuilder: (context) => ListView.builder(
         padding: const EdgeInsets.only(bottom: 16),
-        itemCount: extensionCards.length,
-        itemBuilder: (context, index) => extensionCards[index],
+        itemCount: displayExtensions.length,
+        itemBuilder: buildCard,
       ),
       desktopBuilder: (context) => LayoutBuilder(
         builder: (context, constraints) {
@@ -209,8 +204,8 @@ class _ExtensionRepoPageState extends State<ExtensionRepoPage> {
               mainAxisSpacing: 12,
               mainAxisExtent: 130,
             ),
-            itemCount: extensionCards.length,
-            itemBuilder: (context, index) => extensionCards[index],
+            itemCount: displayExtensions.length,
+            itemBuilder: buildCard,
           );
         },
       ),
@@ -222,6 +217,9 @@ class _ExtensionRepoPageState extends State<ExtensionRepoPage> {
       appBar: SearchAppBar(
         title: 'common.extension-repo'.i18n,
         textEditingController: _searchController,
+        onChanged: (value) {
+          c.search.value = value;
+        },
         onSubmitted: (value) {
           c.search.value = value;
         },
