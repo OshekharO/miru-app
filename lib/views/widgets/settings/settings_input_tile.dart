@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:flutter/material.dart';
 import 'package:miru_app/utils/i18n.dart';
@@ -32,6 +33,7 @@ class SettingsIntpuTile extends fluent.StatefulWidget {
 
 class _SettingsIntpuTileState extends fluent.State<SettingsIntpuTile> {
   TextEditingController? _controller;
+  Timer? _debounceTimer;
 
   @override
   void initState() {
@@ -40,9 +42,28 @@ class _SettingsIntpuTileState extends fluent.State<SettingsIntpuTile> {
   }
 
   @override
+  void didUpdateWidget(covariant SettingsIntpuTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final currentText = widget.buildText();
+    if (_controller != null &&
+        _controller!.text != currentText &&
+        _debounceTimer?.isActive != true) {
+      _controller!.text = currentText;
+    }
+  }
+
+  @override
   void dispose() {
+    _debounceTimer?.cancel();
     _controller?.dispose();
     super.dispose();
+  }
+
+  void _onTextChanged(String value) {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      widget.onChanged(value);
+    });
   }
 
   Widget _buildAndroid(BuildContext context) {
@@ -54,22 +75,33 @@ class _SettingsIntpuTileState extends fluent.State<SettingsIntpuTile> {
       buildSubtitle: widget.buildSubtitle,
       trailing: widget.trailing,
       onTap: () {
+        final textController = TextEditingController(text: widget.buildText());
         showDialog(
           context: context,
-          builder: (context) {
+          builder: (dialogContext) {
             return AlertDialog(
               title: Text(widget.title),
               content: TextField(
-                controller: _controller,
-                onChanged: (value) {
-                  widget.onChanged(value);
-                  setState(() {});
-                },
+                controller: textController,
+                autofocus: true,
               ),
               actions: [
                 TextButton(
                   onPressed: () {
-                    Navigator.pop(context);
+                    Navigator.pop(dialogContext);
+                  },
+                  child: Text('common.cancel'.i18n),
+                ),
+                TextButton(
+                  onPressed: () {
+                    final newValue = textController.text;
+                    widget.onChanged(newValue);
+                    if (mounted) {
+                      setState(() {
+                        _controller?.text = newValue;
+                      });
+                    }
+                    Navigator.pop(dialogContext);
                   },
                   child: Text('common.confirm'.i18n),
                 ),
@@ -91,9 +123,7 @@ class _SettingsIntpuTileState extends fluent.State<SettingsIntpuTile> {
       trailing: Expanded(
         child: fluent.TextBox(
           controller: _controller,
-          onChanged: (value) {
-            widget.onChanged(value);
-          },
+          onChanged: _onTextChanged,
         ),
       ),
     );
