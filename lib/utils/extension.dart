@@ -32,7 +32,7 @@ class ExtensionUtils {
   // 初始化扩展
   static ensureInitialized() async {
     // 创建目录
-    Directory(extensionsDir).createSync(recursive: true);
+    await Directory(extensionsDir).create(recursive: true);
     await _loadExtensions();
     // 监听目录变化
     Directory(extensionsDir).watch().listen((event) async {
@@ -57,7 +57,7 @@ class ExtensionUtils {
 
   static _loadExtensions() async {
     // 获取扩展列表
-    final extensionsList = Directory(extensionsDir).listSync();
+    final extensionsList = await Directory(extensionsDir).list().toList();
     // 遍历扩展列表
     for (final extension in extensionsList) {
       await installByPath(extension.path);
@@ -68,8 +68,8 @@ class ExtensionUtils {
 
   static uninstall(String package) async {
     final file = File(path.join(extensionsDir, '$package.js'));
-    if (file.existsSync()) {
-      file.deleteSync();
+    if (await file.exists()) {
+      await file.delete();
     }
     final existing = runtimes.remove(package);
     existing?.dispose();
@@ -84,7 +84,7 @@ class ExtensionUtils {
       final ext = ExtensionUtils.parseExtension(res.data!);
       final savePath = path.join(extensionsDir, '${ext.package}.js');
       // 保存文件
-      File(savePath).writeAsStringSync(res.data!);
+      await File(savePath).writeAsString(res.data!);
       //reload
       _loadExtensions();
     } catch (e) {
@@ -112,7 +112,7 @@ class ExtensionUtils {
       final ext = ExtensionUtils.parseExtension(script);
       final savePath = path.join(extensionsDir, '${ext.package}.js');
       // 保存文件
-      File(savePath).writeAsStringSync(script);
+      await File(savePath).writeAsString(script);
       runtimes.remove(ext.package)?.dispose();
       runtimes[ext.package] = await ExtensionService().initRuntime(ext);
       _reloadPage();
