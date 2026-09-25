@@ -15,6 +15,8 @@ import 'package:miru_app/views/pages/home_page.dart';
 import 'package:miru_app/views/pages/main_page.dart';
 import 'package:miru_app/views/pages/search/extension_searcher_page.dart';
 import 'package:miru_app/views/pages/search/search_page.dart';
+import 'package:miru_app/views/pages/settings/about_page.dart';
+import 'package:miru_app/views/pages/settings/contributors_page.dart';
 import 'package:miru_app/views/pages/settings/settings_page.dart';
 import 'package:miru_app/views/pages/tracking/anilist_more_page.dart';
 import 'package:miru_app/views/pages/tracking/anilist_tracking_page.dart';
@@ -84,6 +86,14 @@ final router = GoRouter(
         GoRoute(
           path: '/settings',
           builder: (context, state) => _animation(const SettingsPage()),
+        ),
+        GoRoute(
+          path: '/settings/about',
+          builder: (context, state) => _animation(const AboutPage()),
+        ),
+        GoRoute(
+          path: '/settings/contributors',
+          builder: (context, state) => _animation(const ContributorsPage()),
         ),
         GoRoute(
           path: '/settings/anilist',

@@ -13,6 +13,7 @@ import 'package:miru_app/utils/request.dart';
 import 'package:miru_app/views/dialogs/bt_dialog.dart';
 import 'package:miru_app/controllers/extension/extension_repo_controller.dart';
 import 'package:miru_app/controllers/settings_controller.dart';
+import 'package:miru_app/views/pages/settings/about_page.dart';
 import 'package:miru_app/views/pages/tracking/anilist_tracking_page.dart';
 import 'package:miru_app/views/widgets/settings/settings_card_group.dart';
 import 'package:miru_app/views/widgets/settings/settings_expander_tile.dart';
@@ -28,7 +29,6 @@ import 'package:miru_app/utils/application.dart';
 import 'package:miru_app/views/widgets/platform_widget.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:tmdb_api/tmdb_api.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -595,6 +595,27 @@ class _SettingsPageState extends State<SettingsPage> {
         title: 'settings.about'.i18n,
         children: [
           SettingsTile(
+            icon: Container(
+              width: 32,
+              height: 32,
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/icon/logo.png'),
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+            title: 'settings.about'.i18n,
+            buildSubtitle: () => 'Version v${packageInfo.version}',
+            onTap: () {
+              if (Platform.isAndroid) {
+                Get.to(() => const AboutPage());
+              } else {
+                router.push('/settings/about');
+              }
+            },
+          ),
+          SettingsTile(
             icon: const Icon(Icons.system_update, size: 20),
             iconBgColor: const Color(0xFFEC4899), // Pink
             title: 'settings.upgrade'.i18n,
@@ -626,85 +647,6 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
           ),
-          SettingsExpanderTile(
-            leading: const Image(
-              image: AssetImage('assets/icon/logo.png'),
-              width: 24,
-              height: 24,
-            ),
-            iconBgColor: const Color(0xFFF97316), // Orange
-            title: "Miru",
-            subTitle: "AGPL-3.0 License",
-            open: true,
-            noPage: true,
-            content: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SelectableText(
-                  "🎉 A versatile application that is free, open-source, and supports extension sources for videos, comics, and novels, available on Android, Windows, and Web platforms.",
-                ),
-                const SizedBox(height: 20),
-                Text('settings.links'.i18n),
-                const SizedBox(height: 8),
-                Wrap(
-                  children: [
-                    for (final link in c.links.entries)
-                      Padding(
-                        padding: const EdgeInsets.only(right: 10),
-                        child: MouseRegion(
-                          cursor: SystemMouseCursors.click,
-                          child: GestureDetector(
-                            onTap: () async {
-                              await launchUrl(
-                                Uri.parse(link.value),
-                                mode: LaunchMode.externalApplication,
-                              );
-                            },
-                            child: Text(
-                              link.key,
-                              style: const TextStyle(
-                                color: Colors.blue,
-                              ),
-                            ),
-                          ),
-                        ),
-                      )
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Text('settings.contributors'.i18n),
-                const SizedBox(height: 8),
-                Obx(
-                  () => Wrap(
-                    children: [
-                      if (c.contributors.isNotEmpty)
-                        for (final contributor in c.contributors)
-                          Padding(
-                            padding: const EdgeInsets.only(right: 10),
-                            child: MouseRegion(
-                              cursor: SystemMouseCursors.click,
-                              child: GestureDetector(
-                                onTap: () async {
-                                  await launchUrl(
-                                    Uri.parse(contributor['html_url']),
-                                    mode: LaunchMode.externalApplication,
-                                  );
-                                },
-                                child: Text(
-                                  contributor['login'],
-                                  style: const TextStyle(
-                                    color: Colors.blue,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          )
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          )
         ],
       )
     ];
