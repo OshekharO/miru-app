@@ -152,7 +152,7 @@ class _ThumnailPageState extends State<_ThumnailPage> {
       return;
     }
     // 保存
-    File(path).writeAsBytesSync(res.data);
+    await File(path).writeAsBytes(res.data);
   }
 
   Widget _buildContent(BuildContext context) {

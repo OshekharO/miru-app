@@ -137,7 +137,7 @@ class _ExtensionPageState extends State<ExtensionPage> {
             if (path == null) {
               return;
             }
-            final script = File(path).readAsStringSync();
+            final script = await File(path).readAsString();
             await ExtensionUtils.installByScript(script, context);
             RouterUtils.pop();
           },

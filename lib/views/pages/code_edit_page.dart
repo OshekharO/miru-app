@@ -356,7 +356,7 @@ class _CodeEditPageState extends State<CodeEditPage> {
         },
         child: PopScope(
           canPop: _allowPop || !_isModified,
-          onPopInvoked: (didPop) async {
+          onPopInvokedWithResult: (didPop, result) async {
             if (didPop) return;
             final shouldPop = await _onWillPop();
             if (shouldPop && context.mounted) {

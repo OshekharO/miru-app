@@ -46,7 +46,7 @@ class ExtensionService {
     // 读取文件
     final file =
         File('${ExtensionUtils.extensionsDir}/${extension.package}.js');
-    final content = file.readAsStringSync();
+    final content = await file.readAsString();
 
     // 初始化runtime
     if (Platform.isAndroid) {

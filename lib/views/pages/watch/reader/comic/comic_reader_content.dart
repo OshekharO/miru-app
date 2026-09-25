@@ -21,9 +21,17 @@ class ComicReaderContent extends StatefulWidget {
 }
 
 class _ComicReaderContentState extends State<ComicReaderContent> {
+  final FocusNode _focusNode = FocusNode();
+
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
   }
 
   late final _c = Get.find<ComicController>(tag: widget.tag);
@@ -198,7 +206,7 @@ class _ComicReaderContentState extends State<ComicReaderContent> {
       backgroundColor = fluent.FluentTheme.of(context).micaBackgroundColor;
     }
     return RawKeyboardListener(
-      focusNode: FocusNode(),
+      focusNode: _focusNode,
       autofocus: true,
       onKey: _c.onKey,
       child: Container(
