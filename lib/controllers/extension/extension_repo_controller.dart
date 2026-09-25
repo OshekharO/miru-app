@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:get/get.dart';
 import 'package:miru_app/models/index.dart';
+import 'package:miru_app/utils/extension.dart';
 import 'package:miru_app/utils/miru_storage.dart';
 import 'package:miru_app/utils/request.dart';
 
@@ -54,8 +55,9 @@ class ExtensionRepoPageController extends GetxController {
     isError.value = false;
 
     try {
-      final res = await dio.get<String>(
-          '${MiruStorage.getSetting(SettingKey.miruRepoUrl)}/index.json');
+      final baseUrl = ExtensionUtils.normalizeRepoUrl(
+          MiruStorage.getSetting(SettingKey.miruRepoUrl));
+      final res = await dio.get<String>('$baseUrl/index.json');
       extensions = jsonDecode(res.data!);
       if (!MiruStorage.getSetting(SettingKey.enableNSFW)) {
         extensions.removeWhere((element) => element['nsfw'] == "true");

@@ -244,6 +244,26 @@ class ExtensionUtils {
   // @description  Enime API is an open source API service for developers to access anime info (as well as their video sources) https://github.com/Enime-Project/api.enime.moe
   // ==/MiruExtension==
 
+  static String normalizeRepoUrl(String inputUrl) {
+    var url = inputUrl.trim();
+    if (url.endsWith('/index.json')) {
+      url = url.substring(0, url.length - '/index.json'.length);
+    }
+    if (url.endsWith('/')) {
+      url = url.substring(0, url.length - 1);
+    }
+    final githubMatch =
+        RegExp(r'^https?://github\.com/([^/]+)/([^/]+)(?:/tree/([^/]+))?')
+            .firstMatch(url);
+    if (githubMatch != null) {
+      final owner = githubMatch.group(1);
+      final repo = githubMatch.group(2);
+      final branch = githubMatch.group(3) ?? 'main';
+      url = 'https://raw.githubusercontent.com/$owner/$repo/$branch';
+    }
+    return url;
+  }
+
   // 解析扩展为元数据
   static Extension parseExtension(String extension) {
     Map<String, dynamic> result = {};

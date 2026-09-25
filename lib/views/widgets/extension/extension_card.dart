@@ -18,6 +18,7 @@ class ExtensionCard extends StatefulWidget {
     required this.lang,
     required this.nsfw,
     required this.type,
+    this.url,
   });
   final String? icon;
   final String name;
@@ -26,6 +27,7 @@ class ExtensionCard extends StatefulWidget {
   final String lang;
   final ExtensionType type;
   final bool nsfw;
+  final String? url;
 
   @override
   State<ExtensionCard> createState() => _ExtensionCardState();
@@ -51,10 +53,37 @@ class _ExtensionCardState extends State<ExtensionCard> {
       isLoading = true;
     });
     try {
-      final url = MiruStorage.getSetting(SettingKey.miruRepoUrl) +
-          "/repo/${widget.package}.js";
-      debugPrint(url);
-      await ExtensionUtils.install(url, context);
+      final baseUrl = ExtensionUtils.normalizeRepoUrl(
+          MiruStorage.getSetting(SettingKey.miruRepoUrl));
+
+      String relativeUrl = widget.url ?? widget.package;
+      if (!relativeUrl.endsWith('.js')) {
+        relativeUrl = '$relativeUrl.js';
+      }
+
+      String downloadUrl;
+      if (relativeUrl.startsWith('http://') ||
+          relativeUrl.startsWith('https://')) {
+        downloadUrl = relativeUrl;
+      } else {
+        if (relativeUrl.startsWith('/')) {
+          relativeUrl = relativeUrl.substring(1);
+        }
+        downloadUrl = '$baseUrl/$relativeUrl';
+      }
+
+      try {
+        await ExtensionUtils.install(downloadUrl, context);
+      } catch (_) {
+        if (!relativeUrl.startsWith('repo/') &&
+            !downloadUrl.contains('/repo/')) {
+          final fallbackUrl = '$baseUrl/repo/$relativeUrl';
+          await ExtensionUtils.install(fallbackUrl, context);
+        } else {
+          rethrow;
+        }
+      }
+
       isLoading = false;
       isInstall = true;
       hasUpgrade = false;
