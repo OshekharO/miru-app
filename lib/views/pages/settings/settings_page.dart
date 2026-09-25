@@ -299,6 +299,23 @@ class _SettingsPageState extends State<SettingsPage> {
                     return MiruStorage.getSetting(SettingKey.doubleTapSeekDuration) ?? 10;
                   },
                 ),
+                SettingsRadiosTile(
+                  title: 'settings.video-fit-mode'.i18n,
+                  itemNameValue: {
+                    'settings.fit-mode-contain'.i18n: 'contain',
+                    'settings.fit-mode-cover'.i18n: 'cover',
+                    'settings.fit-mode-fill'.i18n: 'fill',
+                    'settings.fit-mode-fitWidth'.i18n: 'fitWidth',
+                    'settings.fit-mode-fitHeight'.i18n: 'fitHeight',
+                  },
+                  buildSubtitle: () => 'settings.video-fit-mode-subtitle'.i18n,
+                  applyValue: (value) {
+                    MiruStorage.setSetting(SettingKey.videoFitMode, value);
+                  },
+                  buildGroupValue: () {
+                    return MiruStorage.getSetting(SettingKey.videoFitMode) ?? 'contain';
+                  },
+                ),
                 if (!Platform.isAndroid) ...[
                   const SizedBox(height: 10),
                   Text("settings.skip-interval".i18n),

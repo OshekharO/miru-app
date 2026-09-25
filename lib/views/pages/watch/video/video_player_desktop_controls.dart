@@ -612,6 +612,11 @@ class _Footer extends StatelessWidget {
                           padding: const EdgeInsets.only(right: 6),
                           child: _Speed(controller: controller),
                         ),
+                      Tooltip(
+                        message: 'Video Resize Mode',
+                        child: _ResizeMode(controller: controller),
+                      ),
+                      const SizedBox(width: 6),
                       if (constraints.maxWidth > 650)
                         Obx(() {
                           if (controller.torrentMediaFileList.isEmpty) {
@@ -1166,6 +1171,79 @@ class _SpeedState extends State<_Speed> {
                             onPressed: () {
                               widget.controller.player.setRate(speed);
                               widget.controller.currentSpeed.value = speed;
+                              router.pop();
+                            },
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _ResizeMode extends StatefulWidget {
+  const _ResizeMode({required this.controller});
+  final VideoPlayerController controller;
+
+  @override
+  State<_ResizeMode> createState() => _ResizeModeState();
+}
+
+class _ResizeModeState extends State<_ResizeMode> {
+  final _flyoutController = FlyoutController();
+
+  @override
+  void dispose() {
+    _flyoutController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final modes = {
+      'contain': 'settings.fit-mode-contain'.i18n,
+      'cover': 'settings.fit-mode-cover'.i18n,
+      'fill': 'settings.fit-mode-fill'.i18n,
+      'fitWidth': 'settings.fit-mode-fitWidth'.i18n,
+      'fitHeight': 'settings.fit-mode-fitHeight'.i18n,
+    };
+
+    return FlyoutTarget(
+      controller: _flyoutController,
+      child: IconButton(
+        icon: const Icon(FluentIcons.aspect_ratio, size: 18),
+        onPressed: () {
+          _flyoutController.showFlyout(
+            barrierDismissible: false,
+            dismissOnPointerMoveAway: true,
+            builder: (context) {
+              return FluentTheme(
+                data: FluentThemeData.dark(),
+                child: FlyoutContent(
+                  useAcrylic: true,
+                  padding: const EdgeInsets.all(0),
+                  child: Container(
+                    width: 180,
+                    constraints: const BoxConstraints(maxHeight: 280),
+                    child: ListView(
+                      padding: const EdgeInsets.all(6),
+                      children: [
+                        for (final mode in modes.entries)
+                          ListTile.selectable(
+                            title: Text(
+                              mode.value,
+                              style: const TextStyle(fontSize: 13),
+                            ),
+                            selected:
+                                widget.controller.videoFitMode.value == mode.key,
+                            onPressed: () {
+                              widget.controller.videoFitMode.value = mode.key;
                               router.pop();
                             },
                           ),
