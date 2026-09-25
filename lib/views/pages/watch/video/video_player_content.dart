@@ -19,6 +19,7 @@ class VideoPlayerConten extends StatelessWidget {
     final c = Get.find<VideoPlayerController>(tag: tag);
     return Video(
       controller: c.videoController,
+      fit: BoxFit.contain,
       subtitleViewConfiguration: const SubtitleViewConfiguration(
         visible: false,
       ),

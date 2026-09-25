@@ -158,6 +158,10 @@ class VideoPlayerController extends GetxController {
   final subtitleBackgroundColor = Colors.black.obs;
   final subtitleBackgroundOpacity = 0.5.obs;
 
+  // 播放器 UI 设置
+  final controlsTimeoutSeconds = 3.obs;
+  final doubleTapSeekSeconds = 10.obs;
+
   // 侧边栏初始化 tab
   final initSidebarTab = SidebarTab.episodes.obs;
 
@@ -218,6 +222,10 @@ class VideoPlayerController extends GetxController {
     subtitleTextAlign.value = TextAlign.values[MiruStorage.getSetting(
       SettingKey.subtitleTextAlign,
     )];
+    controlsTimeoutSeconds.value =
+        MiruStorage.getSetting(SettingKey.controlsTimeout) ?? 3;
+    doubleTapSeekSeconds.value =
+        MiruStorage.getSetting(SettingKey.doubleTapSeekDuration) ?? 10;
 
     ever(subtitleFontSize, (callback) {
       MiruStorage.setSetting(SettingKey.subtitleFontSize, callback);
@@ -857,6 +865,15 @@ class VideoPlayerController extends GetxController {
     final curr = await dlnaDevice.value!.position();
     final diff = duration - position.value;
     await dlnaDevice.value!.seekByCurrent(curr, diff.inSeconds);
+  }
+
+  doubleTapSeek(bool forward) {
+    final seconds = doubleTapSeekSeconds.value;
+    final delta = Duration(seconds: forward ? seconds : -seconds);
+    final targetPosition = position.value + delta;
+    final maxMs = duration.value.inMilliseconds > 0 ? duration.value.inMilliseconds : 86400000;
+    final clampedMs = targetPosition.inMilliseconds.clamp(0, maxMs).toInt();
+    seek(Duration(milliseconds: clampedMs));
   }
 
   @override

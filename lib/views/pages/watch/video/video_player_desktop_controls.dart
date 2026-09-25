@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/foundation.dart';
+import 'package:fluent_ui/fluent_ui.dart' hide ProgressRing;
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:media_kit/media_kit.dart';
@@ -9,6 +10,7 @@ import 'package:miru_app/controllers/watch/video_controller.dart';
 import 'package:miru_app/router/router.dart';
 import 'package:miru_app/utils/i18n.dart';
 import 'package:miru_app/views/widgets/cache_network_image.dart';
+import 'package:miru_app/views/widgets/progress.dart';
 import 'package:miru_app/views/widgets/watch/playlist.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -30,16 +32,30 @@ class _VideoPlayerDesktopControlsState
   final FocusNode _focusNode = FocusNode();
   Timer? _timer;
   bool _showControls = true;
+  DateTime? _lastHoverTime;
   final _subtitleViewKey = GlobalKey<SubtitleViewState>();
 
-  _updateTimer() {
+  void _updateTimer() {
+    final now = DateTime.now();
+    if (_showControls &&
+        _lastHoverTime != null &&
+        now.difference(_lastHoverTime!).inMilliseconds < 300) {
+      return;
+    }
+    _lastHoverTime = now;
+
     _timer?.cancel();
     _timer = null;
-    setState(() {
-      _showControls = true;
-    });
+    if (!_showControls) {
+      setState(() {
+        _showControls = true;
+      });
+    }
+    final timeoutSeconds = _c.controlsTimeoutSeconds.value;
+    if (timeoutSeconds <= 0) return;
+
     _timer = Timer(
-      const Duration(seconds: 3),
+      Duration(seconds: timeoutSeconds),
       () {
         if (mounted) {
           setState(() {
@@ -66,9 +82,8 @@ class _VideoPlayerDesktopControlsState
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-      onHover: (_) {
-        _updateTimer();
-      },
+      cursor: _showControls ? SystemMouseCursors.basic : SystemMouseCursors.none,
+      onHover: (_) => _updateTimer(),
       child: FluentTheme(
         data: FluentThemeData(
           brightness: Brightness.dark,
@@ -83,7 +98,7 @@ class _VideoPlayerDesktopControlsState
           },
           child: Stack(
             children: [
-              // subtitle
+              // Subtitle Layer
               Positioned.fill(
                 child: Obx(
                   () {
@@ -107,7 +122,7 @@ class _VideoPlayerDesktopControlsState
                       16.0,
                       0.0,
                       16.0,
-                      _showControls ? 100.0 : 16.0,
+                      _showControls ? 110.0 : 20.0,
                     );
                     return SubtitleView(
                       controller: _c.videoController,
@@ -120,12 +135,22 @@ class _VideoPlayerDesktopControlsState
                   },
                 ),
               ),
+
+              // Center Loading / Error Overlay
               Positioned.fill(
-                child: SizedBox.expand(
-                  child: Center(
-                    child: Obx(() {
-                      if (_c.error.value.isNotEmpty) {
-                        return Column(
+                child: Center(
+                  child: Obx(() {
+                    if (_c.error.value.isNotEmpty) {
+                      return Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.8),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.red.withOpacity(0.3),
+                          ),
+                        ),
+                        child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
@@ -133,9 +158,10 @@ class _VideoPlayerDesktopControlsState
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
+                                color: Colors.white,
                               ),
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 12),
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -148,23 +174,20 @@ class _VideoPlayerDesktopControlsState
                                         constraints: const BoxConstraints(
                                           maxWidth: 500,
                                         ),
-                                        title:
-                                            Text('common.error-message'.i18n),
+                                        title: Text('common.error-message'.i18n),
                                         content: SelectableText(_c.error.value),
                                         actions: [
                                           Button(
                                             child: Text('common.close'.i18n),
-                                            onPressed: () {
-                                              router.pop();
-                                            },
+                                            onPressed: () => router.pop(),
                                           ),
                                         ],
                                       ),
                                     );
                                   },
                                 ),
-                                const SizedBox(width: 10),
-                                Button(
+                                const SizedBox(width: 12),
+                                FilledButton(
                                   child: Text('common.retry'.i18n),
                                   onPressed: () {
                                     _c.error.value = '';
@@ -174,89 +197,113 @@ class _VideoPlayerDesktopControlsState
                               ],
                             )
                           ],
-                        );
-                      }
-                      if (!_c.isGettingWatchData.value) {
-                        return StreamBuilder(
-                          stream: _c.player.stream.buffering,
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData && snapshot.data! ||
-                                _c.player.state.buffering) {
-                              return const ProgressRing();
-                            }
-                            return const SizedBox.shrink();
-                          },
-                        );
-                      }
-                      return Card(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (_c.runtime.extension.icon != null)
-                              Container(
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                ),
-                                clipBehavior: Clip.antiAlias,
-                                margin: const EdgeInsets.only(right: 10),
-                                child: CacheNetWorkImagePic(
-                                  _c.runtime.extension.icon!,
-                                  width: 30,
-                                  height: 30,
-                                ),
-                              ),
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _c.runtime.extension.name,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  'video.getting-streamlink'.i18n,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w300,
-                                  ),
-                                ),
-                              ],
-                            )
-                          ],
                         ),
                       );
-                    }),
-                  ),
+                    }
+                    if (!_c.isGettingWatchData.value) {
+                      return StreamBuilder(
+                        stream: _c.player.stream.buffering,
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData && snapshot.data! ||
+                              _c.player.state.buffering) {
+                            return Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.6),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const ProgressRing(),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      );
+                    }
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.75),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.1),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (_c.runtime.extension.icon != null)
+                            Container(
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              margin: const EdgeInsets.only(right: 12),
+                              child: CacheNetWorkImagePic(
+                                _c.runtime.extension.icon!,
+                                width: 32,
+                                height: 32,
+                              ),
+                            ),
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _c.runtime.extension.name,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Text(
+                                'video.getting-streamlink'.i18n,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w300,
+                                  color: Colors.white.withOpacity(0.7),
+                                ),
+                              ),
+                            ],
+                          )
+                        ],
+                      ),
+                    );
+                  }),
                 ),
               ),
+
+              // Controls Overlay (Header & Footer)
               Positioned.fill(
-                child: Column(
-                  children: [
-                    // header
-                    Opacity(
-                      opacity: _showControls ? 1 : 0,
-                      child: _Header(
-                        title: _c.title,
-                        episode: _c.playList[_c.index.value].name,
-                        onClose: () {
-                          if (_c.isFullScreen.value) {
-                            WindowManager.instance.setFullScreen(false);
-                          }
-                          router.pop();
-                        },
-                      ),
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 200),
+                  opacity: _showControls ? 1.0 : 0.0,
+                  child: IgnorePointer(
+                    ignoring: !_showControls,
+                    child: Column(
+                      children: [
+                        // Header
+                        _Header(
+                          title: _c.title,
+                          episode: _c.playList[_c.index.value].name,
+                          onClose: () {
+                            if (_c.isFullScreen.value) {
+                              WindowManager.instance.setFullScreen(false);
+                            }
+                            router.pop();
+                          },
+                        ),
+
+                        const Spacer(),
+
+                        // Footer
+                        _Footer(controller: _c),
+                      ],
                     ),
-                    // center
-                    const Spacer(),
-                    // footer
-                    Opacity(
-                      opacity: _showControls ? 1 : 0,
-                      child: _Footer(controller: _c),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ],
@@ -285,10 +332,14 @@ class _HeaderState extends State<_Header> {
   bool _isAlwaysOnTop = false;
 
   @override
-  initState() {
+  void initState() {
     super.initState();
     WindowManager.instance.isAlwaysOnTop().then((value) {
-      _isAlwaysOnTop = value;
+      if (mounted) {
+        setState(() {
+          _isAlwaysOnTop = value;
+        });
+      }
     });
   }
 
@@ -303,68 +354,92 @@ class _HeaderState extends State<_Header> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black.withOpacity(0.5),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        child: Row(
-          children: [
-            Expanded(
-              child: DragToMoveArea(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.65),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.12),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          Expanded(
+            child: DragToMoveArea(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.title,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    Text(
-                      widget.episode,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w300,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    widget.episode,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white.withOpacity(0.75),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-            // 置顶
-            IconButton(
+          ),
+          Tooltip(
+            message: _isAlwaysOnTop ? 'Unpin window' : 'Pin window on top',
+            child: IconButton(
               icon: Icon(
                 _isAlwaysOnTop ? FluentIcons.pinned : FluentIcons.pin,
+                size: 16,
               ),
               onPressed: () async {
-                WindowManager.instance.setAlwaysOnTop(
-                  !_isAlwaysOnTop,
-                );
+                await WindowManager.instance.setAlwaysOnTop(!_isAlwaysOnTop);
                 setState(() {
                   _isAlwaysOnTop = !_isAlwaysOnTop;
                 });
               },
             ),
-            const SizedBox(width: 10),
-            IconButton(
+          ),
+          const SizedBox(width: 6),
+          Tooltip(
+            message: 'Minimize',
+            child: IconButton(
               icon: const Icon(
                 FluentIcons.chrome_minimize,
+                size: 14,
               ),
               onPressed: () {
                 WindowManager.instance.minimize();
               },
             ),
-            const SizedBox(width: 10),
-            IconButton(
+          ),
+          const SizedBox(width: 6),
+          Tooltip(
+            message: 'Close player',
+            child: IconButton(
               onPressed: widget.onClose,
               icon: const Icon(
                 FluentIcons.chevron_down,
+                size: 16,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -379,207 +454,221 @@ class _Footer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black.withOpacity(0.5),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        child: Column(
-          children: [
-            Row(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.65),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.12),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Timeline & SeekBar
+          Row(
+            children: [
+              StreamBuilder<Duration>(
+                stream: controller.player.stream.position,
+                builder: (context, snapshot) {
+                  final position = snapshot.data ?? Duration.zero;
+                  return Text(
+                    '${position.inMinutes}:${(position.inSeconds % 60).toString().padLeft(2, '0')}',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _SeekBar(controller: controller),
+              ),
+              const SizedBox(width: 12),
+              StreamBuilder<Duration>(
+                stream: controller.player.stream.duration,
+                builder: (context, snapshot) {
+                  final duration = snapshot.data ?? Duration.zero;
+                  return Text(
+                    '${duration.inMinutes}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white.withOpacity(0.7),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+
+          // Control Actions
+          LayoutBuilder(builder: (context, constraints) {
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // 当前进度
-                StreamBuilder(
-                  stream: controller.player.stream.position,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      final position = snapshot.data as Duration;
-                      return Text(
-                        '${position.inMinutes}:${(position.inSeconds % 60).toString().padLeft(2, '0')}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w300,
-                        ),
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  },
-                ),
-                const SizedBox(width: 20),
+                // Left Action Group: Volume & Quality
                 Expanded(
-                  child: _SeekBar(controller: controller),
+                  flex: 1,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _Volume(
+                        value: controller.player.state.volume,
+                        onVolumeChanged: (value) {
+                          controller.player.setVolume(value);
+                        },
+                      ),
+                      Obx(() {
+                        if (controller.currentQuality.value.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+                        return Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: _Quality(controller: controller),
+                        );
+                      }),
+                    ],
+                  ),
                 ),
-                const SizedBox(width: 20),
-                // 总时长
-                StreamBuilder(
-                  stream: controller.player.stream.duration,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      final duration = snapshot.data as Duration;
-                      return Text(
-                        '${duration.inMinutes}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w300,
+
+                // Center Action Group: Prev, Play/Pause, Next
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Obx(
+                      () => Tooltip(
+                        message: 'Previous Episode',
+                        child: IconButton(
+                          onPressed: controller.index.value > 0
+                              ? () => controller.index.value--
+                              : null,
+                          icon: const Icon(
+                            FluentIcons.previous,
+                            size: 16,
+                          ),
                         ),
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    StreamBuilder<bool>(
+                      stream: controller.player.stream.playing,
+                      builder: (context, snapshot) {
+                        final playing = snapshot.data ?? controller.player.state.playing;
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            onPressed: controller.playOrPause,
+                            icon: Icon(
+                              playing ? FluentIcons.pause : FluentIcons.play,
+                              size: 22,
+                              color: Colors.white,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 12),
+                    Obx(
+                      () => Tooltip(
+                        message: 'Next Episode',
+                        child: IconButton(
+                          onPressed: controller.playList.length - 1 > controller.index.value
+                              ? () => controller.index.value++
+                              : null,
+                          icon: const Icon(
+                            FluentIcons.next,
+                            size: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                // Right Action Group: Speed, Torrent, Tracks, Playlist, Fullscreen, Settings
+                Expanded(
+                  flex: 1,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (constraints.maxWidth > 650)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 6),
+                          child: _Speed(controller: controller),
+                        ),
+                      const SizedBox(width: 6),
+                      if (constraints.maxWidth > 650)
+                        Obx(() {
+                          if (controller.torrentMediaFileList.isEmpty) {
+                            return const SizedBox.shrink();
+                          }
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 6),
+                            child: _TorrentFiles(controller: controller),
+                          );
+                        }),
+                      Tooltip(
+                        message: 'Audio / Subtitle Tracks',
+                        child: _Track(controller: controller),
+                      ),
+                      const SizedBox(width: 6),
+                      Tooltip(
+                        message: 'Playlist',
+                        child: _Episode(controller: controller),
+                      ),
+                      const SizedBox(width: 6),
+                      Obx(
+                        () => Tooltip(
+                          message: controller.isFullScreen.value
+                              ? 'Exit Fullscreen'
+                              : 'Fullscreen',
+                          child: IconButton(
+                            onPressed: () => controller.toggleFullscreen(),
+                            icon: Icon(
+                              controller.isFullScreen.value
+                                  ? FluentIcons.back_to_window
+                                  : FluentIcons.full_screen,
+                              size: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Tooltip(
+                        message: 'Player Settings',
+                        child: IconButton(
+                          onPressed: () {
+                            controller.showSidebar.value = !controller.showSidebar.value;
+                          },
+                          icon: const Icon(
+                            FluentIcons.settings,
+                            size: 16,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
-            ),
-            const SizedBox(height: 10),
-            LayoutBuilder(builder: (context, constraints) {
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (constraints.maxWidth > 500)
-                    Expanded(
-                      flex: 1,
-                      child: // 音量
-                          Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _Volume(
-                            value: controller.player.state.volume,
-                            onVolumeChanged: (value) {
-                              controller.player.setVolume(value);
-                            },
-                          ),
-                          // 画质
-                          Obx(() {
-                            if (controller.currentQuality.value.isEmpty) {
-                              return const SizedBox.shrink();
-                            }
-                            return Padding(
-                              padding: const EdgeInsets.only(left: 10),
-                              child: _Quality(controller: controller),
-                            );
-                          }),
-                        ],
-                      ),
-                    ),
-                  Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // 上一集
-                        Obx(
-                          () => IconButton(
-                            onPressed: controller.index.value > 0
-                                ? () {
-                                    controller.index.value--;
-                                  }
-                                : null,
-                            icon: const Icon(
-                              FluentIcons.previous,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 20),
-                        StreamBuilder(
-                          stream: controller.player.stream.playing,
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData && snapshot.data! ||
-                                controller.player.state.playing) {
-                              return IconButton(
-                                onPressed: controller.player.pause,
-                                icon: const Icon(
-                                  FluentIcons.pause,
-                                  size: 30,
-                                ),
-                              );
-                            }
-                            return IconButton(
-                              onPressed: controller.player.play,
-                              icon: const Icon(
-                                FluentIcons.play,
-                                size: 30,
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(width: 20),
-                        // 下一集
-                        Obx(
-                          () => IconButton(
-                            onPressed: controller.playList.length - 1 >
-                                    controller.index.value
-                                ? () {
-                                    controller.index.value++;
-                                  }
-                                : null,
-                            icon: const Icon(
-                              FluentIcons.next,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (constraints.maxWidth > 500)
-                    Expanded(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // playback speed
-                          if (constraints.maxWidth > 700)
-                            Padding(
-                              padding: const EdgeInsets.only(right: 10),
-                              child: _Speed(controller: controller),
-                            ),
-                          // torrent files
-                          if (constraints.maxWidth > 700)
-                            Obx(() {
-                              if (controller.torrentMediaFileList.isEmpty) {
-                                return const SizedBox.shrink();
-                              }
-                              return Padding(
-                                padding: const EdgeInsets.only(right: 10),
-                                child: _TorrentFiles(
-                                  controller: controller,
-                                ),
-                              );
-                            }),
-                          // track
-                          _Track(controller: controller),
-                          const SizedBox(width: 10),
-
-                          // 剧集
-                          _Episode(controller: controller),
-                          const SizedBox(width: 10),
-                          // 全屏
-                          Obx(
-                            () => IconButton(
-                              onPressed: () {
-                                controller.toggleFullscreen();
-                              },
-                              icon: Icon(
-                                controller.isFullScreen.value
-                                    ? FluentIcons.back_to_window
-                                    : FluentIcons.full_screen,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          // 设置
-                          IconButton(
-                            onPressed: () {
-                              final showPlayList = controller.showSidebar.value;
-                              controller.showSidebar.value = !showPlayList;
-                            },
-                            icon: const Icon(
-                              FluentIcons.settings,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              );
-            })
-          ],
-        ),
+            );
+          }),
+        ],
       ),
     );
   }
@@ -598,8 +687,9 @@ class _Volume extends StatefulWidget {
 }
 
 class _VolumeState extends State<_Volume> {
-  final _controller = FlyoutController();
+  final _flyoutController = FlyoutController();
   final _volume = 0.0.obs;
+
   @override
   void initState() {
     super.initState();
@@ -608,14 +698,14 @@ class _VolumeState extends State<_Volume> {
 
   @override
   void dispose() {
-    _controller.dispose();
+    _flyoutController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return FlyoutTarget(
-      controller: _controller,
+      controller: _flyoutController,
       child: IconButton(
         icon: Obx(
           () => Icon(
@@ -626,10 +716,11 @@ class _VolumeState extends State<_Volume> {
                     : _volume.value < 100
                         ? FluentIcons.volume2
                         : FluentIcons.volume3,
+            size: 18,
           ),
         ),
         onPressed: () {
-          _controller.showFlyout(
+          _flyoutController.showFlyout(
             barrierDismissible: false,
             dismissOnPointerMoveAway: true,
             builder: (context) {
@@ -651,18 +742,20 @@ class _VolumeState extends State<_Volume> {
                                     : _volume.value < 100
                                         ? FluentIcons.volume2
                                         : FluentIcons.volume3,
+                            size: 18,
                           ),
                         ),
                         const SizedBox(width: 10),
                         Obx(
                           () => SizedBox(
+                            width: 120,
                             height: 30,
                             child: Slider(
                               value: _volume.value,
                               max: 100,
-                              onChanged: (value) {
-                                _volume.value = value;
-                                widget.onVolumeChanged(value);
+                              onChanged: (val) {
+                                _volume.value = val;
+                                widget.onVolumeChanged(val);
                               },
                             ),
                           ),
@@ -670,10 +763,10 @@ class _VolumeState extends State<_Volume> {
                         const SizedBox(width: 10),
                         Obx(
                           () => Text(
-                            _volume.value.toStringAsFixed(1),
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w300,
+                            '${_volume.value.toInt()}%',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.white.withOpacity(0.8),
                             ),
                           ),
                         ),
@@ -691,10 +784,7 @@ class _VolumeState extends State<_Volume> {
 }
 
 class _Episode extends StatefulWidget {
-  const _Episode({
-    required this.controller,
-  });
-
+  const _Episode({required this.controller});
   final VideoPlayerController controller;
 
   @override
@@ -702,11 +792,11 @@ class _Episode extends StatefulWidget {
 }
 
 class _EpisodeState extends State<_Episode> {
-  final controller = FlyoutController();
+  final _flyoutController = FlyoutController();
 
   @override
   void dispose() {
-    controller.dispose();
+    _flyoutController.dispose();
     super.dispose();
   }
 
@@ -715,11 +805,11 @@ class _EpisodeState extends State<_Episode> {
     return FluentTheme(
       data: FluentThemeData.dark(),
       child: FlyoutTarget(
-        controller: controller,
+        controller: _flyoutController,
         child: IconButton(
-          icon: const Icon(FluentIcons.playlist_music),
+          icon: const Icon(FluentIcons.playlist_music, size: 18),
           onPressed: () {
-            controller.showFlyout(
+            _flyoutController.showFlyout(
               barrierDismissible: false,
               dismissOnPointerMoveAway: true,
               builder: (context) {
@@ -730,9 +820,7 @@ class _EpisodeState extends State<_Episode> {
                     useAcrylic: true,
                     child: Container(
                       width: 300,
-                      constraints: const BoxConstraints(
-                        maxHeight: 500,
-                      ),
+                      constraints: const BoxConstraints(maxHeight: 450),
                       child: PlayList(
                         title: widget.controller.title,
                         list: widget.controller.playList
@@ -757,10 +845,7 @@ class _EpisodeState extends State<_Episode> {
 }
 
 class _Quality extends StatefulWidget {
-  const _Quality({
-    required this.controller,
-  });
-
+  const _Quality({required this.controller});
   final VideoPlayerController controller;
 
   @override
@@ -768,20 +853,28 @@ class _Quality extends StatefulWidget {
 }
 
 class _QualityState extends State<_Quality> {
-  final controller = FlyoutController();
+  final _flyoutController = FlyoutController();
 
   @override
   void dispose() {
-    controller.dispose();
+    _flyoutController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return FlyoutTarget(
-      controller: controller,
+      controller: _flyoutController,
       child: Button(
-        child: Text(widget.controller.currentQuality.value),
+        style: ButtonStyle(
+          padding: ButtonState.all(
+            const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          ),
+        ),
+        child: Text(
+          widget.controller.currentQuality.value,
+          style: const TextStyle(fontSize: 12),
+        ),
         onPressed: () {
           if (widget.controller.qualityMap.isEmpty) {
             widget.controller.sendMessage(
@@ -789,7 +882,7 @@ class _QualityState extends State<_Quality> {
             );
             return;
           }
-          controller.showFlyout(
+          _flyoutController.showFlyout(
             barrierDismissible: false,
             dismissOnPointerMoveAway: true,
             builder: (context) {
@@ -798,20 +891,15 @@ class _QualityState extends State<_Quality> {
                 child: FlyoutContent(
                   useAcrylic: true,
                   child: Container(
-                    width: 200,
-                    constraints: const BoxConstraints(
-                      maxHeight: 300,
-                    ),
+                    width: 180,
+                    constraints: const BoxConstraints(maxHeight: 280),
                     child: ListView(
                       children: [
-                        for (final quality
-                            in widget.controller.qualityMap.entries)
+                        for (final quality in widget.controller.qualityMap.entries)
                           ListTile(
                             title: Text(quality.key),
                             onPressed: () {
-                              widget.controller.switchQuality(
-                                quality.value,
-                              );
+                              widget.controller.switchQuality(quality.value);
                               router.pop();
                             },
                           ),
@@ -829,10 +917,7 @@ class _QualityState extends State<_Quality> {
 }
 
 class _Track extends StatefulWidget {
-  const _Track({
-    required this.controller,
-  });
-
+  const _Track({required this.controller});
   final VideoPlayerController controller;
 
   @override
@@ -840,22 +925,22 @@ class _Track extends StatefulWidget {
 }
 
 class _TrackState extends State<_Track> {
-  final controller = FlyoutController();
+  final _flyoutController = FlyoutController();
 
   @override
   void dispose() {
-    controller.dispose();
+    _flyoutController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return FlyoutTarget(
-      controller: controller,
+      controller: _flyoutController,
       child: IconButton(
-        icon: const Icon(FluentIcons.locale_language),
+        icon: const Icon(FluentIcons.locale_language, size: 18),
         onPressed: () {
-          controller.showFlyout(
+          _flyoutController.showFlyout(
             barrierDismissible: false,
             dismissOnPointerMoveAway: true,
             builder: (context) {
@@ -865,10 +950,8 @@ class _TrackState extends State<_Track> {
                   useAcrylic: true,
                   padding: const EdgeInsets.all(0),
                   child: Container(
-                    width: 220,
-                    constraints: const BoxConstraints(
-                      maxHeight: 300,
-                    ),
+                    width: 240,
+                    constraints: const BoxConstraints(maxHeight: 320),
                     child: ListView(
                       padding: const EdgeInsets.all(8),
                       children: [
@@ -877,20 +960,18 @@ class _TrackState extends State<_Track> {
                           child: Text(
                             "video.subtitle".i18n,
                             style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.white.withAlpha(200),
+                              fontSize: 12,
+                              color: Colors.white.withOpacity(0.7),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 5),
+                        const SizedBox(height: 4),
                         ListTile.selectable(
                           selected: SubtitleTrack.no() ==
                               widget.controller.player.state.track.subtitle,
                           title: Text('common.off'.i18n),
                           onPressed: () {
-                            widget.controller.setSubtitleTrack(
-                              SubtitleTrack.no(),
-                            );
+                            widget.controller.setSubtitleTrack(SubtitleTrack.no());
                             router.pop();
                           },
                         ),
@@ -900,7 +981,6 @@ class _TrackState extends State<_Track> {
                             widget.controller.addSubtitleFile();
                           },
                         ),
-                        // 来自扩展的字幕
                         for (final subtitle in widget.controller.subtitles)
                           ListTile.selectable(
                             selected: subtitle ==
@@ -908,27 +988,21 @@ class _TrackState extends State<_Track> {
                             title: Text(subtitle.title ?? ''),
                             subtitle: Text(subtitle.language ?? ''),
                             onPressed: () {
-                              widget.controller.setSubtitleTrack(
-                                subtitle,
-                              );
+                              widget.controller.setSubtitleTrack(subtitle);
                               router.pop();
                             },
                           ),
-                        // 来自视频的字幕
                         for (final subtitle
                             in widget.controller.player.state.tracks.subtitle)
                           if (subtitle != SubtitleTrack.no() &&
-                              (subtitle.language != null ||
-                                  subtitle.title != null))
+                              (subtitle.language != null || subtitle.title != null))
                             ListTile.selectable(
                               selected: subtitle ==
                                   widget.controller.player.state.track.subtitle,
                               title: Text(subtitle.title ?? ''),
                               subtitle: Text(subtitle.language ?? ''),
                               onPressed: () {
-                                widget.controller.setSubtitleTrack(
-                                  subtitle,
-                                );
+                                widget.controller.setSubtitleTrack(subtitle);
                                 router.pop();
                               },
                             ),
@@ -938,13 +1012,12 @@ class _TrackState extends State<_Track> {
                           child: Text(
                             "video.audio".i18n,
                             style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.white.withAlpha(200),
+                              fontSize: 12,
+                              color: Colors.white.withOpacity(0.7),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 5),
-                        // 来自视频的音轨
+                        const SizedBox(height: 4),
                         for (final audio
                             in widget.controller.player.state.tracks.audio)
                           if (audio.language != null || audio.title != null)
@@ -954,9 +1027,7 @@ class _TrackState extends State<_Track> {
                               title: Text(audio.title ?? ''),
                               subtitle: Text(audio.language ?? ''),
                               onPressed: () {
-                                widget.controller.player.setAudioTrack(
-                                  audio,
-                                );
+                                widget.controller.player.setAudioTrack(audio);
                                 router.pop();
                               },
                             ),
@@ -974,10 +1045,7 @@ class _TrackState extends State<_Track> {
 }
 
 class _TorrentFiles extends StatefulWidget {
-  const _TorrentFiles({
-    required this.controller,
-  });
-
+  const _TorrentFiles({required this.controller});
   final VideoPlayerController controller;
 
   @override
@@ -985,22 +1053,22 @@ class _TorrentFiles extends StatefulWidget {
 }
 
 class _TorrentFilesState extends State<_TorrentFiles> {
-  final controller = FlyoutController();
+  final _flyoutController = FlyoutController();
 
   @override
   void dispose() {
-    controller.dispose();
+    _flyoutController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return FlyoutTarget(
-      controller: controller,
+      controller: _flyoutController,
       child: IconButton(
-        icon: const Icon(FluentIcons.folder_open),
+        icon: const Icon(FluentIcons.folder_open, size: 18),
         onPressed: () {
-          controller.showFlyout(
+          _flyoutController.showFlyout(
             barrierDismissible: false,
             dismissOnPointerMoveAway: true,
             builder: (context) {
@@ -1010,23 +1078,19 @@ class _TorrentFilesState extends State<_TorrentFiles> {
                   useAcrylic: true,
                   padding: const EdgeInsets.all(0),
                   child: Container(
-                    width: 300,
-                    constraints: const BoxConstraints(
-                      maxHeight: 300,
-                    ),
+                    width: 280,
+                    constraints: const BoxConstraints(maxHeight: 300),
                     child: ListView(
                       padding: const EdgeInsets.all(8),
                       children: [
-                        for (final file
-                            in widget.controller.torrentMediaFileList)
+                        for (final file in widget.controller.torrentMediaFileList)
                           ListTile.selectable(
                             title: Text(
                               file,
                               style: const TextStyle(fontSize: 13),
                             ),
                             selected:
-                                widget.controller.currentTorrentFile.value ==
-                                    file,
+                                widget.controller.currentTorrentFile.value == file,
                             onPressed: () {
                               widget.controller.playTorrentFile(file);
                               router.pop();
@@ -1046,10 +1110,7 @@ class _TorrentFilesState extends State<_TorrentFiles> {
 }
 
 class _Speed extends StatefulWidget {
-  const _Speed({
-    required this.controller,
-  });
-
+  const _Speed({required this.controller});
   final VideoPlayerController controller;
 
   @override
@@ -1057,22 +1118,30 @@ class _Speed extends StatefulWidget {
 }
 
 class _SpeedState extends State<_Speed> {
-  final controller = FlyoutController();
+  final _flyoutController = FlyoutController();
 
   @override
   void dispose() {
-    controller.dispose();
+    _flyoutController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return FlyoutTarget(
-      controller: controller,
+      controller: _flyoutController,
       child: Button(
-        child: Obx(() => Text('x${widget.controller.currentSpeed.value}')),
+        style: ButtonStyle(
+          padding: ButtonState.all(
+            const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          ),
+        ),
+        child: Obx(() => Text(
+              '${widget.controller.currentSpeed.value}x',
+              style: const TextStyle(fontSize: 12),
+            )),
         onPressed: () {
-          controller.showFlyout(
+          _flyoutController.showFlyout(
             barrierDismissible: false,
             dismissOnPointerMoveAway: true,
             builder: (context) {
@@ -1082,17 +1151,15 @@ class _SpeedState extends State<_Speed> {
                   useAcrylic: true,
                   padding: const EdgeInsets.all(0),
                   child: Container(
-                    width: 200,
-                    constraints: const BoxConstraints(
-                      maxHeight: 300,
-                    ),
+                    width: 140,
+                    constraints: const BoxConstraints(maxHeight: 280),
                     child: ListView(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(6),
                       children: [
                         for (final speed in widget.controller.speedList)
                           ListTile.selectable(
                             title: Text(
-                              speed.toStringAsFixed(2),
+                              '${speed}x',
                               style: const TextStyle(fontSize: 13),
                             ),
                             selected:
@@ -1117,9 +1184,7 @@ class _SpeedState extends State<_Speed> {
 }
 
 class _SeekBar extends StatefulWidget {
-  const _SeekBar({
-    required this.controller,
-  });
+  const _SeekBar({required this.controller});
   final VideoPlayerController controller;
 
   @override
@@ -1129,22 +1194,38 @@ class _SeekBar extends StatefulWidget {
 class _SeekBarState extends State<_SeekBar> {
   Duration position = const Duration();
   Duration duration = const Duration();
+  Duration buffer = const Duration();
   bool _isDrag = false;
   StreamSubscription<Duration>? positionSubscription;
   StreamSubscription<Duration>? durationSubscription;
+  StreamSubscription<Duration>? bufferSubscription;
 
   @override
   void initState() {
     super.initState();
     positionSubscription =
         widget.controller.player.stream.position.listen((event) {
-      if (!_isDrag) {
-        position = event;
+      if (!_isDrag && mounted) {
+        setState(() {
+          position = event;
+        });
       }
     });
     durationSubscription =
         widget.controller.player.stream.duration.listen((event) {
-      duration = event;
+      if (mounted) {
+        setState(() {
+          duration = event;
+        });
+      }
+    });
+    bufferSubscription =
+        widget.controller.player.stream.buffer.listen((event) {
+      if (mounted) {
+        setState(() {
+          buffer = event;
+        });
+      }
     });
   }
 
@@ -1152,30 +1233,32 @@ class _SeekBarState extends State<_SeekBar> {
   void dispose() {
     positionSubscription?.cancel();
     durationSubscription?.cancel();
+    bufferSubscription?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final durationMs = duration.inMilliseconds.toDouble();
+    final positionMs = position.inMilliseconds.toDouble();
+    final maxVal = durationMs > 0 ? durationMs : 1.0;
+    final clampedPos = clampDouble(positionMs, 0.0, maxVal);
+
     return Slider(
-      value: (position.inSeconds).toDouble(),
-      max: duration.inSeconds < position.inSeconds
-          ? position.inSeconds.toDouble()
-          : duration.inSeconds.toDouble(),
+      value: clampedPos,
+      max: maxVal,
       label:
           '${position.inMinutes}:${(position.inSeconds % 60).toString().padLeft(2, '0')}',
       onChanged: (value) {
         _isDrag = true;
         setState(() {
-          position = Duration(seconds: value.toInt());
+          position = Duration(milliseconds: value.toInt());
         });
       },
       onChangeEnd: (value) {
         _isDrag = false;
         widget.controller.player.seek(
-          Duration(
-            seconds: value.toInt(),
-          ),
+          Duration(milliseconds: value.toInt()),
         );
       },
     );
