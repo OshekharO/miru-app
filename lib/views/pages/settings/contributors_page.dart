@@ -20,6 +20,20 @@ class ContributorItem {
   });
 }
 
+class _CoreTeamConfig {
+  final int id;
+  final String defaultLogin;
+  final String name;
+  final String role;
+
+  const _CoreTeamConfig({
+    required this.id,
+    required this.defaultLogin,
+    required this.name,
+    required this.role,
+  });
+}
+
 class ContributorsPage extends StatefulWidget {
   const ContributorsPage({super.key});
 
@@ -30,51 +44,24 @@ class ContributorsPage extends StatefulWidget {
 class _ContributorsPageState extends State<ContributorsPage> {
   final SettingsController c = Get.put(SettingsController());
 
-  static const List<ContributorItem> teamMembers = [
-    ContributorItem(
-      name: 'MiaoMint',
+  static const List<_CoreTeamConfig> coreTeamConfigs = [
+    _CoreTeamConfig(
+      id: 44718819,
+      defaultLogin: 'MiaoMint',
+      name: 'Miao Mint',
       role: 'Founder',
-      avatarUrl: 'https://github.com/MiaoMint.png',
-      profileUrl: 'https://github.com/MiaoMint',
     ),
-    ContributorItem(
-      name: 'OshekharO',
+    _CoreTeamConfig(
+      id: 95137948,
+      defaultLogin: 'OshekharO',
+      name: 'Saksham Shekher',
       role: 'App / Extension',
-      avatarUrl: 'https://github.com/OshekharO.png',
-      profileUrl: 'https://github.com/OshekharO',
     ),
-    ContributorItem(
-      name: 'appdevelpo',
+    _CoreTeamConfig(
+      id: 56633229,
+      defaultLogin: 'appdevelpo',
+      name: 'Appdevelpo',
       role: 'App / Extension',
-      avatarUrl: 'https://github.com/appdevelpo.png',
-      profileUrl: 'https://github.com/appdevelpo',
-    ),
-  ];
-
-  static const List<ContributorItem> communityMembers = [
-    ContributorItem(
-      name: 'Riyoc',
-      role: 'New logo creator',
-      avatarUrl: 'https://github.com/Riyoc.png',
-      profileUrl: 'https://github.com/Riyoc',
-    ),
-    ContributorItem(
-      name: 'mo7AmMeD64',
-      role: 'Contributor',
-      avatarUrl: 'https://github.com/mo7AmMeD64.png',
-      profileUrl: 'https://github.com/mo7AmMeD64',
-    ),
-    ContributorItem(
-      name: 'xayron',
-      role: 'Contributor',
-      avatarUrl: 'https://github.com/xayron.png',
-      profileUrl: 'https://github.com/xayron',
-    ),
-    ContributorItem(
-      name: 'Dev-next-gen',
-      role: 'Contributor',
-      avatarUrl: 'https://github.com/Dev-next-gen.png',
-      profileUrl: 'https://github.com/Dev-next-gen',
     ),
   ];
 
@@ -209,25 +196,60 @@ class _ContributorsPageState extends State<ContributorsPage> {
   }
 
   Widget _buildContent(BuildContext context) {
-    // Combine static community list with any dynamic contributors from Github
-    final knownLogins = {
-      ...teamMembers.map((e) => e.name.toLowerCase()),
-      ...communityMembers.map((e) => e.name.toLowerCase()),
-    };
-
     return Obx(() {
-      final dynamicList = <ContributorItem>[];
+      final teamList = <ContributorItem>[];
+      final coreIds = coreTeamConfigs.map((e) => e.id.toString()).toSet();
+      final coreLogins = coreTeamConfigs.map((e) => e.defaultLogin.toLowerCase()).toSet();
+
+      for (final config in coreTeamConfigs) {
+        Map<String, dynamic>? matched;
+        for (final item in c.contributors) {
+          final itemId = item['id']?.toString();
+          final itemLogin = item['login']?.toString().toLowerCase();
+          if ((itemId != null && itemId == config.id.toString()) ||
+              (itemLogin != null && itemLogin == config.defaultLogin.toLowerCase())) {
+            matched = item;
+            break;
+          }
+        }
+
+        final avatarUrl = matched?['avatar_url'] as String? ??
+            'https://github.com/${config.defaultLogin}.png';
+        final profileUrl = (matched?['html_url'] ??
+                'https://github.com/${config.defaultLogin}')
+            .toString();
+
+        teamList.add(
+          ContributorItem(
+            name: config.name,
+            role: config.role,
+            avatarUrl: avatarUrl,
+            profileUrl: profileUrl,
+          ),
+        );
+      }
+
+      final dynamicCommunityList = <ContributorItem>[];
       for (final item in c.contributors) {
-        final login = (item['login'] ?? '').toString();
-        if (login.isNotEmpty && !knownLogins.contains(login.toLowerCase())) {
-          dynamicList.add(
-            ContributorItem(
-              name: login,
-              role: 'Contributor',
-              avatarUrl: item['avatar_url'] as String?,
-              profileUrl: (item['html_url'] ?? 'https://github.com/$login').toString(),
-            ),
-          );
+        final itemId = item['id']?.toString();
+        final itemLogin = item['login']?.toString().toLowerCase();
+
+        final isCore = (itemId != null && coreIds.contains(itemId)) ||
+            (itemLogin != null && coreLogins.contains(itemLogin));
+
+        if (!isCore) {
+          final login = (item['login'] ?? '').toString();
+          if (login.isNotEmpty) {
+            dynamicCommunityList.add(
+              ContributorItem(
+                name: login,
+                role: 'Contributor',
+                avatarUrl: item['avatar_url'] as String?,
+                profileUrl:
+                    (item['html_url'] ?? 'https://github.com/$login').toString(),
+              ),
+            );
+          }
         }
       }
 
@@ -235,11 +257,17 @@ class _ContributorsPageState extends State<ContributorsPage> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         children: [
           _buildSectionHeader('settings.team'.i18n),
-          ...teamMembers.map((m) => _buildContributorCard(context, m)),
+          ...teamList.map((m) => _buildContributorCard(context, m)),
           _buildSectionHeader('settings.community-contributors'.i18n),
-          ...communityMembers.map((m) => _buildContributorCard(context, m)),
-          if (dynamicList.isNotEmpty)
-            ...dynamicList.map((m) => _buildContributorCard(context, m)),
+          if (dynamicCommunityList.isNotEmpty)
+            ...dynamicCommunityList.map((m) => _buildContributorCard(context, m))
+          else if (c.contributors.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(24.0),
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
         ],
       );
     });
