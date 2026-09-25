@@ -871,11 +871,9 @@ class VideoPlayerController extends GetxController {
     final seconds = doubleTapSeekSeconds.value;
     final delta = Duration(seconds: forward ? seconds : -seconds);
     final targetPosition = position.value + delta;
-    final clampedSeconds = targetPosition.inMilliseconds.clamp(
-      0,
-      duration.value.inMilliseconds > 0 ? duration.value.inMilliseconds : 86400000,
-    );
-    seek(Duration(milliseconds: clampedSeconds));
+    final maxMs = duration.value.inMilliseconds > 0 ? duration.value.inMilliseconds : 86400000;
+    final clampedMs = targetPosition.inMilliseconds.clamp(0, maxMs).toInt();
+    seek(Duration(milliseconds: clampedMs));
   }
 
   @override

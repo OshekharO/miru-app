@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -1218,7 +1219,7 @@ class _SeekBarState extends State<_SeekBar> {
         : duration.inSeconds.toDouble();
 
     return Slider(
-      value: (position.inSeconds).toDouble().clamp(0.0, maxVal > 0 ? maxVal : 1.0),
+      value: clampDouble((position.inSeconds).toDouble(), 0.0, maxVal > 0 ? maxVal : 1.0),
       max: maxVal > 0 ? maxVal : 1.0,
       label:
           '${position.inMinutes}:${(position.inSeconds % 60).toString().padLeft(2, '0')}',

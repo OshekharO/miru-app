@@ -358,10 +358,10 @@ class _VideoPlayerMobileControlsState
                   final add = details.delta.dy / 500;
                   if (_isBrightness) {
                     _currentBrightness =
-                        (_currentBrightness - add).clamp(0.0, 1.0);
+                        clampDouble(_currentBrightness - add, 0.0, 1.0);
                     ScreenBrightness().setScreenBrightness(_currentBrightness);
                   } else {
-                    _currentVolume = (_currentVolume - add).clamp(0.0, 1.0);
+                    _currentVolume = clampDouble(_currentVolume - add, 0.0, 1.0);
                     VolumeController().setVolume(_currentVolume);
                   }
                   _isAdjusting = true;
@@ -831,10 +831,10 @@ class _Footer extends StatelessWidget {
                       controller.toggleSideBar(SidebarTab.qualitys);
                     },
                     style: ButtonStyle(
-                      padding: WidgetStateProperty.all(
+                      padding: MaterialStateProperty.all(
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       ),
-                      minimumSize: WidgetStateProperty.all(Size.zero),
+                      minimumSize: MaterialStateProperty.all(Size.zero),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     child: Text(
