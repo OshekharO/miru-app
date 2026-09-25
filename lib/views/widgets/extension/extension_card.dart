@@ -39,13 +39,11 @@ class _ExtensionCardState extends State<ExtensionCard> {
 
   @override
   void initState() {
-    setState(() {
-      isInstall = ExtensionUtils.runtimes.containsKey(widget.package);
-      hasUpgrade = isInstall &&
-          ExtensionUtils.runtimes[widget.package]!.extension.version !=
-              widget.version;
-    });
     super.initState();
+    isInstall = ExtensionUtils.runtimes.containsKey(widget.package);
+    hasUpgrade = isInstall &&
+        ExtensionUtils.runtimes[widget.package]!.extension.version !=
+            widget.version;
   }
 
   _install() async {

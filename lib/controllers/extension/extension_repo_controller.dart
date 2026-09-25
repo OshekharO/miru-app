@@ -15,6 +15,34 @@ class ExtensionRepoPageController extends GetxController {
   final search = ''.obs;
   final Rx<ExtensionType?> searchType = Rx(null);
 
+  List<dynamic> get displayExtensions {
+    final query = search.value.toLowerCase().trim();
+    final typeFilter = searchType.value;
+
+    if (query.isEmpty && typeFilter == null) {
+      return extensions;
+    }
+
+    final typeFilterStr = typeFilter?.toString().split('.').last;
+
+    return extensions.where((e) {
+      if (typeFilterStr != null) {
+        final itemType = e['type']?.toString();
+        if (itemType != typeFilterStr) {
+          return false;
+        }
+      }
+      if (query.isNotEmpty) {
+        final name = (e['name'] ?? '').toString().toLowerCase();
+        final package = (e['package'] ?? '').toString().toLowerCase();
+        if (!name.contains(query) && !package.contains(query)) {
+          return false;
+        }
+      }
+      return true;
+    }).toList();
+  }
+
   @override
   void onInit() {
     onRefresh();
