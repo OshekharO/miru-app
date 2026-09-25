@@ -1,6 +1,6 @@
 // ==MiruExtension==
 // @name         Tamilarasan
-// @version      v0.0.2
+// @version      v0.0.3
 // @author       Miru
 // @lang         ta
 // @license      MIT
@@ -89,6 +89,8 @@ export default class Tamilarasan extends Extension {
             epName += ' (Voe)';
           } else if (iframeUrl.includes('morencius.com')) {
             epName += ' (Morencius)';
+          } else if (iframeUrl.includes('hgcloud.to') || iframeUrl.includes('hanerix.com')) {
+            epName += ' (Hanerix)';
           }
           episodeUrls.push({
             name: epName,
@@ -112,9 +114,15 @@ export default class Tamilarasan extends Extension {
   }
 
   async watch(url) {
-    // 1. Try prov-extractor API first
+    let targetUrl = url;
+    // Replace hgcloud.to domain with hanerix.com
+    if (targetUrl.includes('hgcloud.to')) {
+      targetUrl = targetUrl.replace('hgcloud.to', 'hanerix.com');
+    }
+
+    // Try prov-extractor API
     try {
-      const apiUrl = `https://prov-extractor.vercel.app/api/extract?url=${encodeURIComponent(url)}`;
+      const apiUrl = `https://prov-extractor.vercel.app/api/extract?url=${encodeURIComponent(targetUrl)}`;
       const res = await this.request(apiUrl);
       if (res && res.success && res.streamUrl) {
         const isMp4 = res.type === 'video/mp4' || res.streamUrl.includes('.mp4');
@@ -130,10 +138,10 @@ export default class Tamilarasan extends Extension {
       console.log('prov-extractor error: ' + e);
     }
 
-    // 2. Fallback: OK.ru extraction
-    if (url.includes('ok.ru')) {
+    // Fallback for OK.ru
+    if (targetUrl.includes('ok.ru')) {
       try {
-        const res = await this.request(url);
+        const res = await this.request(targetUrl);
         const hlsMatch = res.match(/hlsManifestUrl&quot;:&quot;(.*?)&quot;/);
         if (hlsMatch) {
           const hlsUrl = hlsMatch[1].replace(/\\u0026/g, '&');
@@ -156,52 +164,10 @@ export default class Tamilarasan extends Extension {
       }
     }
 
-    // 3. Fallback: Morencius / VidHide unpacked JS parsing
-    if (url.includes('morencius.com')) {
-      try {
-        const html = await this.request(url);
-        const match = html.match(/eval\(function\(p,a,c,k,e,d\)[\s\S]*?\}\s*\(\s*'(.*?)'\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*'([^']*)'\.split\('\|'\)/);
-        if (match) {
-          let [_, p, a, c, k] = match;
-          a = parseInt(a);
-          c = parseInt(c);
-          const words = k.split('|');
-
-          const toString = (num, radix) => {
-            const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            if (num === 0) return '0';
-            let resStr = '';
-            while (num > 0) {
-              resStr = chars[num % radix] + resStr;
-              num = Math.floor(num / radix);
-            }
-            return resStr;
-          };
-
-          while (c--) {
-            if (words[c]) {
-              const key = toString(c, a);
-              p = p.replace(new RegExp('\\b' + key + '\\b', 'g'), words[c]);
-            }
-          }
-
-          const m3u8Match = p.match(/https?:\/\/[^\s"'`]+\.m3u8[^\s"'` animate]*/);
-          if (m3u8Match) {
-            return {
-              type: 'hls',
-              url: m3u8Match[0],
-            };
-          }
-        }
-      } catch (e) {
-        console.log('Error unpacking Morencius: ' + e);
-      }
-    }
-
     // Default fallback
     return {
       type: 'hls',
-      url: url,
+      url: targetUrl,
     };
   }
 }
