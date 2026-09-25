@@ -10,7 +10,7 @@ class ExtensionSettingsPageController extends GetxController {
 
   final Rx<ExtensionService?> runtime = Rx(null);
 
-  final List<ExtensionSetting> settings = <ExtensionSetting>[].obs;
+  final RxList<ExtensionSetting> settings = <ExtensionSetting>[].obs;
 
   @override
   void onInit() {
