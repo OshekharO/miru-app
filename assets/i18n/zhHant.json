@@ -82,7 +82,9 @@
     "language-subtitle": "選擇軟體的語言",
     "extension-log": "擴充套件日誌視窗",
     "extension-log-subtitle": "擴充套件除錯視窗",
-    "about": "關於"
+    "about": "關於",
+    "team": "團隊",
+    "community-contributors": "社群貢獻者"
   },
   "external-player-launching": "正在啟動 {player}",
   "detail": {

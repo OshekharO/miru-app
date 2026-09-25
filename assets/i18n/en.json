@@ -100,6 +100,8 @@
     "about": "About",
     "links": "Links",
     "contributors": "Contributors",
+    "team": "Team",
+    "community-contributors": "Community Contributors",
     "repo-url": "Extension Repository URL",
     "repo-url-subtitle": "Get the repository URL for extensions",
     "tmdb-key": "TMDB API Key",

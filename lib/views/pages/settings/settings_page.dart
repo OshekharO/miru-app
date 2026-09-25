@@ -615,38 +615,6 @@ class _SettingsPageState extends State<SettingsPage> {
               }
             },
           ),
-          SettingsTile(
-            icon: const Icon(Icons.system_update, size: 20),
-            iconBgColor: const Color(0xFFEC4899), // Pink
-            title: 'settings.upgrade'.i18n,
-            buildSubtitle: () => FlutterI18n.translate(
-              context,
-              'settings.upgrade-subtitle',
-              translationParams: {
-                'version': packageInfo.version,
-              },
-            ),
-            trailing: PlatformWidget(
-              androidWidget: TextButton(
-                onPressed: () {
-                  ApplicationUtils.checkUpdate(
-                    context,
-                    showSnackbar: true,
-                  );
-                },
-                child: Text('settings.upgrade-training'.i18n),
-              ),
-              desktopWidget: fluent.FilledButton(
-                onPressed: () {
-                  ApplicationUtils.checkUpdate(
-                    context,
-                    showSnackbar: true,
-                  );
-                },
-                child: Text('settings.upgrade-training'.i18n),
-              ),
-            ),
-          ),
         ],
       )
     ];
