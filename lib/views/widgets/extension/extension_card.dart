@@ -61,28 +61,29 @@ class _ExtensionCardState extends State<ExtensionCard> {
         relativeUrl = '$relativeUrl.js';
       }
 
-      String downloadUrl;
+      final candidates = <String>[];
       if (relativeUrl.startsWith('http://') ||
           relativeUrl.startsWith('https://')) {
-        downloadUrl = relativeUrl;
+        candidates.add(relativeUrl);
       } else {
         if (relativeUrl.startsWith('/')) {
           relativeUrl = relativeUrl.substring(1);
         }
-        downloadUrl = '$baseUrl/$relativeUrl';
-      }
-
-      try {
-        await ExtensionUtils.install(downloadUrl, context);
-      } catch (_) {
-        if (!relativeUrl.startsWith('repo/') &&
-            !downloadUrl.contains('/repo/')) {
-          final fallbackUrl = '$baseUrl/repo/$relativeUrl';
-          await ExtensionUtils.install(fallbackUrl, context);
-        } else {
-          rethrow;
+        candidates.add('$baseUrl/$relativeUrl');
+        if (!relativeUrl.startsWith('repo/')) {
+          candidates.add('$baseUrl/repo/$relativeUrl');
+        }
+        final pkgFileName = widget.package.endsWith('.js')
+            ? widget.package
+            : '${widget.package}.js';
+        if (pkgFileName != relativeUrl) {
+          candidates.add('$baseUrl/$pkgFileName');
+          candidates.add('$baseUrl/repo/$pkgFileName');
         }
       }
+
+      final jsCode = await ExtensionUtils.downloadFromCandidates(candidates);
+      await ExtensionUtils.installByScript(jsCode);
 
       isLoading = false;
       isInstall = true;

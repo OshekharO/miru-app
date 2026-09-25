@@ -107,7 +107,7 @@ class ExtensionUtils {
     }
   }
 
-  static installByScript(String script, BuildContext context) async {
+  static installByScript(String script, [BuildContext? context]) async {
     try {
       final ext = ExtensionUtils.parseExtension(script);
       final savePath = path.join(extensionsDir, '${ext.package}.js');
@@ -117,7 +117,7 @@ class ExtensionUtils {
       runtimes[ext.package] = await ExtensionService().initRuntime(ext);
       _reloadPage();
     } catch (e) {
-      if (context.mounted) {
+      if (context != null && context.mounted) {
         showPlatformDialog(
           context: context,
           title: 'extension-install-error'.i18n,
@@ -243,6 +243,22 @@ class ExtensionUtils {
   // @webSite      https://api.enime.moe/
   // @description  Enime API is an open source API service for developers to access anime info (as well as their video sources) https://github.com/Enime-Project/api.enime.moe
   // ==/MiruExtension==
+
+  static Future<String> downloadFromCandidates(List<String> urls) async {
+    Object? lastError;
+    for (final url in urls) {
+      try {
+        final res = await dio.get<String>(url);
+        if (res.data != null && res.data!.isNotEmpty) {
+          return res.data!;
+        }
+      } catch (e) {
+        lastError = e;
+      }
+    }
+    throw lastError ??
+        Exception("Failed to download extension from all candidate URLs");
+  }
 
   static String normalizeRepoUrl(String inputUrl) {
     var url = inputUrl.trim();
