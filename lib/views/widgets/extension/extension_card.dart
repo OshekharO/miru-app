@@ -83,7 +83,11 @@ class _ExtensionCardState extends State<ExtensionCard> {
       }
 
       final jsCode = await ExtensionUtils.downloadFromCandidates(candidates);
-      await ExtensionUtils.installByScript(jsCode);
+      if (mounted) {
+        await ExtensionUtils.installByScript(jsCode, context);
+      } else {
+        await ExtensionUtils.installByScript(jsCode);
+      }
 
       isLoading = false;
       isInstall = true;

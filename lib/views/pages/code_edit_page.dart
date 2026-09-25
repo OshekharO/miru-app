@@ -44,6 +44,7 @@ class _CodeEditPageState extends State<CodeEditPage> {
 
   String _initialText = '';
   bool _isModified = false;
+  bool _allowPop = false;
 
   bool _isWrap = false;
   double _fontSize = 14.0;
@@ -197,7 +198,9 @@ class _CodeEditPageState extends State<CodeEditPage> {
       text: newText,
       selection: TextSelection.collapsed(offset: start + symbol.length),
     );
-    focusNode.requestFocus();
+    if (!focusNode.hasFocus) {
+      focusNode.requestFocus();
+    }
   }
 
   void _foldAll() {
@@ -227,7 +230,8 @@ class _CodeEditPageState extends State<CodeEditPage> {
     final lowerQuery = query.toLowerCase();
     int index = text.indexOf(lowerQuery);
 
-    while (index != -1) {
+    const maxMatches = 1000;
+    while (index != -1 && matches.length < maxMatches) {
       matches.add(index);
       index = text.indexOf(lowerQuery, index + lowerQuery.length);
     }
@@ -300,12 +304,22 @@ class _CodeEditPageState extends State<CodeEditPage> {
 
   (int line, int col) _getCursorPosition() {
     final selection = controller.selection;
-    if (selection.start < 0 || selection.start > controller.text.length) {
+    final text = controller.text;
+    if (selection.start < 0 || selection.start > text.length) {
       return (1, 1);
     }
-    final textBefore = controller.text.substring(0, selection.start);
-    final lines = textBefore.split('\n');
-    return (lines.length, lines.last.length + 1);
+    int line = 1;
+    int col = 1;
+    final end = selection.start;
+    for (int i = 0; i < end; i++) {
+      if (text.codeUnitAt(i) == 10) { // \n
+        line++;
+        col = 1;
+      } else {
+        col++;
+      }
+    }
+    return (line, col);
   }
 
   @override
@@ -341,11 +355,14 @@ class _CodeEditPageState extends State<CodeEditPage> {
           ),
         },
         child: PopScope(
-          canPop: false,
+          canPop: _allowPop || !_isModified,
           onPopInvoked: (didPop) async {
             if (didPop) return;
             final shouldPop = await _onWillPop();
             if (shouldPop && context.mounted) {
+              setState(() {
+                _allowPop = true;
+              });
               Navigator.of(context).pop();
             }
           },
