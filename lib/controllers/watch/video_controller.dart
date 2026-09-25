@@ -254,7 +254,24 @@ class VideoPlayerController extends GetxController {
     });
   }
 
+  void _configureNetworkProperties() {
+    if (player.platform is NativePlayer) {
+      try {
+        final nativePlayer = player.platform as NativePlayer;
+        nativePlayer.setProperty("network-timeout", "60");
+        nativePlayer.setProperty("reconnect", "yes");
+        nativePlayer.setProperty("reconnect-delay-max", "10");
+        nativePlayer.setProperty("reconnect-streamed", "yes");
+        nativePlayer.setProperty("reconnect-on-http-error", "4xx,5xx");
+      } catch (e) {
+        logger.warning('Failed to set native player properties: $e');
+      }
+    }
+  }
+
   _initPlayer() {
+    _configureNetworkProperties();
+
     // 切换剧集
     ever(index, (callback) {
       play();
@@ -394,9 +411,19 @@ class VideoPlayerController extends GetxController {
     // 错误监听
     _subscriptions.add(
       player.stream.error.listen((event) {
-        sendMessage(Message(Text(event)));
+        sendMessage(Message(Text(_formatPlayerError(event))));
       }),
     );
+  }
+
+  String _formatPlayerError(String rawError) {
+    if (rawError.contains('ffurl_read') ||
+        rawError.contains('0xffffff92') ||
+        rawError.contains('ETIMEDOUT') ||
+        rawError.contains('Connection timed out')) {
+      return 'Network stream connection timed out ($rawError)';
+    }
+    return rawError;
   }
 
   // 播放
@@ -606,7 +633,7 @@ class VideoPlayerController extends GetxController {
   // 播放 torrent 媒体文件
   playTorrentFile(String file) {
     currentTorrentFile.value = file;
-    (player.platform as NativePlayer).setProperty("network-timeout", "60");
+    _configureNetworkProperties();
     player.open(Media('${BTServerApi.baseApi}/torrent/$_torrenHash/$file'));
   }
 
