@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:fluent_ui/fluent_ui.dart';
+import 'package:fluent_ui/fluent_ui.dart' hide ProgressRing;
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:media_kit/media_kit.dart';
@@ -10,6 +10,7 @@ import 'package:miru_app/controllers/watch/video_controller.dart';
 import 'package:miru_app/router/router.dart';
 import 'package:miru_app/utils/i18n.dart';
 import 'package:miru_app/views/widgets/cache_network_image.dart';
+import 'package:miru_app/views/widgets/progress.dart';
 import 'package:miru_app/views/widgets/watch/playlist.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -31,9 +32,18 @@ class _VideoPlayerDesktopControlsState
   final FocusNode _focusNode = FocusNode();
   Timer? _timer;
   bool _showControls = true;
+  DateTime? _lastHoverTime;
   final _subtitleViewKey = GlobalKey<SubtitleViewState>();
 
   void _updateTimer() {
+    final now = DateTime.now();
+    if (_showControls &&
+        _lastHoverTime != null &&
+        now.difference(_lastHoverTime!).inMilliseconds < 300) {
+      return;
+    }
+    _lastHoverTime = now;
+
     _timer?.cancel();
     _timer = null;
     if (!_showControls) {
@@ -72,6 +82,7 @@ class _VideoPlayerDesktopControlsState
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
+      cursor: _showControls ? SystemMouseCursors.basic : SystemMouseCursors.none,
       onHover: (_) => _updateTimer(),
       child: FluentTheme(
         data: FluentThemeData(
@@ -1182,16 +1193,18 @@ class _SeekBar extends StatefulWidget {
 class _SeekBarState extends State<_SeekBar> {
   Duration position = const Duration();
   Duration duration = const Duration();
+  Duration buffer = const Duration();
   bool _isDrag = false;
   StreamSubscription<Duration>? positionSubscription;
   StreamSubscription<Duration>? durationSubscription;
+  StreamSubscription<Duration>? bufferSubscription;
 
   @override
   void initState() {
     super.initState();
     positionSubscription =
         widget.controller.player.stream.position.listen((event) {
-      if (!_isDrag) {
+      if (!_isDrag && mounted) {
         setState(() {
           position = event;
         });
@@ -1199,9 +1212,19 @@ class _SeekBarState extends State<_SeekBar> {
     });
     durationSubscription =
         widget.controller.player.stream.duration.listen((event) {
-      setState(() {
-        duration = event;
-      });
+      if (mounted) {
+        setState(() {
+          duration = event;
+        });
+      }
+    });
+    bufferSubscription =
+        widget.controller.player.stream.buffer.listen((event) {
+      if (mounted) {
+        setState(() {
+          buffer = event;
+        });
+      }
     });
   }
 
@@ -1209,30 +1232,32 @@ class _SeekBarState extends State<_SeekBar> {
   void dispose() {
     positionSubscription?.cancel();
     durationSubscription?.cancel();
+    bufferSubscription?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final maxVal = duration.inSeconds < position.inSeconds
-        ? position.inSeconds.toDouble()
-        : duration.inSeconds.toDouble();
+    final durationMs = duration.inMilliseconds.toDouble();
+    final positionMs = position.inMilliseconds.toDouble();
+    final maxVal = durationMs > 0 ? durationMs : 1.0;
+    final clampedPos = clampDouble(positionMs, 0.0, maxVal);
 
     return Slider(
-      value: clampDouble((position.inSeconds).toDouble(), 0.0, maxVal > 0 ? maxVal : 1.0),
-      max: maxVal > 0 ? maxVal : 1.0,
+      value: clampedPos,
+      max: maxVal,
       label:
           '${position.inMinutes}:${(position.inSeconds % 60).toString().padLeft(2, '0')}',
       onChanged: (value) {
         _isDrag = true;
         setState(() {
-          position = Duration(seconds: value.toInt());
+          position = Duration(milliseconds: value.toInt());
         });
       },
       onChangeEnd: (value) {
         _isDrag = false;
         widget.controller.player.seek(
-          Duration(seconds: value.toInt()),
+          Duration(milliseconds: value.toInt()),
         );
       },
     );

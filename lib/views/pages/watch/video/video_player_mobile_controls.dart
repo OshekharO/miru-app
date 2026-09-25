@@ -7,7 +7,6 @@ import 'package:get/get.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:miru_app/controllers/watch/video_controller.dart';
 import 'package:miru_app/utils/i18n.dart';
-import 'package:miru_app/utils/layout.dart';
 import 'package:miru_app/utils/router.dart';
 import 'package:miru_app/views/pages/watch/video/video_player_cast.dart';
 import 'package:miru_app/views/pages/watch/video/video_player_sidebar.dart';
@@ -45,6 +44,7 @@ class _VideoPlayerMobileControlsState
   // 双击求快进/快退的动画反馈
   bool _showDoubleTapFeedback = false;
   bool _isDoubleTapForward = true;
+  int _accumulatedDoubleTapCount = 0;
   Timer? _doubleTapFeedbackTimer;
   // 定时器
   Timer? _timer;
@@ -74,14 +74,20 @@ class _VideoPlayerMobileControlsState
 
   void _triggerDoubleTapFeedback(bool forward) {
     _doubleTapFeedbackTimer?.cancel();
+    if (_showDoubleTapFeedback && _isDoubleTapForward == forward) {
+      _accumulatedDoubleTapCount++;
+    } else {
+      _accumulatedDoubleTapCount = 1;
+    }
     setState(() {
       _showDoubleTapFeedback = true;
       _isDoubleTapForward = forward;
     });
-    _doubleTapFeedbackTimer = Timer(const Duration(milliseconds: 700), () {
+    _doubleTapFeedbackTimer = Timer(const Duration(milliseconds: 800), () {
       if (mounted) {
         setState(() {
           _showDoubleTapFeedback = false;
+          _accumulatedDoubleTapCount = 0;
         });
       }
     });
@@ -114,6 +120,9 @@ class _VideoPlayerMobileControlsState
   @override
   Widget build(BuildContext context) {
     final doubleTapSeconds = _c.doubleTapSeekSeconds.value;
+    final totalSeekSeconds = doubleTapSeconds * (_accumulatedDoubleTapCount > 0 ? _accumulatedDoubleTapCount : 1);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
 
     return DefaultTextStyle(
       style: const TextStyle(
@@ -293,7 +302,7 @@ class _VideoPlayerMobileControlsState
                       vertical: 12,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.65),
+                      color: Colors.black.withOpacity(0.75),
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
                         color: Colors.white.withOpacity(0.2),
@@ -311,7 +320,7 @@ class _VideoPlayerMobileControlsState
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          '${_isDoubleTapForward ? '+' : '-'}${doubleTapSeconds}s',
+                          '${_isDoubleTapForward ? '+' : '-'}${totalSeekSeconds}s',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 15,
@@ -339,7 +348,7 @@ class _VideoPlayerMobileControlsState
                 },
                 onDoubleTapDown: (details) {
                   final dx = details.localPosition.dx;
-                  final width = LayoutUtils.width / 3;
+                  final width = screenWidth > 0 ? screenWidth / 3 : 100.0;
                   if (dx < width) {
                     _c.doubleTapSeek(false);
                     _triggerDoubleTapFeedback(false);
@@ -351,11 +360,12 @@ class _VideoPlayerMobileControlsState
                   }
                 },
                 onVerticalDragStart: (details) {
-                  _isBrightness =
-                      details.localPosition.dx < LayoutUtils.width / 2;
+                  final width = screenWidth > 0 ? screenWidth : 300.0;
+                  _isBrightness = details.localPosition.dx < width / 2;
                 },
                 onVerticalDragUpdate: (details) {
-                  final add = details.delta.dy / 500;
+                  final height = screenHeight > 0 ? screenHeight : 400.0;
+                  final add = details.delta.dy / (height * 0.8);
                   if (_isBrightness) {
                     _currentBrightness =
                         clampDouble(_currentBrightness - add, 0.0, 1.0);
@@ -375,7 +385,8 @@ class _VideoPlayerMobileControlsState
                   setState(() {});
                 },
                 onHorizontalDragUpdate: (details) {
-                  double scale = 200000 / LayoutUtils.width;
+                  final width = screenWidth > 0 ? screenWidth : 300.0;
+                  double scale = 200000 / width;
                   Duration pos = _position +
                       Duration(
                         milliseconds: (details.delta.dx * scale).round(),

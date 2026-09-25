@@ -61,15 +61,16 @@ class _VideoPlayerState extends State<VideoPlayer> {
   _buildContent() {
     return Obx(() {
       final maxWidth = MediaQuery.of(context).size.width;
+      final videoWidth = _c.showSidebar.value
+          ? (maxWidth - 300.0).clamp(100.0, maxWidth)
+          : maxWidth;
       return Row(
         children: [
           AnimatedContainer(
             onEnd: () {
               _c.isOpenSidebar.value = _c.showSidebar.value;
             },
-            width: _c.showSidebar.value
-                ? MediaQuery.of(context).size.width - 300
-                : maxWidth,
+            width: videoWidth,
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeInOutCubic,
             child: Stack(
