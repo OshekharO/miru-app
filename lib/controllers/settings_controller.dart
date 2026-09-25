@@ -146,10 +146,26 @@ class SettingsController extends GetxController {
   }
 
   _getContributors() async {
-    final res = await dio
-        .get("https://api.github.com/repos/OshekharO/miru-app/contributors");
-    contributors.value = List.from(res.data)
-        .where((element) => element["type"] == "User")
-        .toList();
+    final Map<String, dynamic> uniqueContributors = {};
+
+    Future<void> fetchRepo(String url) async {
+      try {
+        final res = await dio.get(url);
+        if (res.data is List) {
+          for (final element in res.data) {
+            if (element["type"] == "User" && element["login"] != null) {
+              uniqueContributors[element["login"].toString()] = element;
+            }
+          }
+        }
+      } catch (_) {}
+    }
+
+    await Future.wait([
+      fetchRepo("https://api.github.com/repos/OshekharO/miru-app/contributors"),
+      fetchRepo("https://api.github.com/repos/OshekharO/repo/contributors"),
+    ]);
+
+    contributors.value = uniqueContributors.values.toList();
   }
 }

@@ -49,18 +49,6 @@ class _ContributorsPageState extends State<ContributorsPage> {
       avatarUrl: 'https://github.com/appdevelpo.png',
       profileUrl: 'https://github.com/appdevelpo',
     ),
-    ContributorItem(
-      name: 'hualiong',
-      role: 'Extension Dev',
-      avatarUrl: 'https://github.com/hualiong.png',
-      profileUrl: 'https://github.com/hualiong',
-    ),
-    ContributorItem(
-      name: 'bethropolis',
-      role: 'Extension Dev',
-      avatarUrl: 'https://github.com/bethropolis.png',
-      profileUrl: 'https://github.com/bethropolis',
-    ),
   ];
 
   static const List<ContributorItem> communityMembers = [
@@ -282,9 +270,9 @@ class _ContributorsPageState extends State<ContributorsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return PlatformBuildWidget(
-      androidBuilder: _buildAndroid,
-      desktopBuilder: _buildDesktop,
+    return PlatformWidget(
+      androidWidget: _buildAndroid(context),
+      desktopWidget: _buildDesktop(context),
     );
   }
 }
