@@ -68,17 +68,23 @@ class _VideoPlayerSidebarState extends State<VideoPlayerSidebar> {
         ? availableTabs.indexOf(initialTab)
         : 0;
 
+    final isBlackTheme =
+        Theme.of(context).scaffoldBackgroundColor == Colors.black;
+    final panelBgColor = isBlackTheme
+        ? Colors.black
+        : const Color(0xFF121214).withOpacity(0.96);
+
     return Theme(
       data: ThemeData.dark(useMaterial3: true).copyWith(
-        scaffoldBackgroundColor: Colors.transparent,
-        colorScheme: const ColorScheme.dark(
+        scaffoldBackgroundColor: isBlackTheme ? Colors.black : const Color(0xFF121214),
+        colorScheme: ColorScheme.dark(
           primary: Colors.blueAccent,
-          surface: Color(0xFF161618),
+          surface: isBlackTheme ? const Color(0xFF161618) : const Color(0xFF161618),
         ),
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF121214).withOpacity(0.96),
+          color: panelBgColor,
           border: const Border(
             left: BorderSide(
               color: Colors.white10,
