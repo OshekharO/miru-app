@@ -179,6 +179,7 @@ class _ExtensionRepoPageState extends State<ExtensionRepoPage> {
         package: e['package'] ?? '',
         lang: e['lang'] ?? '',
         nsfw: e['nsfw'] == 'true',
+        url: e['url'],
         type: ExtensionType.values.firstWhere(
           (element) =>
               element.name == e['type'] ||

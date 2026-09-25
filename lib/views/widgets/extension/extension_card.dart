@@ -18,6 +18,7 @@ class ExtensionCard extends StatefulWidget {
     required this.lang,
     required this.nsfw,
     required this.type,
+    this.url,
   });
   final String? icon;
   final String name;
@@ -26,6 +27,7 @@ class ExtensionCard extends StatefulWidget {
   final String lang;
   final ExtensionType type;
   final bool nsfw;
+  final String? url;
 
   @override
   State<ExtensionCard> createState() => _ExtensionCardState();
@@ -51,10 +53,42 @@ class _ExtensionCardState extends State<ExtensionCard> {
       isLoading = true;
     });
     try {
-      final url = MiruStorage.getSetting(SettingKey.miruRepoUrl) +
-          "/repo/${widget.package}.js";
-      debugPrint(url);
-      await ExtensionUtils.install(url, context);
+      final baseUrl = ExtensionUtils.normalizeRepoUrl(
+          MiruStorage.getSetting(SettingKey.miruRepoUrl));
+
+      String relativeUrl = widget.url ?? widget.package;
+      if (!relativeUrl.endsWith('.js')) {
+        relativeUrl = '$relativeUrl.js';
+      }
+
+      final candidates = <String>[];
+      if (relativeUrl.startsWith('http://') ||
+          relativeUrl.startsWith('https://')) {
+        candidates.add(relativeUrl);
+      } else {
+        if (relativeUrl.startsWith('/')) {
+          relativeUrl = relativeUrl.substring(1);
+        }
+        candidates.add('$baseUrl/$relativeUrl');
+        if (!relativeUrl.startsWith('repo/')) {
+          candidates.add('$baseUrl/repo/$relativeUrl');
+        }
+        final pkgFileName = widget.package.endsWith('.js')
+            ? widget.package
+            : '${widget.package}.js';
+        if (pkgFileName != relativeUrl) {
+          candidates.add('$baseUrl/$pkgFileName');
+          candidates.add('$baseUrl/repo/$pkgFileName');
+        }
+      }
+
+      final jsCode = await ExtensionUtils.downloadFromCandidates(candidates);
+      if (mounted) {
+        await ExtensionUtils.installByScript(jsCode, context);
+      } else {
+        await ExtensionUtils.installByScript(jsCode);
+      }
+
       isLoading = false;
       isInstall = true;
       hasUpgrade = false;

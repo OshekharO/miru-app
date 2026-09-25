@@ -79,3 +79,5 @@ flutter:
     - assets/icon/logo.png
     - assets/icon/anilist.jpg
     - assets/js/
+dependency_overrides:
+  intl: ^0.19.0
