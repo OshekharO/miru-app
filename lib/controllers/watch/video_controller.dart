@@ -161,7 +161,6 @@ class VideoPlayerController extends GetxController {
   // 播放器 UI 设置
   final controlsTimeoutSeconds = 3.obs;
   final doubleTapSeekSeconds = 10.obs;
-  final videoFitMode = 'contain'.obs;
 
   // 侧边栏初始化 tab
   final initSidebarTab = SidebarTab.episodes.obs;
@@ -227,12 +226,6 @@ class VideoPlayerController extends GetxController {
         MiruStorage.getSetting(SettingKey.controlsTimeout) ?? 3;
     doubleTapSeekSeconds.value =
         MiruStorage.getSetting(SettingKey.doubleTapSeekDuration) ?? 10;
-    videoFitMode.value =
-        MiruStorage.getSetting(SettingKey.videoFitMode) ?? 'contain';
-
-    ever(videoFitMode, (callback) {
-      MiruStorage.setSetting(SettingKey.videoFitMode, callback);
-    });
 
     ever(subtitleFontSize, (callback) {
       MiruStorage.setSetting(SettingKey.subtitleFontSize, callback);
@@ -872,13 +865,6 @@ class VideoPlayerController extends GetxController {
     final curr = await dlnaDevice.value!.position();
     final diff = duration - position.value;
     await dlnaDevice.value!.seekByCurrent(curr, diff.inSeconds);
-  }
-
-  cycleVideoFitMode() {
-    final modes = ['contain', 'cover', 'fill', 'fitWidth', 'fitHeight'];
-    final currentIndex = modes.indexOf(videoFitMode.value);
-    final nextIndex = (currentIndex + 1) % modes.length;
-    videoFitMode.value = modes[nextIndex];
   }
 
   doubleTapSeek(bool forward) {

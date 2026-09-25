@@ -492,53 +492,6 @@ class _SideBarSettingsState extends State<_SideBarSettings> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'settings.video-fit-mode'.i18n,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              Obx(
-                () => Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: [
-                    fluent.ToggleButton(
-                      checked: _c.videoFitMode.value == 'contain',
-                      onChanged: (value) => _c.videoFitMode.value = 'contain',
-                      child: Text('settings.fit-mode-contain'.i18n),
-                    ),
-                    fluent.ToggleButton(
-                      checked: _c.videoFitMode.value == 'cover',
-                      onChanged: (value) => _c.videoFitMode.value = 'cover',
-                      child: Text('settings.fit-mode-cover'.i18n),
-                    ),
-                    fluent.ToggleButton(
-                      checked: _c.videoFitMode.value == 'fill',
-                      onChanged: (value) => _c.videoFitMode.value = 'fill',
-                      child: Text('settings.fit-mode-fill'.i18n),
-                    ),
-                    fluent.ToggleButton(
-                      checked: _c.videoFitMode.value == 'fitWidth',
-                      onChanged: (value) => _c.videoFitMode.value = 'fitWidth',
-                      child: Text('settings.fit-mode-fitWidth'.i18n),
-                    ),
-                    fluent.ToggleButton(
-                      checked: _c.videoFitMode.value == 'fitHeight',
-                      onChanged: (value) => _c.videoFitMode.value = 'fitHeight',
-                      child: Text('settings.fit-mode-fitHeight'.i18n),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        fluent.Card(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
                 'video.sidebar.play-mode.title'.i18n,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
@@ -805,49 +758,6 @@ class _SideBarSettingsState extends State<_SideBarSettings> {
             onSelectionChanged: (value) {
               _c.subtitleFontWeight.value = value.first;
             },
-          ),
-        ),
-        const SizedBox(height: 24),
-        Text(
-          'settings.video-fit-mode'.i18n,
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.primary,
-            fontWeight: FontWeight.bold,
-            fontSize: 15,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Obx(
-          () => Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              ChoiceChip(
-                label: Text('settings.fit-mode-contain'.i18n),
-                selected: _c.videoFitMode.value == 'contain',
-                onSelected: (val) => _c.videoFitMode.value = 'contain',
-              ),
-              ChoiceChip(
-                label: Text('settings.fit-mode-cover'.i18n),
-                selected: _c.videoFitMode.value == 'cover',
-                onSelected: (val) => _c.videoFitMode.value = 'cover',
-              ),
-              ChoiceChip(
-                label: Text('settings.fit-mode-fill'.i18n),
-                selected: _c.videoFitMode.value == 'fill',
-                onSelected: (val) => _c.videoFitMode.value = 'fill',
-              ),
-              ChoiceChip(
-                label: Text('settings.fit-mode-fitWidth'.i18n),
-                selected: _c.videoFitMode.value == 'fitWidth',
-                onSelected: (val) => _c.videoFitMode.value = 'fitWidth',
-              ),
-              ChoiceChip(
-                label: Text('settings.fit-mode-fitHeight'.i18n),
-                selected: _c.videoFitMode.value == 'fitHeight',
-                onSelected: (val) => _c.videoFitMode.value = 'fitHeight',
-              ),
-            ],
           ),
         ),
         const SizedBox(height: 24),

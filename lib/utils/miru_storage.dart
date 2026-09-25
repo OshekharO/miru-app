@@ -146,7 +146,6 @@ class MiruStorage {
     await _initSetting(SettingKey.subtitleTextAlign, TextAlign.center.index);
     await _initSetting(SettingKey.controlsTimeout, 3);
     await _initSetting(SettingKey.doubleTapSeekDuration, 10);
-    await _initSetting(SettingKey.videoFitMode, "contain");
     // 漫画缓存配置（生产者 / 消费者）
     await _initSetting(
       SettingKey.comicCacheConfig,
@@ -221,5 +220,4 @@ class SettingKey {
   static const comicCacheConfig = "ComicCacheConfig";
   static const controlsTimeout = "ControlsTimeout";
   static const doubleTapSeekDuration = "DoubleTapSeekDuration";
-  static const videoFitMode = "VideoFitMode";
 }

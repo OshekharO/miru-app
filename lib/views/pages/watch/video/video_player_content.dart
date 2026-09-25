@@ -14,44 +14,25 @@ class VideoPlayerConten extends StatelessWidget {
   });
   final String tag;
 
-  BoxFit _getBoxFit(String fitMode) {
-    switch (fitMode) {
-      case 'cover':
-        return BoxFit.cover;
-      case 'fill':
-        return BoxFit.fill;
-      case 'fitWidth':
-        return BoxFit.fitWidth;
-      case 'fitHeight':
-        return BoxFit.fitHeight;
-      case 'contain':
-      default:
-        return BoxFit.contain;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final c = Get.find<VideoPlayerController>(tag: tag);
-    return Obx(() {
-      final fit = _getBoxFit(c.videoFitMode.value);
-      return Video(
-        controller: c.videoController,
-        fit: fit,
-        subtitleViewConfiguration: const SubtitleViewConfiguration(
-          visible: false,
-        ),
-        controls: (state) {
-          if (Platform.isAndroid) {
-            return VideoPlayerMobileControls(
-              controller: c,
-            );
-          }
-          return VideoPlayerDesktopControls(
+    return Video(
+      controller: c.videoController,
+      fit: BoxFit.contain,
+      subtitleViewConfiguration: const SubtitleViewConfiguration(
+        visible: false,
+      ),
+      controls: (state) {
+        if (Platform.isAndroid) {
+          return VideoPlayerMobileControls(
             controller: c,
           );
-        },
-      );
-    });
+        }
+        return VideoPlayerDesktopControls(
+          controller: c,
+        );
+      },
+    );
   }
 }
