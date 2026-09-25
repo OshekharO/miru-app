@@ -2,12 +2,15 @@ import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:miru_app/models/extension.dart';
+import 'package:miru_app/views/pages/code_edit_page.dart';
 import 'package:miru_app/views/pages/extension/extension_settings_page.dart';
 import 'package:miru_app/router/router.dart';
 import 'package:miru_app/utils/extension.dart';
 import 'package:miru_app/utils/i18n.dart';
 import 'package:miru_app/views/widgets/cache_network_image.dart';
 import 'package:miru_app/views/widgets/platform_widget.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:path/path.dart' as path;
 
 class ExtensionTile extends StatefulWidget {
   const ExtensionTile(this.extension, {super.key});
@@ -18,6 +21,8 @@ class ExtensionTile extends StatefulWidget {
 }
 
 class _ExtensionTileState extends State<ExtensionTile> {
+  final fluent.FlyoutController moreFlyoutController =
+      fluent.FlyoutController();
 
   Widget _buildTypeBadge(BuildContext context, ExtensionType type) {
     Color color;
@@ -176,6 +181,51 @@ class _ExtensionTileState extends State<ExtensionTile> {
                       package: widget.extension.package));
                 },
               ),
+              IconButton(
+                icon: const Icon(Icons.more_vert, size: 20),
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(16)),
+                    ),
+                    builder: (context) {
+                      return SafeArea(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(height: 8),
+                            ListTile(
+                              leading: const Icon(Icons.code),
+                              title: Text('extension.edit-code'.i18n),
+                              onTap: () async {
+                                Get.back();
+                                Get.to(() =>
+                                    CodeEditPage(extension: widget.extension));
+                              },
+                            ),
+                            ListTile(
+                              leading: const Icon(Icons.delete_outline,
+                                  color: Colors.red),
+                              title: Text(
+                                'common.uninstall'.i18n,
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                              onTap: () {
+                                ExtensionUtils.uninstall(
+                                    widget.extension.package);
+                                Get.back();
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
             ],
           ),
         ),
@@ -256,6 +306,47 @@ class _ExtensionTileState extends State<ExtensionTile> {
                 queryParameters: {'package': widget.extension.package},
               ).toString());
             },
+          ),
+          const SizedBox(width: 8),
+          // More flyout action button
+          fluent.FlyoutTarget(
+            controller: moreFlyoutController,
+            child: fluent.IconButton(
+              icon: const Icon(fluent.FluentIcons.more, size: 16),
+              onPressed: () {
+                moreFlyoutController.showFlyout(
+                  autoModeConfiguration: fluent.FlyoutAutoConfiguration(
+                    preferredMode: fluent.FlyoutPlacementMode.bottomLeft,
+                  ),
+                  builder: (context) {
+                    return fluent.MenuFlyout(
+                      items: [
+                        fluent.MenuFlyoutItem(
+                          leading: const Icon(fluent.FluentIcons.code),
+                          text: Text('extension.edit-code'.i18n),
+                          onPressed: () async {
+                            fluent.Flyout.of(context).close();
+                            launchUrl(path.toUri(
+                              '${ExtensionUtils.extensionsDir}/${widget.extension.package}.js',
+                            ));
+                          },
+                        ),
+                        fluent.MenuFlyoutItem(
+                          leading: const Icon(fluent.FluentIcons.delete),
+                          text: Text('common.uninstall'.i18n),
+                          onPressed: () {
+                            ExtensionUtils.uninstall(widget.extension.package);
+                            fluent.Flyout.of(context).close();
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                  barrierDismissible: true,
+                  dismissWithEsc: true,
+                );
+              },
+            ),
           ),
         ],
       ),

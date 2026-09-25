@@ -31,7 +31,7 @@ class ApplicationController extends GetxController {
           hintColor: Colors.black,
           primaryColorDark: Colors.black,
           primaryColorLight: Colors.black,
-          dialogTheme: DialogThemeData(
+          dialogTheme: DialogTheme(
             backgroundColor: const Color(0xFF1E1E22),
             elevation: 8,
             shape: RoundedRectangleBorder(
