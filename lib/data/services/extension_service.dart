@@ -29,6 +29,7 @@ class ExtensionService {
   late JavascriptRuntime runtime;
   late Extension extension;
   String _currentRequestUrl = '';
+  String _lastUserAgent = '';
   String evalString = '';
   late JsBridge jsBridge;
   static Map<dynamic, dynamic> evalMap = {};
@@ -73,8 +74,17 @@ class ExtensionService {
     jsRequest(dynamic args) async {
       _currentRequestUrl = args[0];
       final headers = args[1]['headers'] ?? {};
-      final hasUa = headers.keys.any((k) => k.toString().toLowerCase() == 'user-agent');
-      if (!hasUa) {
+      String? customUa;
+      for (final k in headers.keys) {
+        if (k.toString().toLowerCase() == 'user-agent') {
+          customUa = headers[k]?.toString();
+          break;
+        }
+      }
+
+      if (customUa != null && customUa.isNotEmpty) {
+        _lastUserAgent = customUa;
+      } else {
         headers['User-Agent'] = MiruStorage.getUASetting();
       }
 
@@ -102,6 +112,7 @@ class ExtensionService {
           options: Options(
             headers: headers,
             method: method,
+            validateStatus: (status) => true,
           ),
         );
         log.requestHeaders = res.requestOptions.headers;
@@ -244,13 +255,28 @@ class ExtensionService {
 
     jsOpenWebView(dynamic args) async {
       final reqUrl = args[0] as String;
+      final options = (args.length > 1 && args[1] is Map) ? args[1] as Map : null;
+      String? customUa;
+      if (options != null && options['headers'] != null) {
+        final headers = options['headers'] as Map;
+        for (final k in headers.keys) {
+          if (k.toString().toLowerCase() == 'user-agent') {
+            customUa = headers[k]?.toString();
+            break;
+          }
+        }
+      }
+      final webviewUa = (customUa != null && customUa.isNotEmpty)
+          ? customUa
+          : (_lastUserAgent.isNotEmpty ? _lastUserAgent : MiruStorage.getUASetting());
+
       final targetUrl = (reqUrl.startsWith("http://") || reqUrl.startsWith("https://"))
           ? reqUrl
           : extension.webSite + reqUrl;
 
       if (Platform.isWindows) {
         final webview = FlutterWindowsWebview();
-        await webview.setUA(MiruStorage.getUASetting());
+        await webview.setUA(webviewUa);
         webview.launchWebview(
           targetUrl,
           WebviewOptions(
@@ -281,6 +307,7 @@ class ExtensionService {
         () => WebViewPage(
           extensionRuntime: this,
           url: targetUrl,
+          userAgent: webviewUa,
         ),
       );
     }
@@ -480,8 +507,8 @@ class Extension {
     this.settingKeys.push(settings.key);
     return await handlePromise("registerSetting$className",JSON.stringify([settings]));
   }
-  async openWebView(url) {
-    return await handlePromise("openWebView$className", JSON.stringify([url]));
+  async openWebView(url, options) {
+    return await handlePromise("openWebView$className", JSON.stringify([url, options]));
   }
   async load() {}
 }
@@ -662,10 +689,10 @@ async function stringify(callback) {
               this.settingKeys.push(settings.key);
               return sendMessage("registerSetting", JSON.stringify([settings]));
             }
-            async openWebView(url) {
+            async openWebView(url, options) {
               return await sendMessage(
                 "openWebView",
-                JSON.stringify([url])
+                JSON.stringify([url, options])
               );
             }
             async load() {}
@@ -728,7 +755,7 @@ async function stringify(callback) {
   Future<Map<String, String>> get _defaultHeaders async {
     return {
       "Referer": _currentRequestUrl,
-      "User-Agent": MiruStorage.getUASetting(),
+      "User-Agent": _lastUserAgent.isNotEmpty ? _lastUserAgent : MiruStorage.getUASetting(),
       "Cookie": await listCookie(),
     };
   }

@@ -10,9 +10,11 @@ class WebViewPage extends StatefulWidget {
     super.key,
     required this.extensionRuntime,
     required this.url,
+    this.userAgent,
   });
   final ExtensionService extensionRuntime;
   final String url;
+  final String? userAgent;
 
   @override
   State<WebViewPage> createState() => _WebViewPageState();
@@ -116,7 +118,7 @@ class _WebViewPageState extends State<WebViewPage> {
             url: inapp.WebUri(url),
           ),
           initialSettings: inapp.InAppWebViewSettings(
-            userAgent: MiruStorage.getUASetting(),
+            userAgent: widget.userAgent ?? MiruStorage.getUASetting(),
             javaScriptEnabled: true,
             domStorageEnabled: true,
           ),
