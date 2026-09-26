@@ -187,7 +187,9 @@ class _SettingsPageState extends State<SettingsPage> {
                   },
                   onChanged: (value) {
                     MiruStorage.setSetting(SettingKey.miruRepoUrl, value);
-                    Get.find<ExtensionRepoPageController>().onRefresh();
+                    if (Get.isRegistered<ExtensionRepoPageController>()) {
+                      Get.find<ExtensionRepoPageController>().onRefresh();
+                    }
                   },
                   buildText: () {
                     return MiruStorage.getSetting(SettingKey.miruRepoUrl);

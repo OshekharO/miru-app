@@ -126,7 +126,7 @@ class ApplicationUtils {
         }
         showPlatformSnackbar(
           context: context,
-          title: 'upgrade.check-update'.i18n,
+          title: '',
           content: FlutterI18n.translate(
             context,
             'upgrade.no-update',

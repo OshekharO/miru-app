@@ -12,9 +12,10 @@ showPlatformSnackbar({
   fluent.InfoBarSeverity severity = fluent.InfoBarSeverity.info,
 }) {
   if (Platform.isAndroid) {
+    final text = title.trim().isEmpty ? content : "$title $content";
     return material.ScaffoldMessenger.of(context).showSnackBar(
       material.SnackBar(
-        content: Text("$title $content"),
+        content: Text(text),
         action: action,
       ),
     );
