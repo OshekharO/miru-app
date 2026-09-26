@@ -81,6 +81,19 @@ class MiruRequest {
     }
   }
 
+  static bool isCloudflareResponse(Response? response) {
+    if (response == null) return false;
+    final statusCode = response.statusCode ?? 0;
+    if (statusCode != 403 && statusCode != 503) return false;
+    final serverHeader = response.headers.value('server')?.toLowerCase() ?? '';
+    final cfRay = response.headers.value('cf-ray');
+    final body = response.data?.toString().toLowerCase() ?? '';
+    return serverHeader.contains('cloudflare') ||
+        cfRay != null ||
+        body.contains('just a moment') ||
+        body.contains('cf-turnstile');
+  }
+
   static Future<String> getCookie(String url) async {
     final cookies = await _cookieJar.loadForRequest(Uri.parse(url));
     return cookies.map((e) => e.toString()).join(';');
