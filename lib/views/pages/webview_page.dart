@@ -64,10 +64,13 @@ class _WebViewPageState extends State<WebViewPage> {
       }
 
       try {
-        final ua = await _webViewController?.getUserAgent();
-        if (ua != null && ua.isNotEmpty) {
-          widget.extensionRuntime.setUserAgent(ua);
-          debugPrint('Synced User-Agent for WebView: $ua');
+        final rawUa = await _webViewController?.evaluateJavascript(source: 'navigator.userAgent');
+        if (rawUa != null) {
+          final ua = rawUa.toString().replaceAll('"', '').trim();
+          if (ua.isNotEmpty) {
+            widget.extensionRuntime.setUserAgent(ua);
+            debugPrint('Synced User-Agent for WebView: $ua');
+          }
         }
       } catch (_) {}
 
