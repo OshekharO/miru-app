@@ -119,6 +119,10 @@ class MiruStorage {
     await _initSetting(SettingKey.language, 'en');
     await _initSetting(SettingKey.novelFontSize, 18.0);
     await _initSetting(SettingKey.theme, 'system');
+    await _initSetting(SettingKey.materialYouColors, false);
+    if (Platform.isAndroid) {
+      await _initSetting(SettingKey.androidNavigationLabels, 'selected');
+    }
     await _initSetting(SettingKey.enableNSFW, false);
     await _initSetting(SettingKey.videoPlayer, 'built-in');
     await _initSetting(SettingKey.listMode, "grid");
@@ -185,6 +189,8 @@ class MiruStorage {
 
 class SettingKey {
   static const theme = "Theme";
+  static const materialYouColors = "MaterialYouColors";
+  static const androidNavigationLabels = "AndroidNavigationLabels";
   static const miruRepoUrl = "MiruRepoUrl";
   static const tmdbKey = 'TMDBKey';
   static const autoCheckUpdate = 'AutoCheckUpdate';
