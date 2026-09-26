@@ -25,26 +25,47 @@ class MiruRequest {
         final client = HttpClient();
         client.badCertificateCallback =
             (X509Certificate cert, String host, int port) => true;
+
+        client.connectionFactory = (Uri uri, String? proxyHost, int? proxyPort) async {
+          if (proxyHost != null) {
+            return Socket.startConnect(proxyHost, proxyPort!);
+          }
+
+          final host = uri.host;
+          String targetHost = host;
+          if (host.isNotEmpty && InternetAddress.tryParse(host) == null) {
+            targetHost = await DnsResolver.resolve(host);
+          }
+
+          final socket = await Socket.connect(
+            targetHost,
+            uri.port,
+            timeout: const Duration(seconds: 10),
+          );
+
+          if (uri.scheme == 'https') {
+            final secureSocket = await SecureSocket.secure(
+              socket,
+              host: host,
+              onBadCertificate: (cert) => true,
+            );
+            return ConnectionTask.fromSocket(
+              Future.value(secureSocket),
+              () => secureSocket.destroy(),
+            );
+          }
+
+          return ConnectionTask.fromSocket(
+            Future.value(socket),
+            () => socket.destroy(),
+          );
+        };
+
         return client;
       },
     );
     final cookieManager = CookieManager(_cookieJar);
     dio.interceptors.add(cookieManager);
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) async {
-          final host = options.uri.host;
-          if (host.isNotEmpty && InternetAddress.tryParse(host) == null) {
-            final ip = await DnsResolver.resolve(host);
-            if (ip != host) {
-              options.headers['Host'] = host;
-              options.path = options.uri.replace(host: ip).toString();
-            }
-          }
-          return handler.next(options);
-        },
-      ),
-    );
     refreshProxy();
     _isInitialized = true;
   }
