@@ -14,7 +14,7 @@
 [![License](https://img.shields.io/github/license/miru-project/miru-app)](https://github.com/miru-project/miru-app/blob/main/LICENSE)
 [![Stars](https://img.shields.io/github/stars/miru-project/miru-app)](https://github.com/miru-project/miru-app/stargazers)
 [![GitHub all releases](https://img.shields.io/github/downloads/miru-project/miru-app/total)](https://github.com/miru-project/miru-app/releases/latest)
-[![Nightly Builds](https://img.shields.io/badge/Nightly_Builds-Download-blue?logo=github)](https://nightly.link/OshekharO/miru-app/workflows/prbuild/dev?preview)
+[![Nightly Builds](https://img.shields.io/badge/Nightly_Builds-Download-blue?logo=github)](https://nightly.link/OshekharO/miru-app/workflows/build-release/dev?preview)
 
 </div>
 
