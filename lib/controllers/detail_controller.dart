@@ -112,12 +112,13 @@ class DetailPageController extends GetxController {
               ),
             );
           } else {
-            Get.to(
+            await Get.to(
               () => WebViewPage(
                 extensionRuntime: runtime.value!,
                 url: targetUrl,
               ),
             );
+            onRefresh();
           }
         },
       ),
