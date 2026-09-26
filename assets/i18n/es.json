@@ -128,7 +128,10 @@
     "save-log-subtitle": "Guardar automáticamente el archivo de registros",
     "export-log": "Exportar registros",
     "export-log-subtitle": "Exportar archivo de registros",
-    "advanced": "Avanzado"
+    "advanced": "Avanzado",
+    "dns": "DNS",
+    "dns-subtitle": "Encrypted DNS / DNS over HTTPS",
+    "dns-off": "Off"
   },
   "external-player-launching": "Lanzando {player}",
   "detail": {

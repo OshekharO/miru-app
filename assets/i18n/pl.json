@@ -126,7 +126,10 @@
     "save-log-subtitle": "Automatyczne zapisywanie pliku logów",
     "export-log": "Wyeksportuj logi",
     "export-log-subtitle": "Wyeksportuj logi do pliku",
-    "advanced": "Zaawansowane"
+    "advanced": "Zaawansowane",
+    "dns": "DNS",
+    "dns-subtitle": "Encrypted DNS / DNS over HTTPS",
+    "dns-off": "Off"
   },
   "external-player-launching": "Uruchamianie {player}",
   "detail": {

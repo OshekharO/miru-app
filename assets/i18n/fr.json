@@ -106,7 +106,10 @@
     "source-code": "Open Source",
     "source-code-training": "Donner une Etoile",
     "license": "Licence",
-    "license-subtitle": "Licence"
+    "license-subtitle": "Licence",
+    "dns": "DNS",
+    "dns-subtitle": "Encrypted DNS / DNS over HTTPS",
+    "dns-off": "Off"
   },
   "external-player-launching": "Lancement du {player}",
   "detail": {

@@ -11,6 +11,7 @@ import 'package:miru_app/router/router.dart';
 import 'package:miru_app/utils/log.dart';
 import 'package:miru_app/utils/request.dart';
 import 'package:miru_app/views/dialogs/bt_dialog.dart';
+import 'package:miru_app/utils/dns_resolver.dart';
 import 'package:miru_app/controllers/extension/extension_repo_controller.dart';
 import 'package:miru_app/controllers/settings_controller.dart';
 import 'package:miru_app/views/pages/settings/about_page.dart';
@@ -509,6 +510,27 @@ class _SettingsPageState extends State<SettingsPage> {
                   },
                   buildGroupValue: () {
                     return MiruStorage.getSetting(SettingKey.proxyType);
+                  },
+                ),
+                SettingsRadiosTile(
+                  title: 'settings.dns'.i18n,
+                  itemNameValue: {
+                    'settings.dns-off'.i18n: 'off',
+                    'Cloudflare': 'cloudflare',
+                    'Google': 'google',
+                    'AdGuard': 'adguard',
+                    'Quad9': 'quad9',
+                  },
+                  buildSubtitle: () => 'settings.dns-subtitle'.i18n,
+                  applyValue: (value) {
+                    MiruStorage.setSetting(SettingKey.dns, value);
+                    DnsResolver.clearCache();
+                  },
+                  buildGroupValue: () {
+                    final dns = MiruStorage.getSetting(SettingKey.dns);
+                    return (dns == null || dns.toString().isEmpty)
+                        ? 'off'
+                        : dns;
                   },
                 ),
                 SettingsIntpuTile(

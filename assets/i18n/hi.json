@@ -81,7 +81,10 @@
     "language-subtitle": "सॉफ़्टवेयर की भाषा बदलें",
     "extension-log": "एक्सटेंशन लॉग विंडो",
     "extension-log-subtitle": "एक्सटेंशन्स को डिबग करने के लिए प्रयुक्त होता है",
-    "about": "जानकारी"
+    "about": "जानकारी",
+    "dns": "DNS",
+    "dns-subtitle": "Encrypted DNS / DNS over HTTPS",
+    "dns-off": "Off"
   },
   "external-player-launching": "{player} को चालना",
   "detail": {

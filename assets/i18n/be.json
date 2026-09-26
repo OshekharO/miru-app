@@ -82,7 +82,10 @@
     "language-subtitle": "Змяніць мову праграмы",
     "extension-log": "Акно часопіса пашырэнняў",
     "extension-log-subtitle": "Выкарыстоўваецца для адладкі пашырэнняў",
-    "about": "Аб праграме"
+    "about": "Аб праграме",
+    "dns": "DNS",
+    "dns-subtitle": "Encrypted DNS / DNS over HTTPS",
+    "dns-off": "Off"
   },
   "external-player-launching": "Запуск {player}",
   "detail": {

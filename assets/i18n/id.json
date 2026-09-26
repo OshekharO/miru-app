@@ -131,7 +131,10 @@
     "save-log-subtitle": "Simpan file log secara otomatis",
     "export-log": "Export Log",
     "export-log-subtitle": "Ekspor log ke file",
-    "advanced": "Lanjutan"
+    "advanced": "Lanjutan",
+    "dns": "DNS",
+    "dns-subtitle": "Encrypted DNS / DNS over HTTPS",
+    "dns-off": "Off"
   },
   "external-player-launching": "Menjalankan {player}",
   "detail": {

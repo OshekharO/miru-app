@@ -85,7 +85,10 @@
     "skip-interval": "スキップかんかく",
     "skip-interval-subtitle": "ねーんぞうビデオプレーヤーぬスキップかんかく",
     "default-reader-mode": "デフォルトぬリーダーモード",
-    "about": "しょうさい"
+    "about": "しょうさい",
+    "dns": "DNS",
+    "dns-subtitle": "Encrypted DNS / DNS over HTTPS",
+    "dns-off": "Off"
   },
   "external-player-launching": "{player}きどう",
   "detail": {
