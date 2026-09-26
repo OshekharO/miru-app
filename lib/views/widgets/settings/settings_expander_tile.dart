@@ -103,9 +103,6 @@ class SettingsExpanderTile extends StatelessWidget {
       onTap: () {
         Get.to(
           () => Scaffold(
-            backgroundColor: Theme.of(context).brightness == Brightness.dark
-                ? null
-                : const Color(0xFFEFF2F6),
             appBar: AppBar(
               title: Text(title),
               centerTitle: true,

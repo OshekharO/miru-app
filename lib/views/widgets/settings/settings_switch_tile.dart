@@ -39,7 +39,6 @@ class _SettingsSwitchTileState extends State<SettingsSwitchTile> {
       trailing: PlatformWidget(
         androidWidget: Switch.adaptive(
           value: widget.buildValue(),
-          activeTrackColor: Colors.blue,
           onChanged: (value) {
             widget.onChanged(value);
             setState(() {});

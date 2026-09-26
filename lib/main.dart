@@ -1,13 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:desktop_multi_window/desktop_multi_window.dart';
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:miru_app/controllers/application_controller.dart';
+import 'package:miru_app/utils/android_system_ui.dart';
 import 'package:miru_app/utils/log.dart';
 import 'package:miru_app/utils/miru_directory.dart';
 import 'package:miru_app/utils/request.dart';
@@ -82,11 +84,7 @@ void main(List<String> args) async {
     }
 
     if (Platform.isAndroid) {
-      SystemUiOverlayStyle style = const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-      );
-      SystemChrome.setSystemUIOverlayStyle(style);
+      await configureAndroidSystemUi();
     }
 
     runApp(const MainApp());
@@ -112,16 +110,18 @@ class _MainAppState extends State<MainApp> {
   }
 
   Widget _buildMobileMain(BuildContext context) {
-    return GetMaterialApp(
-      title: "Miru",
-      debugShowCheckedModeBanner: false,
-      themeMode: c.theme,
-      theme: c.currentThemeData,
-      darkTheme: ThemeData.dark(useMaterial3: true),
-      home: const AndroidMainPage(),
-      localizationsDelegates: [
-        I18nUtils.flutterI18nDelegate,
-      ],
+    return DynamicColorBuilder(
+      builder: (lightDynamic, darkDynamic) => GetMaterialApp(
+        title: "Miru",
+        debugShowCheckedModeBanner: false,
+        themeMode: c.theme,
+        theme: c.mobileLightTheme(lightDynamic, darkDynamic),
+        darkTheme: c.mobileDarkTheme(darkDynamic),
+        home: const AndroidMainPage(),
+        localizationsDelegates: [
+          I18nUtils.flutterI18nDelegate,
+        ],
+      ),
     );
   }
 

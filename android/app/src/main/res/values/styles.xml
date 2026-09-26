@@ -5,6 +5,7 @@
         <!-- Show a splash screen on the activity. Automatically removed when
              the Flutter engine draws its first frame -->
         <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
         <!-- 阅读器沉浸模式要画到刘海区域，理由见 NormalTheme 的注释。 -->
         <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
     </style>
@@ -16,6 +17,7 @@
          This Theme is only used starting with V2 of Flutter's Android embedding. -->
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
         <item name="android:windowBackground">?android:colorBackground</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
         <!-- 阅读器沉浸模式下要画到刘海区域里。
              默认值 DEFAULT 的语义是「只有刘海被系统栏包住时才画进去」：
              一旦隐藏系统栏（immersiveSticky），窗口就不再覆盖刘海，

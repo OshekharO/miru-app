@@ -143,6 +143,48 @@ class _SettingsPageState extends State<SettingsPage> {
                     return Get.find<ApplicationController>().themeText.value;
                   },
                 ),
+                if (Platform.isAndroid)
+                  SettingsSwitchTile(
+                    title: 'settings.material-you-colors'.i18n,
+                    buildSubtitle: () =>
+                        'settings.material-you-colors-subtitle'.i18n,
+                    buildValue: () => Get.find<ApplicationController>()
+                        .materialYouColors
+                        .value,
+                    onChanged: (value) {
+                      Get.find<ApplicationController>().changeMaterialYouColors(
+                        value,
+                      );
+                    },
+                  ),
+                if (Platform.isAndroid)
+                  SettingsRadiosTile<String>(
+                    title: 'settings.navigation-labels'.i18n,
+                    itemNameValue: {
+                      'settings.navigation-labels-all'.i18n: 'all',
+                      'settings.navigation-labels-selected'.i18n: 'selected',
+                      'settings.navigation-labels-none'.i18n: 'none',
+                    },
+                    buildSubtitle: () {
+                      switch (Get.find<ApplicationController>()
+                          .androidNavigationLabels
+                          .value) {
+                        case 'all':
+                          return 'settings.navigation-labels-all'.i18n;
+                        case 'none':
+                          return 'settings.navigation-labels-none'.i18n;
+                        default:
+                          return 'settings.navigation-labels-selected'.i18n;
+                      }
+                    },
+                    applyValue: (value) {
+                      Get.find<ApplicationController>()
+                          .changeAndroidNavigationLabels(value);
+                    },
+                    buildGroupValue: () => Get.find<ApplicationController>()
+                        .androidNavigationLabels
+                        .value,
+                  ),
                 // 启动检查更新
                 SettingsSwitchTile(
                   title: 'settings.auto-check-update'.i18n,
@@ -623,9 +665,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildAndroid(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: isDark ? null : const Color(0xFFEFF2F6),
       appBar: AppBar(
         title: Text('common.settings'.i18n),
         centerTitle: true,

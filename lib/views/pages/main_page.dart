@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:miru_app/views/pages/extension/extension_page.dart';
 import 'package:miru_app/views/pages/home_page.dart';
+import 'package:miru_app/controllers/application_controller.dart';
 import 'package:miru_app/controllers/main_controller.dart';
 import 'package:miru_app/views/pages/search/search_page.dart';
 import 'package:miru_app/views/pages/settings/settings_page.dart';
@@ -225,6 +226,7 @@ class AndroidMainPage extends fluent.StatefulWidget {
 
 class _AndroidMainPageState extends fluent.State<AndroidMainPage> {
   late MainController c;
+  late ApplicationController applicationController;
 
   final pages = const [
     HomePage(),
@@ -236,6 +238,7 @@ class _AndroidMainPageState extends fluent.State<AndroidMainPage> {
   @override
   void initState() {
     c = Get.put(MainController());
+    applicationController = Get.find<ApplicationController>();
     if (MiruStorage.getSetting(SettingKey.autoCheckUpdate)) {
       ApplicationUtils.checkUpdate(context);
     }
@@ -284,8 +287,7 @@ class _AndroidMainPageState extends fluent.State<AndroidMainPage> {
                           label: e.label,
                         ))
                     .toList(),
-                labelBehavior:
-                    NavigationDestinationLabelBehavior.onlyShowSelected,
+                labelBehavior: applicationController.navigationLabelBehavior,
                 selectedIndex: c.selectedTab.value,
                 onDestinationSelected: c.changeTab,
               ),
