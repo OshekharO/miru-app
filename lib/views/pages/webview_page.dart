@@ -1,3 +1,4 @@
+import 'package:miru_app/utils/request.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:miru_app/data/services/extension_service.dart';
@@ -36,6 +37,10 @@ class _WebViewPageState extends State<WebViewPage> {
             cookies.map((e) => '${e.name}=${e.value}').toList().join(';');
         debugPrint('$url $cookieString');
         await widget.extensionRuntime.setCookie(cookieString);
+        final extWebsite = widget.extensionRuntime.extension.webSite;
+        if (extWebsite.isNotEmpty && extWebsite != url) {
+          await MiruRequest.setCookie(cookieString, extWebsite);
+        }
       }
     } catch (e) {
       debugPrint('Error syncing cookies: $e');
