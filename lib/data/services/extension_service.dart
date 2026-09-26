@@ -73,7 +73,8 @@ class ExtensionService {
     jsRequest(dynamic args) async {
       _currentRequestUrl = args[0];
       final headers = args[1]['headers'] ?? {};
-      if (headers['User-Agent'] == null) {
+      final hasUa = headers.keys.any((k) => k.toString().toLowerCase() == 'user-agent');
+      if (!hasUa) {
         headers['User-Agent'] = MiruStorage.getUASetting();
       }
 
@@ -254,20 +255,22 @@ class ExtensionService {
           targetUrl,
           WebviewOptions(
             onNavigation: (navUrl) {
-              if (Uri.parse(navUrl).host != Uri.parse(extension.webSite).host) {
-                return false;
+              final targetHost = Uri.parse(navUrl).host;
+              final extHost = Uri.parse(extension.webSite).host;
+              if (targetHost.isNotEmpty && (targetHost == extHost || targetHost.endsWith('.$extHost') || extHost.endsWith('.$targetHost'))) {
+                webview.getCookies(navUrl).then((value) async {
+                  if (value.isNotEmpty) {
+                    await setCookie(
+                      value.entries
+                          .map((e) => '${e.key}=${e.value}')
+                          .toList()
+                          .join(';'),
+                      navUrl,
+                    );
+                  }
+                });
               }
-              webview.getCookies(navUrl).then((value) async {
-                if (value.isNotEmpty) {
-                  await setCookie(
-                    value.entries
-                        .map((e) => '${e.key}=${e.value}')
-                        .toList()
-                        .join(';'),
-                  );
-                }
-              });
-              return false;
+              return true;
             },
           ),
         );
@@ -700,8 +703,8 @@ async function stringify(callback) {
 
   /// 添加 cookie
   /// key=value; key=value
-  setCookie(String cookies) async {
-    await MiruRequest.setCookie(cookies, extension.webSite);
+  setCookie(String cookies, [String? targetUrl]) async {
+    await MiruRequest.setCookie(cookies, targetUrl ?? extension.webSite);
   }
 
   // 列出所有的 cookie
