@@ -84,7 +84,10 @@
     "extension-log-subtitle": "擴充套件除錯視窗",
     "about": "關於",
     "team": "團隊",
-    "community-contributors": "社群貢獻者"
+    "community-contributors": "社群貢獻者",
+    "dns": "DNS",
+    "dns-subtitle": "加密 DNS / DNS over HTTPS",
+    "dns-off": "关闭"
   },
   "external-player-launching": "正在啟動 {player}",
   "detail": {

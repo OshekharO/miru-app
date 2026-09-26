@@ -133,7 +133,10 @@
     "save-log-subtitle": "自动保存日志文件",
     "export-log": "导出日志",
     "export-log-subtitle": "导出日志文件到本地",
-    "advanced": "高级"
+    "advanced": "高级",
+    "dns": "DNS",
+    "dns-subtitle": "加密 DNS / DNS over HTTPS",
+    "dns-off": "关闭"
   },
   "external-player-launching": "正在启动 {player}",
   "detail": {

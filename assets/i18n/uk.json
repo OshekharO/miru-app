@@ -82,7 +82,10 @@
     "language-subtitle": "Змінити мову додатка",
     "extension-log": "Вікно журналу розширень",
     "extension-log-subtitle": "Використовується для налагодження розширень",
-    "about": "Про додаток"
+    "about": "Про додаток",
+    "dns": "DNS",
+    "dns-subtitle": "Encrypted DNS / DNS over HTTPS",
+    "dns-off": "Off"
   },
   "external-player-launching": "Запуск {player}",
   "detail": {

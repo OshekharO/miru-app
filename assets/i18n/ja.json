@@ -85,7 +85,10 @@
     "about": "詳細",
     "skip-interval": "スキップ間隔",
     "skip-interval-subtitle": "内蔵ビデオプレーヤーのスキップ間隔",
-    "default-reader-mode": "デフォルトのリーダーモード"
+    "default-reader-mode": "デフォルトのリーダーモード",
+    "dns": "DNS",
+    "dns-subtitle": "Encrypted DNS / DNS over HTTPS",
+    "dns-off": "Off"
   },
   "external-player-launching": "{player}を起動",
   "detail": {

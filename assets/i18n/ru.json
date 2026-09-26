@@ -132,7 +132,10 @@
     "save-log-subtitle": "Автоматическое сохранение файла журнала",
     "export-log": "Экспортировать журнал",
     "export-log-subtitle": "Экспорт файла журнала",
-    "advanced": "Расширенные"
+    "advanced": "Расширенные",
+    "dns": "DNS",
+    "dns-subtitle": "Encrypted DNS / DNS over HTTPS",
+    "dns-off": "Off"
   },
   "external-player-launching": "Запуск {player}",
   "detail": {

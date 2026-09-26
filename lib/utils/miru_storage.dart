@@ -138,6 +138,7 @@ class MiruStorage {
     await _initSetting(SettingKey.proxy, '');
     await _initSetting(SettingKey.proxyType, 'DIRECT');
     await _initSetting(SettingKey.saveLog, true);
+    await _initSetting(SettingKey.dns, 'off');
     await _initSetting(SettingKey.subtitleFontSize, 46.0);
     await _initSetting(SettingKey.subtitleFontColor, Colors.white.value);
     await _initSetting(SettingKey.subtitleFontWeight, 'bold');
@@ -209,6 +210,7 @@ class SettingKey {
   static const proxy = "Proxy";
   static const proxyType = "ProxyType";
   static const saveLog = "SaveLog";
+  static const dns = "DNS";
   static const subtitleFontSize = "SubtitleFontSize";
   static const subtitleFontWeight = "SubtitleFontWeight";
   static const subtitleFontColor = "SubtitleFontColor";
