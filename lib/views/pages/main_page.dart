@@ -1,3 +1,4 @@
+import 'package:miru_app/views/pages/extension/extension_repo_page.dart';
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -47,6 +48,40 @@ class _DesktopMainPageState extends State<DesktopMainPage> with WindowListener {
   void dispose() {
     windowManager.removeListener(this);
     super.dispose();
+  }
+
+
+  int? _calculateSelectedIndex(String path) {
+    if (path == '/') return 0;
+    if (path == '/search' || path.startsWith('/search_extension')) return 1;
+    if (path == '/extension' || path.startsWith('/extension_settings')) return 2;
+    if (path == '/extension_repo') return 3;
+    if (path == '/settings' || path.startsWith('/settings/')) return 4;
+    return null;
+  }
+
+  void _onNavigationChanged(int index) {
+    switch (index) {
+      case 0:
+        c.changeTab(0);
+        router.go('/');
+        break;
+      case 1:
+        c.changeTab(1);
+        router.go('/search');
+        break;
+      case 2:
+        c.changeTab(2);
+        router.go('/extension');
+        break;
+      case 3:
+        router.go('/extension_repo');
+        break;
+      case 4:
+        c.changeTab(3);
+        router.go('/settings');
+        break;
+    }
   }
 
   Widget _title() {
@@ -103,15 +138,17 @@ class _DesktopMainPageState extends State<DesktopMainPage> with WindowListener {
       },
       pane: fluent.NavigationPane(
         size: const fluent.NavigationPaneSize(openMaxWidth: 200),
-        selected: c.selectedTab.value,
-        onChanged: c.changeTab,
+        selected: _calculateSelectedIndex(widget.state.uri.path),
+        onChanged: (index) {
+          _onNavigationChanged(index);
+        },
         displayMode: fluent.PaneDisplayMode.compact,
         footerItems: [
           fluent.PaneItemSeparator(),
           fluent.PaneItem(
             icon: const Icon(fluent.FluentIcons.repo),
             title: Text('common.extension-repo'.i18n),
-            body: const ExtensionPage(),
+            body: const ExtensionRepoPage(),
             onTap: () {
               router.go('/extension_repo');
             },

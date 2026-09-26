@@ -64,10 +64,9 @@ class ExtensionRepoPageController extends GetxController {
       );
       final rawData = res.data;
       final decodedData = rawData is String ? jsonDecode(rawData) : rawData;
+      extensions.clear();
       if (decodedData is List) {
-        extensions = List<dynamic>.from(decodedData);
-      } else {
-        extensions = <dynamic>[];
+        extensions.addAll(decodedData);
       }
       if (!MiruStorage.getSetting(SettingKey.enableNSFW)) {
         extensions.removeWhere((element) => element['nsfw'] == "true");

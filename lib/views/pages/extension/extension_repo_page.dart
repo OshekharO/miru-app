@@ -295,21 +295,19 @@ class _ExtensionRepoPageState extends State<ExtensionRepoPage> {
               // Search Input Box
               SizedBox(
                 width: 220,
-                child: Obx(
-                  () => fluent.TextBox(
-                    controller: _searchController,
-                    placeholder: 'common.search'.i18n,
-                    prefix: const Padding(
-                      padding: EdgeInsets.only(left: 8.0),
-                      child: Icon(fluent.FluentIcons.search, size: 14),
-                    ),
-                    onChanged: (value) {
-                      c.search.value = value;
-                    },
-                    onSubmitted: (value) {
-                      c.search.value = value;
-                    },
+                child: fluent.TextBox(
+                  controller: _searchController,
+                  placeholder: 'common.search'.i18n,
+                  prefix: const Padding(
+                    padding: EdgeInsets.only(left: 8.0),
+                    child: Icon(fluent.FluentIcons.search, size: 14),
                   ),
+                  onChanged: (value) {
+                    c.search.value = value;
+                  },
+                  onSubmitted: (value) {
+                    c.search.value = value;
+                  },
                 ),
               ),
               const SizedBox(width: 12),
