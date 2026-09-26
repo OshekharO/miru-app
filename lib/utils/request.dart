@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:flutter_socks_proxy/socks_proxy.dart';
+import 'package:miru_app/utils/dns_resolver.dart';
 import 'package:miru_app/utils/miru_directory.dart';
 import 'package:miru_app/utils/miru_storage.dart';
 
@@ -29,6 +30,21 @@ class MiruRequest {
     );
     final cookieManager = CookieManager(_cookieJar);
     dio.interceptors.add(cookieManager);
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          final host = options.uri.host;
+          if (host.isNotEmpty && InternetAddress.tryParse(host) == null) {
+            final ip = await DnsResolver.resolve(host);
+            if (ip != host) {
+              options.headers['Host'] = host;
+              options.path = options.uri.replace(host: ip).toString();
+            }
+          }
+          return handler.next(options);
+        },
+      ),
+    );
     refreshProxy();
     _isInitialized = true;
   }
@@ -79,6 +95,19 @@ class MiruRequest {
         );
       }
     }
+  }
+
+  static bool isCloudflareResponse(Response? response) {
+    if (response == null) return false;
+    final statusCode = response.statusCode ?? 0;
+    if (statusCode != 403 && statusCode != 503) return false;
+    final serverHeader = response.headers.value('server')?.toLowerCase() ?? '';
+    final cfRay = response.headers.value('cf-ray');
+    final body = response.data?.toString().toLowerCase() ?? '';
+    return serverHeader.contains('cloudflare') ||
+        cfRay != null ||
+        body.contains('just a moment') ||
+        body.contains('cf-turnstile');
   }
 
   static Future<String> getCookie(String url) async {
