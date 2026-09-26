@@ -53,6 +53,11 @@ class MiruRequest {
     await _cookieJar.delete(Uri.parse(url));
   }
 
+  /// Saves cookies (such as Cloudflare `cf_clearance` or `__cf_bm` tokens) obtained
+  /// from WebView or manual challenge resolution into the persistent cookie jar.
+  ///
+  /// Cookies are saved for both the specific request domain and the root domain to
+  /// ensure subdomains inherit anti-bot clearance across extension network calls.
   static Future<void> setCookie(String cookies, String url) async {
     final uri = Uri.parse(url);
     final hostParts = uri.host.split('.');
