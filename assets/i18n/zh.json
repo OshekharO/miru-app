@@ -227,7 +227,7 @@
     "check-update": "检查更新",
     "new-version": "检测到新版本 {version}",
     "download": "前往更新",
-    "no-update": "已经是最新版本",
+    "no-update": "已经是最新版本 ({version})",
     "not-now": "暂不更新",
     "error": "检查更新失败,网络出现异常"
   },

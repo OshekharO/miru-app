@@ -130,9 +130,9 @@
     "check-update": "檢查更新",
     "new-version": "偵測到新版本 {version}",
     "download": "前往更新",
-    "no-update": "已经是最新版本",
+    "no-update": "已經是最新版本 ({version})",
     "not-now": "暫不更新",
-    "error": "检查更新失敗，請檢查網路狀態"
+    "error": "檢查更新失敗，請檢查網路狀態"
   },
   "extension-install-error": "擴充套件安裝失敗",
   "extension-type": {

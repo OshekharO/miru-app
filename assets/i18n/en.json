@@ -253,7 +253,7 @@
     "check-update": "Check for Updates",
     "new-version": "New version {version} detected",
     "download": "Go to Update",
-    "no-update": "Already up to date",
+    "no-update": "You're on latest version ({version})",
     "not-now": "Not now",
     "error": "Failed to check for updates, network error occurred"
   },
