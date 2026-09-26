@@ -100,6 +100,8 @@
     "about": "About",
     "links": "Links",
     "contributors": "Contributors",
+    "team": "Team",
+    "community-contributors": "Community Contributors",
     "repo-url": "Extension Repository URL",
     "repo-url-subtitle": "Get the repository URL for extensions",
     "tmdb-key": "TMDB API Key",
@@ -251,7 +253,7 @@
     "check-update": "Check for Updates",
     "new-version": "New version {version} detected",
     "download": "Go to Update",
-    "no-update": "Already up to date",
+    "no-update": "You're on latest version ({version})",
     "not-now": "Not now",
     "error": "Failed to check for updates, network error occurred"
   },

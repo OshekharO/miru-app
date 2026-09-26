@@ -81,6 +81,8 @@
     "about": "关于",
     "links": "链接",
     "contributors": "贡献者",
+    "team": "团队",
+    "community-contributors": "社区贡献者",
     "repo-url": "扩展仓库地址",
     "repo-url-subtitle": "获取扩展的仓库地址",
     "tmdb-key": "TMDB API Key",
@@ -225,7 +227,7 @@
     "check-update": "检查更新",
     "new-version": "检测到新版本 {version}",
     "download": "前往更新",
-    "no-update": "已经是最新版本",
+    "no-update": "已经是最新版本 ({version})",
     "not-now": "暂不更新",
     "error": "检查更新失败,网络出现异常"
   },

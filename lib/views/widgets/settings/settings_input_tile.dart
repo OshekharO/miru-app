@@ -88,20 +88,20 @@ class _SettingsIntpuTileState extends fluent.State<SettingsIntpuTile> {
               actions: [
                 TextButton(
                   onPressed: () {
-                    Navigator.pop(dialogContext);
+                    Navigator.of(dialogContext, rootNavigator: true).pop();
                   },
                   child: Text('common.cancel'.i18n),
                 ),
                 TextButton(
                   onPressed: () {
                     final newValue = textController.text;
+                    Navigator.of(dialogContext, rootNavigator: true).pop();
                     widget.onChanged(newValue);
                     if (mounted) {
                       setState(() {
                         _controller?.text = newValue;
                       });
                     }
-                    Navigator.pop(dialogContext);
                   },
                   child: Text('common.confirm'.i18n),
                 ),
