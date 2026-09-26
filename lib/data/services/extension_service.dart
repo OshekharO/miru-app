@@ -85,7 +85,7 @@ class ExtensionService {
       if (customUa != null && customUa.isNotEmpty) {
         _lastUserAgent = customUa;
       } else {
-        headers['User-Agent'] = MiruStorage.getUASetting();
+        headers['User-Agent'] = _lastUserAgent.isNotEmpty ? _lastUserAgent : MiruStorage.getUASetting();
       }
 
       final url = args[0];
@@ -726,6 +726,12 @@ async function stringify(callback) {
   // 清理 cookie
   cleanCookie() async {
     await MiruRequest.cleanCookie(extension.webSite);
+  }
+
+  void setUserAgent(String ua) {
+    if (ua.isNotEmpty) {
+      _lastUserAgent = ua;
+    }
   }
 
   /// 添加 cookie

@@ -72,6 +72,12 @@ class MiruRequest {
         rootDomainUri,
         [cookie],
       );
+      if (uri != rootDomainUri) {
+        await _cookieJar.saveFromResponse(
+          uri,
+          [cookie],
+        );
+      }
     }
   }
 

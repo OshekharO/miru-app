@@ -27,6 +27,7 @@ class _WebViewPageState extends State<WebViewPage> {
   final cookieManager = WebviewCookieManager();
   late Uri loadUrl = Uri.parse(url);
   bool _isSaving = false;
+  inapp.InAppWebViewController? _webViewController;
 
   Future<void> _setCookie() async {
     if (_isSaving) return;
@@ -61,6 +62,14 @@ class _WebViewPageState extends State<WebViewPage> {
           }
         } catch (_) {}
       }
+
+      try {
+        final ua = await _webViewController?.getUserAgent();
+        if (ua != null && ua.isNotEmpty) {
+          widget.extensionRuntime.setUserAgent(ua);
+          debugPrint('Synced User-Agent for WebView: $ua');
+        }
+      } catch (_) {}
 
       if (mergedCookies.isNotEmpty) {
         final cookieString = mergedCookies.entries.map((e) => '${e.key}=${e.value}').join('; ');
@@ -114,6 +123,9 @@ class _WebViewPageState extends State<WebViewPage> {
           ],
         ),
         body: inapp.InAppWebView(
+          onWebViewCreated: (controller) {
+            _webViewController = controller;
+          },
           initialUrlRequest: inapp.URLRequest(
             url: inapp.WebUri(url),
           ),
