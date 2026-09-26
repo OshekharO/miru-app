@@ -54,12 +54,29 @@ class MiruRequest {
   }
 
   static Future<void> setCookie(String cookies, String url) async {
+    final uri = Uri.parse(url);
+    final rootUri = Uri.parse('${uri.scheme}://${uri.host}');
     final cookieList = cookies.split(';');
-    for (final cookie in cookieList) {
+    for (final cookieStr in cookieList) {
+      final trimmed = cookieStr.trim();
+      if (trimmed.isEmpty) continue;
+      final cookie = Cookie.fromSetCookieValue(trimmed);
+      if (cookie.domain == null || cookie.domain!.isEmpty) {
+        cookie.domain = uri.host;
+      }
+      if (cookie.path == null || cookie.path!.isEmpty) {
+        cookie.path = "/";
+      }
       await _cookieJar.saveFromResponse(
-        Uri.parse(url),
-        [Cookie.fromSetCookieValue(cookie)],
+        uri,
+        [cookie],
       );
+      if (uri != rootUri) {
+        await _cookieJar.saveFromResponse(
+          rootUri,
+          [cookie],
+        );
+      }
     }
   }
 

@@ -90,23 +90,24 @@ class DetailPageController extends GetxController {
             webview.launchWebview(
               targetUrl,
               WebviewOptions(
-                onNavigation: (url) {
-                  if (Uri.parse(url).host != Uri.parse(extension!.webSite).host) {
-                    return false;
+                onNavigation: (navUrl) {
+                  final targetHost = Uri.parse(navUrl).host;
+                  final extHost = Uri.parse(extension!.webSite).host;
+                  if (targetHost.isNotEmpty && (targetHost == extHost || targetHost.endsWith('.$extHost') || extHost.endsWith('.$targetHost'))) {
+                    webview.getCookies(navUrl).then((value) async {
+                      if (value.containsKey("cf_clearance")) {
+                        debugPrint("验证通过");
+                      }
+                      runtime.value!.setCookie(
+                        value.entries
+                            .map((e) => '${e.key}=${e.value}')
+                            .toList()
+                            .join(';'),
+                        navUrl,
+                      );
+                    });
                   }
-                  webview.getCookies(url).then((value) async {
-                    if (value.containsKey("cf_clearance")) {
-                      debugPrint("验证通过");
-                    }
-                    runtime.value!.setCookie(
-                      value.entries
-                          .map((e) => '${e.key}=${e.value}')
-                          .toList()
-                          .join(';'),
-                    );
-                  });
-
-                  return false;
+                  return true;
                 },
               ),
             );
