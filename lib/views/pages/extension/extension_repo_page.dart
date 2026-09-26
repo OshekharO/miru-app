@@ -201,9 +201,9 @@ class _ExtensionRepoPageState extends State<ExtensionRepoPage> {
           return GridView.builder(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: crossAxisCount,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              mainAxisExtent: 130,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              mainAxisExtent: 135,
             ),
             itemCount: displayExtensions.length,
             itemBuilder: buildCard,
@@ -245,7 +245,7 @@ class _ExtensionRepoPageState extends State<ExtensionRepoPage> {
 
   Widget _buildDesktop(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Column(
         children: [
           Row(
@@ -253,7 +253,7 @@ class _ExtensionRepoPageState extends State<ExtensionRepoPage> {
               Text(
                 'common.extension-repo'.i18n,
                 style: const TextStyle(
-                  fontSize: 20,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                 ),
               ),

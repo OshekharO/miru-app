@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 import 'package:miru_app/data/providers/tmdb_provider.dart';
 import 'package:miru_app/models/extension.dart';
 import 'package:miru_app/controllers/detail_controller.dart';
-import 'package:miru_app/views/pages/webview_page.dart';
 import 'package:miru_app/views/widgets/detail/detail_appbar_flexible_space.dart';
 import 'package:miru_app/views/widgets/detail/detail_appbar_title.dart';
 import 'package:miru_app/views/widgets/detail/detail_background_color.dart';
@@ -114,13 +113,10 @@ class _DetailPageState extends State<DetailPage> {
                     // webview
                     IconButton(
                       onPressed: () async {
-                        await Get.to(
-                          WebViewPage(
-                            extensionRuntime: c.runtime.value!,
-                            url: c.url,
-                          ),
-                        );
-                        c.onRefresh();
+                        if (c.runtime.value != null) {
+                          await c.runtime.value!.openWebView(c.url);
+                          c.onRefresh();
+                        }
                       },
                       icon: const Icon(Icons.public),
                     ),

@@ -481,7 +481,7 @@ class _ExtensionPageState extends State<ExtensionPage> {
 
   Widget _buildDesktop(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Column(
         children: [
           // Header Controls
@@ -490,7 +490,7 @@ class _ExtensionPageState extends State<ExtensionPage> {
               Text(
                 'common.extension'.i18n,
                 style: const TextStyle(
-                  fontSize: 20,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                 ),
               ),

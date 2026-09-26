@@ -408,7 +408,7 @@ class _ExtensionSettingsPageState extends State<ExtensionSettingsPage> {
 
       final extension = c.runtime.value!.extension;
       return Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: LayoutBuilder(builder: ((context, constraints) {
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
