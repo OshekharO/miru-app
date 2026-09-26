@@ -50,7 +50,6 @@ class _DesktopMainPageState extends State<DesktopMainPage> with WindowListener {
     super.dispose();
   }
 
-
   int? _calculateSelectedIndex(String path) {
     if (path == '/') return 0;
     if (path == '/search' || path.startsWith('/search_extension')) return 1;
@@ -91,7 +90,7 @@ class _DesktopMainPageState extends State<DesktopMainPage> with WindowListener {
         child: Text(
           'Miru',
           style: TextStyle(
-            fontSize: 20.0,
+            fontSize: 18.0,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -101,19 +100,23 @@ class _DesktopMainPageState extends State<DesktopMainPage> with WindowListener {
 
   @override
   Widget build(BuildContext context) {
+    final canPop = router.canPop();
     return fluent.NavigationView(
       appBar: fluent.NavigationAppBar(
-        leading: () {
-          return fluent.IconButton(
-            icon: const Icon(fluent.FluentIcons.back, size: 12.0),
-            onPressed: () {
-              if (router.canPop()) {
-                context.pop();
-                setState(() {});
-              }
-            },
-          );
-        }(),
+        leading: canPop
+            ? fluent.Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: fluent.IconButton(
+                  icon: const Icon(fluent.FluentIcons.back, size: 12.0),
+                  onPressed: () {
+                    if (router.canPop()) {
+                      context.pop();
+                      setState(() {});
+                    }
+                  },
+                ),
+              )
+            : null,
         title: _title(),
         actions: Obx(
           () => Row(
@@ -137,12 +140,12 @@ class _DesktopMainPageState extends State<DesktopMainPage> with WindowListener {
         return widget.child;
       },
       pane: fluent.NavigationPane(
-        size: const fluent.NavigationPaneSize(openMaxWidth: 200),
+        size: const fluent.NavigationPaneSize(openMaxWidth: 200, openMinWidth: 180),
         selected: _calculateSelectedIndex(widget.state.uri.path),
         onChanged: (index) {
           _onNavigationChanged(index);
         },
-        displayMode: fluent.PaneDisplayMode.compact,
+        displayMode: fluent.PaneDisplayMode.auto,
         footerItems: [
           fluent.PaneItemSeparator(),
           fluent.PaneItem(

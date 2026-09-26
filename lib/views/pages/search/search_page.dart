@@ -143,85 +143,89 @@ class _SearchPageState extends State<SearchPage> {
           else
             const SizedBox(height: 4),
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
                     Text(
                       'common.search'.i18n,
                       style: const TextStyle(
-                        fontSize: 20,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
-                  height: 30,
+                  height: 36,
                   child: Row(
                     children: [
                       Expanded(
-                          child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        children: [
-                          fluent.ToggleButton(
-                            checked: c.cuurentExtensionType.value == null,
-                            onChanged: (value) {
-                              if (value) {
-                                c.getRuntime();
-                              }
-                            },
-                            child: Row(
-                              children: [
-                                Text("search.all".i18n),
-                              ],
-                            ),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              fluent.ToggleButton(
+                                checked: c.cuurentExtensionType.value == null,
+                                onChanged: (value) {
+                                  if (value) {
+                                    c.getRuntime();
+                                  }
+                                },
+                                child: Text("search.all".i18n),
+                              ),
+                              const SizedBox(width: 8),
+                              fluent.ToggleButton(
+                                checked: c.cuurentExtensionType.value ==
+                                    ExtensionType.bangumi,
+                                onChanged: (value) {
+                                  if (value) {
+                                    c.getRuntime(type: ExtensionType.bangumi);
+                                  }
+                                },
+                                child: Text('extension-type.video'.i18n),
+                              ),
+                              const SizedBox(width: 8),
+                              fluent.ToggleButton(
+                                checked: c.cuurentExtensionType.value ==
+                                    ExtensionType.manga,
+                                onChanged: (value) {
+                                  if (value) {
+                                    c.getRuntime(type: ExtensionType.manga);
+                                  }
+                                },
+                                child: Text('extension-type.comic'.i18n),
+                              ),
+                              const SizedBox(width: 8),
+                              fluent.ToggleButton(
+                                checked: c.cuurentExtensionType.value ==
+                                    ExtensionType.fikushon,
+                                onChanged: (value) {
+                                  if (value) {
+                                    c.getRuntime(type: ExtensionType.fikushon);
+                                  }
+                                },
+                                child: Text('extension-type.novel'.i18n),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 8),
-                          fluent.ToggleButton(
-                            checked: c.cuurentExtensionType.value ==
-                                ExtensionType.bangumi,
-                            onChanged: (value) {
-                              if (value) {
-                                c.getRuntime(type: ExtensionType.bangumi);
-                              }
-                            },
-                            child: Text('extension-type.video'.i18n),
-                          ),
-                          const SizedBox(width: 8),
-                          fluent.ToggleButton(
-                            checked: c.cuurentExtensionType.value ==
-                                ExtensionType.manga,
-                            onChanged: (value) {
-                              if (value) {
-                                c.getRuntime(type: ExtensionType.manga);
-                              }
-                            },
-                            child: Text('extension-type.comic'.i18n),
-                          ),
-                          const SizedBox(width: 8),
-                          fluent.ToggleButton(
-                            checked: c.cuurentExtensionType.value ==
-                                ExtensionType.fikushon,
-                            onChanged: (value) {
-                              if (value) {
-                                c.getRuntime(type: ExtensionType.fikushon);
-                              }
-                            },
-                            child: Text('extension-type.novel'.i18n),
-                          ),
-                        ],
-                      )),
+                        ),
+                      ),
                       const SizedBox(width: 16),
                       SizedBox(
-                        width: 300,
+                        width: 280,
                         child: fluent.TextBox(
                           controller:
                               TextEditingController(text: c.search.value),
                           placeholder: "search.hint-text".i18n,
+                          prefix: const Padding(
+                            padding: EdgeInsets.only(left: 8.0),
+                            child: Icon(fluent.FluentIcons.search, size: 14),
+                          ),
                           suffix: suffix,
                           suffixMode: fluent.OverlayVisibilityMode.editing,
                           onChanged: (value) {
@@ -233,7 +237,7 @@ class _SearchPageState extends State<SearchPage> {
                             c.search.value = value;
                           },
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ),

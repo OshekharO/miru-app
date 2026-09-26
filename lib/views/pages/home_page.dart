@@ -92,7 +92,62 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildDesktopHome(BuildContext context) {
-    return _buildContent();
+    return Obx(
+      () {
+        if (c.resents.isEmpty &&
+            c.favorites.values.every((element) => element.isEmpty)) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  "（＞人＜；）",
+                  style: TextStyle(
+                    fontSize: 50,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  "home.no-record".i18n,
+                ),
+              ],
+            ),
+          );
+        }
+
+        return SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (c.resents.isNotEmpty) ...[
+                  HomeRecent(
+                    data: c.resents,
+                  ),
+                  const SizedBox(height: 20),
+                ],
+                if (c.favorites.isNotEmpty) ...[
+                  HomeFavorites(
+                    type: ExtensionType.bangumi,
+                    data: c.favorites[ExtensionType.bangumi]!,
+                  ),
+                  HomeFavorites(
+                    type: ExtensionType.manga,
+                    data: c.favorites[ExtensionType.manga]!,
+                  ),
+                  HomeFavorites(
+                    type: ExtensionType.fikushon,
+                    data: c.favorites[ExtensionType.fikushon]!,
+                  ),
+                ]
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override

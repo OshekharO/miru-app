@@ -358,6 +358,49 @@ class ExtensionService {
     return this;
   }
 
+  Future<void> openWebView(String reqUrl, {Map? options}) async {
+    final targetUrl = (reqUrl.startsWith("http://") || reqUrl.startsWith("https://"))
+        ? reqUrl
+        : extension.webSite + reqUrl;
+
+    if (Platform.isWindows) {
+      final webview = FlutterWindowsWebview();
+      await webview.setUA(_lastUserAgent.isNotEmpty ? _lastUserAgent : MiruStorage.getUASetting());
+      webview.launchWebview(
+        targetUrl,
+        WebviewOptions(
+          onNavigation: (navUrl) {
+            final targetHost = Uri.parse(navUrl).host;
+            final extHost = Uri.parse(extension.webSite).host;
+            if (targetHost.isNotEmpty && (targetHost == extHost || targetHost.endsWith('.$extHost') || extHost.endsWith('.$targetHost'))) {
+              webview.getCookies(navUrl).then((value) async {
+                if (value.isNotEmpty) {
+                  await setCookie(
+                    value.entries
+                        .map((e) => '${e.key}=${e.value}')
+                        .toList()
+                        .join('; '),
+                    navUrl,
+                  );
+                }
+              });
+            }
+            return true;
+          },
+        ),
+      );
+      return;
+    }
+
+    await Get.to(
+      () => WebViewPage(
+        extensionRuntime: this,
+        url: targetUrl,
+        userAgent: _lastUserAgent.isNotEmpty ? _lastUserAgent : MiruStorage.getUASetting(),
+      ),
+    );
+  }
+
   _initRunExtension(String extScript) async {
     final cryptoJs = await rootBundle.loadString('assets/js/CryptoJS.min.js');
     final jsencrypt = await rootBundle.loadString('assets/js/jsencrypt.min.js');

@@ -60,18 +60,18 @@ class _HomeRecentState extends State<HomeRecent> {
           children: [
             Text(
               "home.continue-watching".i18n,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             Row(
               children: [
                 fluent.IconButton(
-                    icon: const Icon(fluent.FluentIcons.chevron_left),
+                    icon: const Icon(fluent.FluentIcons.chevron_left, size: 14),
                     onPressed: () {
                       _horzontalMove(true);
                     }),
                 const SizedBox(width: 8),
                 fluent.IconButton(
-                    icon: const Icon(fluent.FluentIcons.chevron_right),
+                    icon: const Icon(fluent.FluentIcons.chevron_right, size: 14),
                     onPressed: () {
                       _horzontalMove(false);
                     })
