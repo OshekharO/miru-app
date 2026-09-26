@@ -113,13 +113,14 @@ class _DetailPageState extends State<DetailPage> {
 
                     // webview
                     IconButton(
-                      onPressed: () {
-                        Get.to(
+                      onPressed: () async {
+                        await Get.to(
                           WebViewPage(
                             extensionRuntime: c.runtime.value!,
                             url: c.url,
                           ),
                         );
+                        c.onRefresh();
                       },
                       icon: const Icon(Icons.public),
                     ),
