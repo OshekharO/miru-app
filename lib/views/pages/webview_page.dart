@@ -5,14 +5,6 @@ import 'package:miru_app/utils/miru_storage.dart';
 import 'package:miru_app/utils/request.dart';
 import 'package:webview_cookie_manager/webview_cookie_manager.dart';
 
-/// [WebViewPage] provides an in-app browser view used to solve Cloudflare, DDoS-GUARD,
-/// and Turnstile anti-bot challenges.
-///
-/// When an extension encounters a 403 / 503 challenge, loading the target URL in this
-/// page allows the user or browser engine to resolve JS challenges. Upon page load,
-/// cookies (including `cf_clearance` and `__cf_bm`) and the exact WebView `User-Agent`
-/// are extracted and synced back to [ExtensionService] and [MiruRequest] so subsequent
-/// automated requests pass protection checks seamlessly.
 class WebViewPage extends StatefulWidget {
   const WebViewPage({
     super.key,
