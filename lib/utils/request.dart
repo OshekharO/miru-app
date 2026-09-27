@@ -10,19 +10,6 @@ import 'package:miru_app/utils/miru_storage.dart';
 
 late final Dio dio;
 
-class _CustomConnectionTask<S> implements ConnectionTask<S> {
-  @override
-  final Future<S> socket;
-  final void Function() _onCancel;
-
-  _CustomConnectionTask(this.socket, this._onCancel);
-
-  @override
-  void cancel() {
-    _onCancel();
-  }
-}
-
 class MiruRequest {
   static final _cookieJar = PersistCookieJar(
     ignoreExpires: true,
@@ -50,28 +37,15 @@ class MiruRequest {
             targetHost = await DnsResolver.resolve(host);
           }
 
-          final socket = await Socket.connect(
-            targetHost,
-            uri.port,
-            timeout: const Duration(seconds: 10),
-          );
-
           if (uri.scheme == 'https') {
-            final secureSocket = await SecureSocket.secure(
-              socket,
-              host: host,
+            return SecureSocket.startConnect(
+              targetHost,
+              uri.port,
               onBadCertificate: (cert) => true,
-            );
-            return _CustomConnectionTask<Socket>(
-              Future.value(secureSocket),
-              () => secureSocket.destroy(),
             );
           }
 
-          return _CustomConnectionTask<Socket>(
-            Future.value(socket),
-            () => socket.destroy(),
-          );
+          return Socket.startConnect(targetHost, uri.port);
         };
 
         return client;
