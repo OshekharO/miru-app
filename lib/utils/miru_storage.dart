@@ -141,6 +141,7 @@ class MiruStorage {
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0");
     await _initSetting(SettingKey.proxy, '');
     await _initSetting(SettingKey.proxyType, 'DIRECT');
+    await _initSetting(SettingKey.dns, 'off');
     await _initSetting(SettingKey.saveLog, true);
     await _initSetting(SettingKey.subtitleFontSize, 46.0);
     await _initSetting(SettingKey.subtitleFontColor, Colors.white.value);
@@ -214,6 +215,7 @@ class SettingKey {
   static const windowsWebviewUA = "WindowsWebviewUA";
   static const proxy = "Proxy";
   static const proxyType = "ProxyType";
+  static const dns = "DNS";
   static const saveLog = "SaveLog";
   static const subtitleFontSize = "SubtitleFontSize";
   static const subtitleFontWeight = "SubtitleFontWeight";

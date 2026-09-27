@@ -1,3 +1,4 @@
+import 'package:miru_app/utils/dns_resolver.dart';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -534,6 +535,31 @@ class _SettingsPageState extends State<SettingsPage> {
                   },
                   buildText: () {
                     return MiruStorage.getUASetting();
+                  },
+                ),
+                SettingsRadiosTile(
+                  title: 'DNS',
+                  itemNameValue: {
+                    'settings.dns-off'.i18n: 'off',
+                    'Cloudflare': 'cloudflare',
+                    'Google': 'google',
+                    'AdGuard': 'adguard',
+                    'Quad9': 'quad9',
+                  },
+                  buildSubtitle: () {
+                    final dns = MiruStorage.getSetting(SettingKey.dns);
+                    if (dns == 'cloudflare') return 'Cloudflare';
+                    if (dns == 'google') return 'Google';
+                    if (dns == 'adguard') return 'AdGuard';
+                    if (dns == 'quad9') return 'Quad9';
+                    return 'settings.dns-off'.i18n;
+                  },
+                  applyValue: (value) {
+                    MiruStorage.setSetting(SettingKey.dns, value);
+                    DnsResolver.clearCache();
+                  },
+                  buildGroupValue: () {
+                    return MiruStorage.getSetting(SettingKey.dns) ?? 'off';
                   },
                 ),
                 SettingsRadiosTile(

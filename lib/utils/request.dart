@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:flutter_socks_proxy/socks_proxy.dart';
+import 'package:miru_app/utils/dns_resolver.dart';
 import 'package:miru_app/utils/miru_directory.dart';
 import 'package:miru_app/utils/miru_storage.dart';
 
@@ -27,6 +28,7 @@ class MiruRequest {
         return client;
       },
     );
+    dio.interceptors.add(DohInterceptor());
     final cookieManager = CookieManager(_cookieJar);
     dio.interceptors.add(cookieManager);
     refreshProxy();
