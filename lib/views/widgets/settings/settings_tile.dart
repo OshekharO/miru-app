@@ -114,11 +114,11 @@ class _SettingsTileState extends State<SettingsTile> {
 
       final cardBgColor = isBlack
           ? Colors.black
-          : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5);
+          : theme.colorScheme.surfaceVariant.withOpacity(0.3);
 
       final borderColor = isBlack
-          ? Colors.white.withValues(alpha: 0.12)
-          : theme.colorScheme.outline.withValues(alpha: 0.15);
+          ? Colors.white.withOpacity(0.12)
+          : theme.colorScheme.outline.withOpacity(0.15);
 
       return Container(
         decoration: BoxDecoration(

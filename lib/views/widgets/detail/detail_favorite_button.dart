@@ -30,15 +30,15 @@ class _DetailFavoriteButtonState extends State<DetailFavoriteButton> {
             isFavorite ? 'detail.favorited'.i18n : 'detail.favorite'.i18n,
           ),
           style: ButtonStyle(
-            minimumSize: WidgetStateProperty.all(
+            minimumSize: MaterialStateProperty.all(
               const Size(double.infinity, 50),
             ),
             backgroundColor: isFavorite
-                ? WidgetStateProperty.all(
+                ? MaterialStateProperty.all(
                     Theme.of(context).colorScheme.primary)
                 : null,
             foregroundColor: isFavorite
-                ? WidgetStateProperty.all(
+                ? MaterialStateProperty.all(
                     Theme.of(context).colorScheme.onPrimary)
                 : null,
           ),
