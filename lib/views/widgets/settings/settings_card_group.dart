@@ -21,12 +21,13 @@ class SettingsCardGroup extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final cardBgColor = isDark
-        ? (Theme.of(context).cardColor != Colors.black
-            ? Theme.of(context).cardColor
+        ? (theme.cardColor != Colors.black
+            ? theme.cardColor
             : const Color(0xFF1E1C1E))
-        : Colors.white;
+        : theme.cardColor;
 
     final dividerColor = isDark
         ? Colors.white.withOpacity(0.1)
