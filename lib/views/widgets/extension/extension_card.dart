@@ -122,9 +122,9 @@ class _ExtensionCardState extends State<ExtensionCard> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withOpacity(0.3), width: 0.8),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 0.8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -152,7 +152,7 @@ class _ExtensionCardState extends State<ExtensionCard> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: theme.dividerColor.withOpacity(0.1),
+          color: theme.dividerColor.withValues(alpha: 0.1),
         ),
       ),
       child: Padding(
@@ -165,7 +165,7 @@ class _ExtensionCardState extends State<ExtensionCard> {
               height: 48,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                color: theme.colorScheme.surfaceVariant.withOpacity(0.4),
+                color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
               ),
               clipBehavior: Clip.antiAlias,
               child: CacheNetWorkImagePic(
@@ -200,7 +200,7 @@ class _ExtensionCardState extends State<ExtensionCard> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 1.5),
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.onSurface.withOpacity(0.06),
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.06),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
@@ -216,7 +216,7 @@ class _ExtensionCardState extends State<ExtensionCard> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 1.5),
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.onSurface.withOpacity(0.06),
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.06),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
@@ -232,7 +232,7 @@ class _ExtensionCardState extends State<ExtensionCard> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 4, vertical: 1),
                           decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.12),
+                            color: Colors.red.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: const Text(
@@ -370,7 +370,7 @@ class _ExtensionCardState extends State<ExtensionCard> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.12),
+                    color: Colors.red.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: const Text(

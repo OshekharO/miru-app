@@ -22,7 +22,7 @@ class ControlPanelFooter<T extends ReaderController> extends StatelessWidget {
         // 测试注入点（`debugForceAndroidLayout`）。直接读 `Platform.isAndroid`
         // 会让这段布局在 Windows/CI 上永远走不到、无法验证。
         color: isAndroidLayout
-            ? Theme.of(context).colorScheme.background.withOpacity(0.9)
+            ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.9)
             : Colors.transparent,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(40),

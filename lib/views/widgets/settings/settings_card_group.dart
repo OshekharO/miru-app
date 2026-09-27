@@ -25,13 +25,13 @@ class SettingsCardGroup extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final cardBgColor = isDark
         ? (theme.cardColor != Colors.black
-            ? theme.cardColor
-            : const Color(0xFF1E1C1E))
-        : theme.cardColor;
+            ? theme.colorScheme.surfaceContainer
+            : const Color(0xFF121212))
+        : theme.colorScheme.surfaceContainer;
 
     final dividerColor = isDark
-        ? Colors.white.withOpacity(0.1)
-        : Colors.black.withOpacity(0.08);
+        ? Colors.white.withValues(alpha: 0.1)
+        : Colors.black.withValues(alpha: 0.08);
 
     final List<Widget> dividedChildren = [];
     for (int i = 0; i < validChildren.length; i++) {
@@ -52,12 +52,12 @@ class SettingsCardGroup extends StatelessWidget {
     final cardContent = Container(
       decoration: BoxDecoration(
         color: cardBgColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: isDark
             ? []
             : [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
+                  color: Colors.black.withValues(alpha: 0.03),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
