@@ -160,7 +160,8 @@
     "save-log-subtitle": "Auto save log file",
     "export-log": "Export Log",
     "export-log-subtitle": "Export log file",
-    "advanced": "Advanced"
+    "advanced": "Advanced",
+    "dns-off": "Off"
   },
   "external-player-launching": "Launching {player}",
   "detail": {
