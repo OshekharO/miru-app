@@ -10,6 +10,34 @@ import 'package:miru_app/utils/miru_storage.dart';
 
 late final Dio dio;
 
+base class MiruIOOverrides extends IOOverrides {
+  @override
+  Future<ConnectionTask<Socket>> socketStartConnect(
+    host,
+    int port, {
+    sourceAddress,
+    int sourcePort = 0,
+  }) async {
+    if (host is String &&
+        host.isNotEmpty &&
+        InternetAddress.tryParse(host) == null) {
+      final targetHost = await DnsResolver.resolve(host);
+      return super.socketStartConnect(
+        targetHost,
+        port,
+        sourceAddress: sourceAddress,
+        sourcePort: sourcePort,
+      );
+    }
+    return super.socketStartConnect(
+      host,
+      port,
+      sourceAddress: sourceAddress,
+      sourcePort: sourcePort,
+    );
+  }
+}
+
 class MiruRequest {
   static final _cookieJar = PersistCookieJar(
     ignoreExpires: true,
@@ -19,35 +47,14 @@ class MiruRequest {
   static bool _isInitialized = false;
 
   static Future<void> ensureInitialized() async {
+    IOOverrides.global = MiruIOOverrides();
+
     dio = Dio();
     dio.httpClientAdapter = IOHttpClientAdapter(
       createHttpClient: () {
         final client = HttpClient();
         client.badCertificateCallback =
             (X509Certificate cert, String host, int port) => true;
-
-        client.connectionFactory = (Uri uri, String? proxyHost, int? proxyPort) async {
-          if (proxyHost != null) {
-            return Socket.startConnect(proxyHost, proxyPort!);
-          }
-
-          final host = uri.host;
-          String targetHost = host;
-          if (host.isNotEmpty && InternetAddress.tryParse(host) == null) {
-            targetHost = await DnsResolver.resolve(host);
-          }
-
-          if (uri.scheme == 'https') {
-            return SecureSocket.startConnect(
-              targetHost,
-              uri.port,
-              onBadCertificate: (cert) => true,
-            );
-          }
-
-          return Socket.startConnect(targetHost, uri.port);
-        };
-
         return client;
       },
     );
