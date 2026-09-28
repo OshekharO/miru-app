@@ -31,10 +31,10 @@ tasks.register("clean", Delete) {
 }
 
 subprojects {
-    afterEvaluate { project ->
+    def setNamespace = { project ->
         if (project.hasProperty('android')) {
             if (project.android.namespace == null) {
-                def manifestFile = file("${project.projectDir}/src/main/AndroidManifest.xml")
+                def manifestFile = project.file("${project.projectDir}/src/main/AndroidManifest.xml")
                 if (manifestFile.exists()) {
                     def parsedManifest = new groovy.xml.XmlParser().parse(manifestFile)
                     def packageName = parsedManifest.@package
@@ -44,5 +44,10 @@ subprojects {
                 }
             }
         }
+    }
+    if (project.state.executed) {
+        setNamespace(project)
+    } else {
+        project.afterEvaluate { setNamespace(it) }
     }
 }
