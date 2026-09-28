@@ -41,7 +41,7 @@ apply plugin: 'dev.flutter.flutter-gradle-plugin'
 
 android {
     namespace "miru.miaomint"
-    compileSdkVersion 34
+    compileSdkVersion flutter.compileSdkVersion
     ndkVersion flutter.ndkVersion
 
     compileOptions {
