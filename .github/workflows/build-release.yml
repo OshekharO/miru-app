@@ -132,7 +132,7 @@ jobs:
           # 只取桌面版 CRT（排除 onecore/uwp 变体，那些适用于 UWP/系统组件）
           $best = Get-ChildItem $root -Recurse -File -Filter "msvcp140.dll" -ErrorAction SilentlyContinue |
                   Where-Object {
-                    $_.DirectoryName -match '\x64\Microsoft\.VC143\.CRT$' -and
+                    $_.DirectoryName -like '*\x64\Microsoft.VC143.CRT' -and
                     $_.DirectoryName -notmatch 'onecore|uwp|store'
                   } |
                   Sort-Object { [version]($_.VersionInfo.FileVersion -replace '\s.*$', '') } -Descending |
