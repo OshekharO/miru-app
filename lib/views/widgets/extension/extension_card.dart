@@ -165,7 +165,7 @@ class _ExtensionCardState extends State<ExtensionCard> {
               height: 48,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                color: theme.colorScheme.surfaceVariant.withOpacity(0.4),
+                color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
               ),
               clipBehavior: Clip.antiAlias,
               child: CacheNetWorkImagePic(

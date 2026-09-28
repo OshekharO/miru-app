@@ -52,7 +52,7 @@ class SettingsCardGroup extends StatelessWidget {
     final cardContent = Container(
       decoration: BoxDecoration(
         color: cardBgColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: isDark
             ? []
             : [

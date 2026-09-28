@@ -65,7 +65,7 @@ class _SettingsTileState extends State<SettingsTile> {
             : null);
 
     Widget tileContent = InkWell(
-      borderRadius: widget.isCard ? BorderRadius.circular(12) : null,
+      borderRadius: widget.isCard ? BorderRadius.circular(16) : null,
       onTap: widget.onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -114,9 +114,7 @@ class _SettingsTileState extends State<SettingsTile> {
 
       final cardBgColor = isBlack
           ? Colors.black
-          : isDark
-              ? theme.colorScheme.surfaceVariant.withOpacity(0.3)
-              : theme.colorScheme.surfaceVariant.withOpacity(0.3);
+          : theme.colorScheme.surfaceVariant.withOpacity(0.3);
 
       final borderColor = isBlack
           ? Colors.white.withOpacity(0.12)
@@ -125,7 +123,7 @@ class _SettingsTileState extends State<SettingsTile> {
       return Container(
         decoration: BoxDecoration(
           color: cardBgColor,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: borderColor,
             width: 1,

@@ -46,12 +46,78 @@ class ApplicationController extends GetxController {
   }
 
   ThemeData _materialTheme(Brightness brightness, ColorScheme? colorScheme) {
-    if (colorScheme != null) {
-      return ThemeData(useMaterial3: true, colorScheme: colorScheme);
-    }
-    return brightness == Brightness.dark
+    final baseTheme = brightness == Brightness.dark
         ? ThemeData.dark(useMaterial3: true)
         : ThemeData.light(useMaterial3: true);
+
+    final effectiveScheme = colorScheme ?? baseTheme.colorScheme;
+
+    return _applyM3ExpressiveTheme(baseTheme, effectiveScheme);
+  }
+
+  ThemeData _applyM3ExpressiveTheme(
+    ThemeData baseTheme,
+    ColorScheme colorScheme,
+  ) {
+    final isDark = colorScheme.brightness == Brightness.dark;
+
+    return baseTheme.copyWith(
+      colorScheme: colorScheme,
+      bottomSheetTheme: BottomSheetThemeData(
+        elevation: 4,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        backgroundColor: colorScheme.surface,
+        modalBackgroundColor: colorScheme.surface,
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        elevation: 3,
+        indicatorShape: const StadiumBorder(),
+        backgroundColor: colorScheme.surface,
+        indicatorColor: colorScheme.secondaryContainer,
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        elevation: 3,
+        highlightElevation: 6,
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+      scaffoldBackgroundColor: isDark
+          ? colorScheme.surface
+          : colorScheme.background,
+    );
   }
 
   ThemeData _blackTheme(ColorScheme? dynamicColorScheme) {
@@ -73,11 +139,10 @@ class ApplicationController extends GetxController {
           surfaceTint: Colors.transparent,
         );
 
-    return ThemeData.dark(useMaterial3: true).copyWith(
+    final baseTheme = ThemeData.dark(useMaterial3: true).copyWith(
       scaffoldBackgroundColor: Colors.black,
       canvasColor: Colors.black,
       cardColor: Colors.black,
-      dialogBackgroundColor: const Color(0xFF1E1E22),
       primaryColor:
           dynamicColorScheme == null ? Colors.black : colorScheme.primary,
       hintColor: dynamicColorScheme == null
@@ -85,24 +150,19 @@ class ApplicationController extends GetxController {
           : colorScheme.onSurfaceVariant,
       primaryColorDark: Colors.black,
       primaryColorLight: Colors.black,
-      dialogTheme: DialogTheme(
-        backgroundColor: const Color(0xFF1E1E22),
-        elevation: 8,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: Colors.white.withOpacity(0.12), width: 1),
-        ),
-      ),
+    );
+
+    return _applyM3ExpressiveTheme(baseTheme, colorScheme).copyWith(
+      scaffoldBackgroundColor: Colors.black,
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: const Color(0xFF1E1E22),
         modalBackgroundColor: const Color(0xFF1E1E22),
         elevation: 8,
         shape: RoundedRectangleBorder(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
           side: BorderSide(color: Colors.white.withOpacity(0.12), width: 1),
         ),
       ),
-      colorScheme: colorScheme,
     );
   }
 
