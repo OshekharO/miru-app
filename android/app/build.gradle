@@ -37,7 +37,7 @@ def _keyPassword = System.getenv("KEY_PASSWORD") ?: keystoreProperties.getProper
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+apply plugin: 'dev.flutter.flutter-gradle-plugin'
 
 android {
     namespace "miru.miaomint"
@@ -62,7 +62,7 @@ android {
         applicationId "miru.miaomint"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
-        minSdkVersion 21
+        minSdkVersion flutter.minSdkVersion
         // Cannot be changed or bt-server will not start.
         targetSdkVersion 28
         versionCode flutterVersionCode.toInteger()
