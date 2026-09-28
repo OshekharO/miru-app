@@ -29,3 +29,20 @@ subprojects {
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
+
+subprojects {
+    afterEvaluate { project ->
+        if (project.hasProperty('android')) {
+            if (project.android.namespace == null) {
+                def manifestFile = file("${project.projectDir}/src/main/AndroidManifest.xml")
+                if (manifestFile.exists()) {
+                    def parsedManifest = new groovy.xml.XmlParser().parse(manifestFile)
+                    def packageName = parsedManifest.@package
+                    if (packageName) {
+                        project.android.namespace = packageName
+                    }
+                }
+            }
+        }
+    }
+}
