@@ -22,32 +22,30 @@ rootProject.buildDir = '../build'
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
-subprojects {
-    project.evaluationDependsOn(':app')
-}
-
-tasks.register("clean", Delete) {
-    delete rootProject.buildDir
-}
 
 subprojects {
-    def setNamespace = { project ->
-        if (project.hasProperty('android')) {
-            if (project.android.namespace == null) {
-                def manifestFile = project.file("${project.projectDir}/src/main/AndroidManifest.xml")
+    afterEvaluate { p ->
+        if (p.hasProperty('android')) {
+            if (p.android.namespace == null) {
+                def manifestFile = p.file("${p.projectDir}/src/main/AndroidManifest.xml")
                 if (manifestFile.exists()) {
                     def parsedManifest = new groovy.xml.XmlParser().parse(manifestFile)
                     def packageName = parsedManifest.@package
                     if (packageName) {
-                        project.android.namespace = packageName
+                        p.android.namespace = packageName
                     }
                 }
             }
         }
     }
-    if (project.state.executed) {
-        setNamespace(project)
-    } else {
-        project.afterEvaluate { setNamespace(it) }
+}
+
+subprojects {
+    if (project.name != 'app') {
+        project.evaluationDependsOn(':app')
     }
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
 }
