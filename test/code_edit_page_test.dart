@@ -4,7 +4,23 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:miru_app/models/extension.dart';
 import 'package:miru_app/views/pages/code_edit_page.dart';
 
+import 'package:miru_app/utils/miru_directory.dart';
+import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
+import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+
+class FakePathProviderPlatform extends PathProviderPlatform
+    implements MockPlatformInterfaceMixin {
+  @override
+  Future<String?> getApplicationDocumentsPath() async => '/tmp';
+  @override
+  Future<String?> getTemporaryPath() async => '/tmp';
+}
+
 void main() {
+  setUpAll(() async {
+    PathProviderPlatform.instance = FakePathProviderPlatform();
+    await MiruDirectory.ensureInitialized();
+  });
   final testExtension = Extension(
     package: 'test.package',
     author: 'TestAuthor',

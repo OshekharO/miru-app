@@ -93,9 +93,9 @@ void main() {
               'fluent.ToggleSwitch 等依赖 FluentTheme.of() 的控件');
 
       // n / l / m 三项必须真实可见。
-      expect(find.text('Preload following chapters (n)'), findsOneWidget);
-      expect(find.text('Chapter cache interval (l, seconds)'), findsOneWidget);
-      expect(find.text('Image cache interval (m, seconds)'), findsOneWidget);
+      expect(find.text('Preload following chapters'), findsOneWidget);
+      expect(find.text('Chapter cache interval (seconds)'), findsOneWidget);
+      expect(find.text('Image cache interval (seconds)'), findsOneWidget);
     });
 
     testWidgets('n / l / m 用的是 Material 控件（不是 fluent 控件）',
@@ -137,9 +137,9 @@ void main() {
           tester.view.physicalSize.width / tester.view.devicePixelRatio;
 
       for (final label in [
-        'Preload following chapters (n)',
-        'Chapter cache interval (l, seconds)',
-        'Image cache interval (m, seconds)',
+        'Preload following chapters',
+        'Chapter cache interval (seconds)',
+        'Image cache interval (seconds)',
       ]) {
         final rect = tester.getRect(find.text(label));
         expect(rect.left, greaterThanOrEqualTo(16),
@@ -158,7 +158,7 @@ void main() {
       final headerLeft =
           tester.getRect(find.text('Comic Cache')).left;
       final numberRowLeft =
-          tester.getRect(find.text('Preload following chapters (n)')).left;
+          tester.getRect(find.text('Preload following chapters')).left;
       final switchRowLeft =
           tester.getRect(find.text('Enable comic cache')).left;
       expect(headerLeft, closeTo(switchRowLeft, 0.5),
