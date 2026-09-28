@@ -95,12 +95,12 @@ class _VideoPlayerMobileControlsState
 
   Future<void> _init() async {
     _updateTimer();
-    VolumeController().showSystemUI = false;
+    VolumeController.instance.showSystemUI = false;
     try {
       _currentBrightness = await ScreenBrightness().current;
     } catch (_) {}
     try {
-      _currentVolume = await VolumeController().getVolume();
+      _currentVolume = await VolumeController.instance.getVolume();
     } catch (_) {}
   }
 
@@ -371,7 +371,7 @@ class _VideoPlayerMobileControlsState
                     ScreenBrightness().setScreenBrightness(_currentBrightness);
                   } else {
                     _currentVolume = clampDouble(_currentVolume - add, 0.0, 1.0);
-                    VolumeController().setVolume(_currentVolume);
+                    VolumeController.instance.setVolume(_currentVolume);
                   }
                   _isAdjusting = true;
                   setState(() {});

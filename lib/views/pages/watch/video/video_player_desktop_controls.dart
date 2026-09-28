@@ -865,7 +865,7 @@ class _QualityState extends State<_Quality> {
       controller: _flyoutController,
       child: Button(
         style: ButtonStyle(
-          padding: ButtonState.all(
+          padding: WidgetStateProperty.all(
             const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           ),
         ),
@@ -1130,7 +1130,7 @@ class _SpeedState extends State<_Speed> {
       controller: _flyoutController,
       child: Button(
         style: ButtonStyle(
-          padding: ButtonState.all(
+          padding: WidgetStateProperty.all(
             const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           ),
         ),
