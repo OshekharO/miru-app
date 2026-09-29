@@ -17,13 +17,13 @@ class ExtensionLogTile extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isError
-            ? Colors.red.withOpacity(0.12)
-            : Colors.grey.withOpacity(0.1),
+            ? Colors.red.withValues(alpha: 0.12)
+            : Colors.grey.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
         border: Border.all(
           color: isError
-              ? Colors.red.withOpacity(0.4)
-              : Colors.grey.withOpacity(0.2),
+              ? Colors.red.withValues(alpha: 0.4)
+              : Colors.grey.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -63,8 +63,8 @@ class ExtensionLogTile extends StatelessWidget {
                           horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: isError
-                            ? Colors.red.withOpacity(0.2)
-                            : Colors.blue.withOpacity(0.15),
+                            ? Colors.red.withValues(alpha: 0.2)
+                            : Colors.blue.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(

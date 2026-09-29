@@ -164,85 +164,99 @@ class _ExtensionDebugWindowState extends State<ExtensionDebugWindow> {
     return FluentApp(
       debugShowCheckedModeBanner: false,
       theme: FluentThemeData.dark(),
-      home: Container(
-        color: FluentThemeData.dark().acrylicBackgroundColor,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      home: ScaffoldPage(
+        header: PageHeader(
+          title: Row(
+            children: [
+              const Icon(FluentIcons.bug, size: 20),
+              const SizedBox(width: 8),
+              const Text("Extension Debugger", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const Spacer(),
+              // 获取扩展列表
+              Button(
+                onPressed: _getInstalledExtensions,
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(FluentIcons.refresh, size: 12),
+                    SizedBox(width: 6),
+                    Text("Refresh"),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              // 选择扩展
+              SizedBox(
+                width: 220,
+                child: ComboBox<Extension>(
+                  placeholder: const Text("Select Extension"),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedExtension = value;
+                    });
+                  },
+                  items: [
+                    for (var ext in _extensions)
+                      ComboBoxItem<Extension>(
+                        value: ext,
+                        child: Row(
+                          children: [
+                            Text(ext.name, overflow: TextOverflow.ellipsis),
+                            const SizedBox(width: 6),
+                            Text(
+                              ext.package,
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.grey[400],
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            )
+                          ],
+                        ),
+                      ),
+                  ],
+                  value: _selectedExtension,
+                ),
+              ),
+              const SizedBox(width: 8),
+              // 清空选择
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    _selectedExtension = null;
+                  });
+                },
+                icon: const Icon(
+                  FluentIcons.clear,
+                  size: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+        content: Column(
           children: [
-            Card(
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-                  Expanded(
-                    child: Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: [
-                        for (var tab in _tabs)
-                          ToggleButton(
-                            checked: _currentTab == tab,
-                            onChanged: (value) {
-                              if (!value) {
-                                return;
-                              }
-                              setState(() {
-                                _currentTab = tab;
-                              });
-                            },
-                            child: Text(tab),
-                          ),
-                      ],
+                  for (var tab in _tabs) ...[
+                    ToggleButton(
+                      checked: _currentTab == tab,
+                      onChanged: (value) {
+                        if (!value) return;
+                        setState(() {
+                          _currentTab = tab;
+                        });
+                      },
+                      child: Text(tab),
                     ),
-                  ),
-                  // 获取扩展列表
-                  Button(
-                    onPressed: _getInstalledExtensions,
-                    child: const Text("Refresh"),
-                  ),
-                  const SizedBox(width: 8),
-                  // 选择扩展
-                  ComboBox<Extension>(
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedExtension = value;
-                      });
-                    },
-                    items: [
-                      for (var ext in _extensions)
-                        ComboBoxItem<Extension>(
-                          value: ext,
-                          child: Row(
-                            children: [
-                              Text(ext.name),
-                              const SizedBox(width: 8),
-                              Text(
-                                ext.package,
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                    ],
-                    value: _selectedExtension,
-                  ),
-                  const SizedBox(width: 8),
-                  // 清空选择
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _selectedExtension = null;
-                      });
-                    },
-                    icon: const Icon(
-                      FluentIcons.clear,
-                      size: 10,
-                    ),
-                  ),
+                    const SizedBox(width: 8),
+                  ],
                 ],
               ),
             ),
-            const SizedBox(height: 10),
+            const Divider(style: DividerThemeData(verticalMargin: EdgeInsets.symmetric(vertical: 8))),
             Expanded(
               child: IndexedStack(
                 index: _tabs.indexOf(_currentTab),
@@ -271,10 +285,12 @@ class ConsoleView extends StatefulWidget {
 
 class _ConsoleViewState extends State<ConsoleView> {
   final ScrollController _controller = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
 
   List<ExtensionLog> get logs => widget.logs;
   // 是否滚动到底部
   bool _isScrollToBottom = true;
+  String _filterLevel = "All"; // "All", "Info", "Error"
 
   @override
   void initState() {
@@ -310,26 +326,90 @@ class _ConsoleViewState extends State<ConsoleView> {
   @override
   void dispose() {
     _controller.dispose();
+    _searchController.dispose();
     super.dispose();
+  }
+
+  List<ExtensionLog> get _filteredLogs {
+    final query = _searchController.text.trim().toLowerCase();
+    return logs.where((log) {
+      if (_filterLevel == "Info" && log.level != ExtensionLogLevel.info) {
+        return false;
+      }
+      if (_filterLevel == "Error" && log.level != ExtensionLogLevel.error) {
+        return false;
+      }
+      if (query.isNotEmpty) {
+        final matchesContent = log.content.toLowerCase().contains(query);
+        final matchesName = log.extension.name.toLowerCase().contains(query);
+        final matchesPkg = log.extension.package.toLowerCase().contains(query);
+        if (!matchesContent && !matchesName && !matchesPkg) {
+          return false;
+        }
+      }
+      return true;
+    }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (logs.isEmpty) {
-      return const Center(
-        child: Text("No log"),
-      );
-    }
+    final filtered = _filteredLogs;
+
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
             children: [
+              SizedBox(
+                width: 200,
+                child: TextBox(
+                  controller: _searchController,
+                  placeholder: "Filter logs...",
+                  prefix: const Padding(
+                    padding: EdgeInsets.only(left: 8),
+                    child: Icon(FluentIcons.search, size: 12),
+                  ),
+                  suffix: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(FluentIcons.clear, size: 10),
+                          onPressed: () {
+                            setState(() {
+                              _searchController.clear();
+                            });
+                          },
+                        )
+                      : null,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
+              const SizedBox(width: 10),
+              ComboBox<String>(
+                value: _filterLevel,
+                items: const [
+                  ComboBoxItem(value: "All", child: Text("Level: All")),
+                  ComboBoxItem(value: "Info", child: Text("Level: Info")),
+                  ComboBoxItem(value: "Error", child: Text("Level: Error")),
+                ],
+                onChanged: (val) {
+                  if (val != null) {
+                    setState(() {
+                      _filterLevel = val;
+                    });
+                  }
+                },
+              ),
+              const Spacer(),
               Button(
                 onPressed: widget.onClear,
-                child: const Text("Clear"),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(FluentIcons.delete, size: 12),
+                    SizedBox(width: 4),
+                    Text("Clear"),
+                  ],
+                ),
               ),
               const SizedBox(width: 8),
               // 自动滚动到底部
@@ -347,13 +427,19 @@ class _ConsoleViewState extends State<ConsoleView> {
         ),
         const SizedBox(height: 10),
         Expanded(
-          child: ListView(
-            controller: _controller,
-            padding: const EdgeInsets.all(10),
-            children: [
-              for (var log in logs) ExtensionLogTile(log: log),
-            ],
-          ),
+          child: filtered.isEmpty
+              ? const Center(child: Text("No logs matching filter"))
+              : ListView.builder(
+                  controller: _controller,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  itemCount: filtered.length,
+                  itemBuilder: (context, index) {
+                    return ExtensionLogTile(
+                      key: ValueKey(filtered[index].time.millisecondsSinceEpoch.toString() + index.toString()),
+                      log: filtered[index],
+                    );
+                  },
+                ),
         )
       ],
     );
@@ -375,148 +461,263 @@ class NetworkView extends StatefulWidget {
 
 class _NetworkViewState extends State<NetworkView> {
   String _selectLogKey = "";
+  final TextEditingController _searchController = TextEditingController();
+  String _filterStatus = "All"; // "All", "2xx", "Error", "Waiting"
+
   ExtensionNetworkLog? get _selectLog => widget.logs[_selectLogKey];
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<MapEntry<String, ExtensionNetworkLog>> get _filteredLogs {
+    final query = _searchController.text.trim().toLowerCase();
+    return widget.logs.entries.where((entry) {
+      final log = entry.value;
+      if (_filterStatus == "2xx") {
+        if (log.statusCode == null || log.statusCode! < 200 || log.statusCode! >= 300) {
+          return false;
+        }
+      } else if (_filterStatus == "Error") {
+        if (log.statusCode == null || (log.statusCode! >= 200 && log.statusCode! < 300)) {
+          return false;
+        }
+      } else if (_filterStatus == "Waiting") {
+        if (log.statusCode != null) {
+          return false;
+        }
+      }
+
+      if (query.isNotEmpty) {
+        final matchesUrl = log.url.toLowerCase().contains(query);
+        final matchesMethod = log.method.toLowerCase().contains(query);
+        if (!matchesUrl && !matchesMethod) {
+          return false;
+        }
+      }
+      return true;
+    }).toList();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (widget.logs.isEmpty) {
-      return const Center(
-        child: Text("No log"),
-      );
-    }
+    final filtered = _filteredLogs;
+
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
             children: [
+              SizedBox(
+                width: 200,
+                child: TextBox(
+                  controller: _searchController,
+                  placeholder: "Filter requests...",
+                  prefix: const Padding(
+                    padding: EdgeInsets.only(left: 8),
+                    child: Icon(FluentIcons.search, size: 12),
+                  ),
+                  suffix: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(FluentIcons.clear, size: 10),
+                          onPressed: () {
+                            setState(() {
+                              _searchController.clear();
+                            });
+                          },
+                        )
+                      : null,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
+              const SizedBox(width: 10),
+              ComboBox<String>(
+                value: _filterStatus,
+                items: const [
+                  ComboBoxItem(value: "All", child: Text("Status: All")),
+                  ComboBoxItem(value: "2xx", child: Text("Status: 2xx")),
+                  ComboBoxItem(value: "Error", child: Text("Status: Error")),
+                  ComboBoxItem(value: "Waiting", child: Text("Status: Waiting")),
+                ],
+                onChanged: (val) {
+                  if (val != null) {
+                    setState(() {
+                      _filterStatus = val;
+                    });
+                  }
+                },
+              ),
+              const Spacer(),
               Button(
                 onPressed: widget.onClear,
-                child: const Text("Clear"),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(FluentIcons.delete, size: 12),
+                    SizedBox(width: 4),
+                    Text("Clear"),
+                  ],
+                ),
               ),
             ],
           ),
         ),
         const SizedBox(height: 10),
         Expanded(
-          child: Row(
-            children: [
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.all(10),
+          child: widget.logs.isEmpty
+              ? const Center(child: Text("No network logs"))
+              : Row(
                   children: [
-                    for (var log in widget.logs.entries)
-                      ListTile.selectable(
-                        leading: Text(
-                          log.value.statusCode == null
-                              ? "waiting"
-                              : log.value.statusCode.toString(),
-                          style: TextStyle(
-                            color: log.value.statusCode != null
-                                ? (log.value.statusCode! >= 200 &&
-                                        log.value.statusCode! < 300
-                                    ? Colors.green
-                                    : Colors.red)
-                                : null,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        selectionMode: ListTileSelectionMode.none,
-                        subtitle: Text(
-                          log.value.url,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        selected: _selectLogKey == log.key,
-                        title: Text(
-                          log.value.url.split('/').last,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            if (_selectLogKey == log.key) {
-                              _selectLogKey = "";
-                              return;
-                            }
-                            _selectLogKey = log.key;
-                          });
-                        },
-                      ),
+                    Expanded(
+                      flex: 2,
+                      child: filtered.isEmpty
+                          ? const Center(child: Text("No requests match filter"))
+                          : ListView.builder(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              itemCount: filtered.length,
+                              itemBuilder: (context, index) {
+                                final log = filtered[index];
+                                final isSelected = _selectLogKey == log.key;
+                                final isSuccess = log.value.statusCode != null &&
+                                    log.value.statusCode! >= 200 &&
+                                    log.value.statusCode! < 300;
+                                final statusColor = log.value.statusCode == null
+                                    ? Colors.orange
+                                    : (isSuccess ? Colors.green : Colors.red);
+
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 4),
+                                  child: ListTile.selectable(
+                                    selected: isSelected,
+                                    selectionMode: ListTileSelectionMode.none,
+                                    leading: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: statusColor.withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        log.value.statusCode == null ? "WAIT" : log.value.statusCode.toString(),
+                                        style: TextStyle(
+                                          color: statusColor,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    ),
+                                    title: Text(
+                                      "${log.value.method.toUpperCase()} ${log.value.url.split('/').last.isEmpty ? log.value.url : log.value.url.split('/').last}",
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                                    ),
+                                    subtitle: Text(
+                                      log.value.url,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(fontSize: 11, color: Colors.grey[400]),
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        if (_selectLogKey == log.key) {
+                                          _selectLogKey = "";
+                                          return;
+                                        }
+                                        _selectLogKey = log.key;
+                                      });
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                    const Divider(direction: Axis.vertical),
+                    Expanded(
+                      flex: 3,
+                      child: _selectLogKey.isNotEmpty && _selectLog != null
+                          ? ListView(
+                              padding: const EdgeInsets.all(12),
+                              children: [
+                                Card(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text("URL", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                                      const SizedBox(height: 4),
+                                      SelectableText(_selectLog!.url, style: const TextStyle(fontSize: 13)),
+                                      const SizedBox(height: 10),
+                                      Row(
+                                        children: [
+                                          const Text("Method: ", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                                          SelectableText(_selectLog!.method, style: const TextStyle(fontSize: 13)),
+                                          const SizedBox(width: 20),
+                                          const Text("Status: ", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                                          SelectableText(_selectLog!.statusCode?.toString() ?? "waiting", style: const TextStyle(fontSize: 13)),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                if (_selectLog!.requestHeaders != null && _selectLog!.requestHeaders!.isNotEmpty) ...[
+                                  Expander(
+                                    header: const Text("Request Headers", style: TextStyle(fontWeight: FontWeight.bold)),
+                                    content: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        for (var header in _selectLog!.requestHeaders!.entries)
+                                          SelectableText(
+                                            "${header.key}: ${header.value}",
+                                            style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                ],
+                                if (_selectLog!.requestBody != null && _selectLog!.requestBody.toString().isNotEmpty) ...[
+                                  Expander(
+                                    header: const Text("Request Body", style: TextStyle(fontWeight: FontWeight.bold)),
+                                    content: SelectableText(
+                                      _selectLog!.requestBody.toString(),
+                                      style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                ],
+                                if (_selectLog!.responseHeaders != null && _selectLog!.responseHeaders!.isNotEmpty) ...[
+                                  Expander(
+                                    header: const Text("Response Headers", style: TextStyle(fontWeight: FontWeight.bold)),
+                                    content: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        for (var header in _selectLog!.responseHeaders!.entries)
+                                          SelectableText(
+                                            "${header.key}: ${header.value}",
+                                            style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                ],
+                                Expander(
+                                  initiallyExpanded: true,
+                                  header: const Text("Response Body", style: TextStyle(fontWeight: FontWeight.bold)),
+                                  content: SelectableText(
+                                    _selectLog!.responseBody ?? "",
+                                    style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : const Center(
+                              child: Text("Select a request to view details"),
+                            ),
+                    ),
                   ],
                 ),
-              ),
-              if (_selectLogKey.isNotEmpty && _selectLog != null)
-                Expanded(
-                  flex: 2,
-                  child: ListView(
-                    children: [
-                      ListTile(
-                        title: const Text("URL"),
-                        subtitle: SelectableText(
-                          _selectLog!.url,
-                        ),
-                      ),
-                      ListTile(
-                        title: const Text("Method"),
-                        subtitle: SelectableText(
-                          _selectLog!.method,
-                        ),
-                      ),
-                      ListTile(
-                        title: const Text("Status Code"),
-                        subtitle: SelectableText(
-                          _selectLog!.statusCode.toString(),
-                        ),
-                      ),
-                      if (_selectLog!.requestHeaders != null)
-                        ListTile(
-                          title: const Text("Request Headers"),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              for (var header
-                                  in _selectLog!.requestHeaders!.entries)
-                                SelectableText(
-                                  "${header.key}: ${header.value}",
-                                ),
-                            ],
-                          ),
-                        ),
-                      ListTile(
-                        title: const Text("Request Body"),
-                        subtitle: SelectableText(
-                          _selectLog!.requestBody.toString(),
-                        ),
-                      ),
-                      if (_selectLog!.responseHeaders != null)
-                        ListTile(
-                          title: const Text("Response Headers"),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              for (var header
-                                  in _selectLog!.responseHeaders!.entries)
-                                SelectableText(
-                                  "${header.key}: ${header.value}",
-                                ),
-                            ],
-                          ),
-                        ),
-                      ListTile(
-                        title: const Text("Response Body"),
-                        subtitle: TextBox(
-                          readOnly: true,
-                          maxLines: 100,
-                          controller: TextEditingController(
-                            text: _selectLog!.responseBody,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-            ],
-          ),
         )
       ],
     );
@@ -590,30 +791,35 @@ class _DebugViewState extends State<DebugView> {
       children: [
         Expanded(
           child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             children: [
               for (var method in _methods.entries)
-                ListTile.selectable(
-                  title: Text(
-                    method.key,
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: ListTile.selectable(
+                    title: Text(
+                      method.key,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                    subtitle: Text(method.value, style: TextStyle(fontSize: 11, color: Colors.grey[400])),
+                    onSelectionChange: (value) {
+                      if (!value) {
+                        return;
+                      }
+                      setState(() {
+                        _controller.text = 'extension.${method.key}';
+                      });
+                    },
                   ),
-                  subtitle: Text(method.value),
-                  onSelectionChange: (value) {
-                    if (!value) {
-                      return;
-                    }
-                    setState(() {
-                      _controller.text = 'extension.${method.key}';
-                    });
-                  },
                 )
             ],
           ),
         ),
-        const SizedBox(width: 10),
+        const Divider(direction: Axis.vertical),
         Expanded(
           flex: 3,
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(12.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -621,7 +827,7 @@ class _DebugViewState extends State<DebugView> {
                   children: [
                     Expanded(
                       child: TextBox(
-                        placeholder: "call method",
+                        placeholder: "e.g., extension.latest(1)",
                         controller: _controller,
                       ),
                     ),
@@ -632,27 +838,41 @@ class _DebugViewState extends State<DebugView> {
                           : () {
                               execute();
                             },
-                      child: const Text("Execute"),
+                      child: _isLoading
+                          ? const ProgressRing(strokeWidth: 2)
+                          : const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(FluentIcons.play, size: 12),
+                                SizedBox(width: 4),
+                                Text("Execute"),
+                              ],
+                            ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
-                const Text("Result"),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
+                const Text("Execution Result", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                const SizedBox(height: 8),
                 Expanded(
-                  child: material.MaterialApp(
-                    debugShowCheckedModeBanner: false,
-                    home: material.Scaffold(
-                      backgroundColor: Colors.transparent,
-                      body: CodeTheme(
-                        data: CodeThemeData(
-                          styles: monokaiSublimeTheme,
-                        ),
-                        child: SingleChildScrollView(
-                          child: CodeField(
-                            controller: _resultController,
-                            textStyle: const TextStyle(
-                              fontSize: 14,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: material.MaterialApp(
+                      debugShowCheckedModeBanner: false,
+                      home: material.Scaffold(
+                        backgroundColor: const Color(0xFF272822),
+                        body: CodeTheme(
+                          data: CodeThemeData(
+                            styles: monokaiSublimeTheme,
+                          ),
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.all(12),
+                            child: CodeField(
+                              controller: _resultController,
+                              textStyle: const TextStyle(
+                                fontSize: 13,
+                                fontFamily: 'monospace',
+                              ),
                             ),
                           ),
                         ),
