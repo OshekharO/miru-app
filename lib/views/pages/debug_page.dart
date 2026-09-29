@@ -2,8 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
-import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter/material.dart' as material;
+import 'package:flutter/material.dart';
 import 'package:flutter_code_editor/flutter_code_editor.dart';
 import 'package:flutter_highlight/themes/monokai-sublime.dart';
 import 'package:miru_app/models/extension.dart';
@@ -161,102 +160,102 @@ class _ExtensionDebugWindowState extends State<ExtensionDebugWindow> {
       ),
     ];
 
-    return FluentApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: FluentThemeData.dark(),
-      home: ScaffoldPage(
-        header: PageHeader(
-          title: Row(
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.deepPurple,
+          brightness: Brightness.dark,
+        ),
+      ),
+      home: Scaffold(
+        appBar: AppBar(
+          centerTitle: false,
+          title: const Row(
             children: [
-              const Icon(FluentIcons.bug, size: 20),
-              const SizedBox(width: 8),
-              const Text("Extension Debugger", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const Spacer(),
-              // 获取扩展列表
-              Button(
-                onPressed: _getInstalledExtensions,
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(FluentIcons.refresh, size: 12),
-                    SizedBox(width: 6),
-                    Text("Refresh"),
-                  ],
+              Icon(Icons.bug_report_rounded, size: 24),
+              SizedBox(width: 10),
+              Text("Extension Debugger", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            ],
+          ),
+          actions: [
+            IconButton.filledTonal(
+              tooltip: "Refresh Extensions",
+              onPressed: _getInstalledExtensions,
+              icon: const Icon(Icons.refresh_rounded, size: 18),
+            ),
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 220,
+              child: DropdownButtonFormField<Extension>(
+                initialValue: _selectedExtension,
+                isExpanded: true,
+                decoration: InputDecoration(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  labelText: "Filter Extension",
                 ),
-              ),
-              const SizedBox(width: 8),
-              // 选择扩展
-              SizedBox(
-                width: 220,
-                child: ComboBox<Extension>(
-                  placeholder: const Text("Select Extension"),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedExtension = value;
-                    });
-                  },
-                  items: [
-                    for (var ext in _extensions)
-                      ComboBoxItem<Extension>(
-                        value: ext,
-                        child: Row(
-                          children: [
-                            Text(ext.name, overflow: TextOverflow.ellipsis),
-                            const SizedBox(width: 6),
-                            Text(
-                              ext.package,
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Colors.grey[400],
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            )
-                          ],
-                        ),
+                items: [
+                  for (var ext in _extensions)
+                    DropdownMenuItem<Extension>(
+                      value: ext,
+                      child: Text(
+                        ext.name,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 13),
                       ),
-                  ],
-                  value: _selectedExtension,
-                ),
+                    )
+                ],
+                onChanged: (val) {
+                  setState(() {
+                    _selectedExtension = val;
+                  });
+                },
               ),
-              const SizedBox(width: 8),
-              // 清空选择
+            ),
+            if (_selectedExtension != null) ...[
+              const SizedBox(width: 4),
               IconButton(
+                tooltip: "Clear Extension Filter",
+                icon: const Icon(Icons.clear_rounded, size: 18),
                 onPressed: () {
                   setState(() {
                     _selectedExtension = null;
                   });
                 },
-                icon: const Icon(
-                  FluentIcons.clear,
-                  size: 12,
-                ),
               ),
             ],
-          ),
+            const SizedBox(width: 12),
+          ],
         ),
-        content: Column(
+        body: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  for (var tab in _tabs) ...[
-                    ToggleButton(
-                      checked: _currentTab == tab,
-                      onChanged: (value) {
-                        if (!value) return;
-                        setState(() {
-                          _currentTab = tab;
-                        });
-                      },
-                      child: Text(tab),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: SegmentedButton<String>(
+                segments: [
+                  for (var tab in _tabs)
+                    ButtonSegment<String>(
+                      value: tab,
+                      label: Text(tab, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      icon: Icon(
+                        tab == "Log"
+                            ? Icons.terminal_rounded
+                            : (tab == "Network" ? Icons.language_rounded : Icons.code_rounded),
+                        size: 18,
+                      ),
                     ),
-                    const SizedBox(width: 8),
-                  ],
                 ],
+                selected: {_currentTab},
+                onSelectionChanged: (newSelection) {
+                  setState(() {
+                    _currentTab = newSelection.first;
+                  });
+                },
               ),
             ),
-            const Divider(style: DividerThemeData(verticalMargin: EdgeInsets.symmetric(vertical: 8))),
+            const Divider(height: 1),
             Expanded(
               child: IndexedStack(
                 index: _tabs.indexOf(_currentTab),
@@ -288,14 +287,13 @@ class _ConsoleViewState extends State<ConsoleView> {
   final TextEditingController _searchController = TextEditingController();
 
   List<ExtensionLog> get logs => widget.logs;
-  // 是否滚动到底部
   bool _isScrollToBottom = true;
-  String _filterLevel = "All"; // "All", "Info", "Error"
+  String _filterLevel = "All";
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       scrollToBottom();
     });
   }
@@ -303,15 +301,13 @@ class _ConsoleViewState extends State<ConsoleView> {
   @override
   void didUpdateWidget(covariant ConsoleView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      if (!_isScrollToBottom) {
-        return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_isScrollToBottom) {
+        scrollToBottom();
       }
-      scrollToBottom();
     });
   }
 
-  // 滚动到底部
   void scrollToBottom() {
     if (!_controller.hasClients) {
       return;
@@ -319,7 +315,7 @@ class _ConsoleViewState extends State<ConsoleView> {
     _controller.animateTo(
       _controller.position.maxScrollExtent,
       duration: const Duration(milliseconds: 300),
-      curve: Curves.ease,
+      curve: Curves.easeOutCubic,
     );
   }
 
@@ -354,84 +350,92 @@ class _ConsoleViewState extends State<ConsoleView> {
   @override
   Widget build(BuildContext context) {
     final filtered = _filteredLogs;
+    final theme = Theme.of(context);
 
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              SizedBox(
-                width: 200,
-                child: TextBox(
+              Expanded(
+                child: SearchBar(
                   controller: _searchController,
-                  placeholder: "Filter logs...",
-                  prefix: const Padding(
-                    padding: EdgeInsets.only(left: 8),
-                    child: Icon(FluentIcons.search, size: 12),
-                  ),
-                  suffix: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(FluentIcons.clear, size: 10),
-                          onPressed: () {
-                            setState(() {
-                              _searchController.clear();
-                            });
-                          },
-                        )
+                  hintText: "Search logs...",
+                  leading: const Icon(Icons.search_rounded, size: 20),
+                  trailing: _searchController.text.isNotEmpty
+                      ? [
+                          IconButton(
+                            icon: const Icon(Icons.clear_rounded, size: 18),
+                            onPressed: () {
+                              setState(() {
+                                _searchController.clear();
+                              });
+                            },
+                          )
+                        ]
                       : null,
                   onChanged: (_) => setState(() {}),
+                  elevation: WidgetStateProperty.all(1),
                 ),
               ),
-              const SizedBox(width: 10),
-              ComboBox<String>(
-                value: _filterLevel,
-                items: const [
-                  ComboBoxItem(value: "All", child: Text("Level: All")),
-                  ComboBoxItem(value: "Info", child: Text("Level: Info")),
-                  ComboBoxItem(value: "Error", child: Text("Level: Error")),
+              const SizedBox(width: 12),
+              Wrap(
+                spacing: 6,
+                children: [
+                  FilterChip(
+                    label: const Text("All"),
+                    selected: _filterLevel == "All",
+                    onSelected: (_) => setState(() => _filterLevel = "All"),
+                  ),
+                  FilterChip(
+                    label: const Text("Info"),
+                    selected: _filterLevel == "Info",
+                    onSelected: (_) => setState(() => _filterLevel = "Info"),
+                  ),
+                  FilterChip(
+                    label: const Text("Error"),
+                    selected: _filterLevel == "Error",
+                    onSelected: (_) => setState(() => _filterLevel = "Error"),
+                  ),
                 ],
-                onChanged: (val) {
-                  if (val != null) {
-                    setState(() {
-                      _filterLevel = val;
-                    });
-                  }
-                },
               ),
-              const Spacer(),
-              Button(
+              const SizedBox(width: 12),
+              IconButton.filledTonal(
+                tooltip: "Clear Logs",
                 onPressed: widget.onClear,
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(FluentIcons.delete, size: 12),
-                    SizedBox(width: 4),
-                    Text("Clear"),
-                  ],
-                ),
+                icon: const Icon(Icons.delete_outline_rounded, size: 20),
               ),
               const SizedBox(width: 8),
-              // 自动滚动到底部
-              ToggleButton(
-                checked: _isScrollToBottom,
-                onChanged: (value) {
+              FilterChip(
+                avatar: Icon(
+                  _isScrollToBottom ? Icons.south_rounded : Icons.swap_vert_rounded,
+                  size: 16,
+                ),
+                label: const Text("Auto Scroll"),
+                selected: _isScrollToBottom,
+                onSelected: (val) {
                   setState(() {
-                    _isScrollToBottom = value;
+                    _isScrollToBottom = val;
                   });
                 },
-                child: const Text("Auto Scroll"),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 10),
         Expanded(
           child: filtered.isEmpty
-              ? const Center(child: Text("No logs matching filter"))
+              ? Center(
+                  child: Text(
+                    "No logs available",
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                )
               : ListView.builder(
                   controller: _controller,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   itemCount: filtered.length,
                   itemBuilder: (context, index) {
                     return ExtensionLogTile(
@@ -462,7 +466,7 @@ class NetworkView extends StatefulWidget {
 class _NetworkViewState extends State<NetworkView> {
   String _selectLogKey = "";
   final TextEditingController _searchController = TextEditingController();
-  String _filterStatus = "All"; // "All", "2xx", "Error", "Waiting"
+  String _filterStatus = "All";
 
   ExtensionNetworkLog? get _selectLog => widget.logs[_selectLogKey];
 
@@ -504,71 +508,66 @@ class _NetworkViewState extends State<NetworkView> {
   @override
   Widget build(BuildContext context) {
     final filtered = _filteredLogs;
+    final theme = Theme.of(context);
 
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              SizedBox(
-                width: 200,
-                child: TextBox(
+              Expanded(
+                child: SearchBar(
                   controller: _searchController,
-                  placeholder: "Filter requests...",
-                  prefix: const Padding(
-                    padding: EdgeInsets.only(left: 8),
-                    child: Icon(FluentIcons.search, size: 12),
-                  ),
-                  suffix: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(FluentIcons.clear, size: 10),
-                          onPressed: () {
-                            setState(() {
-                              _searchController.clear();
-                            });
-                          },
-                        )
+                  hintText: "Filter request URLs...",
+                  leading: const Icon(Icons.search_rounded, size: 20),
+                  trailing: _searchController.text.isNotEmpty
+                      ? [
+                          IconButton(
+                            icon: const Icon(Icons.clear_rounded, size: 18),
+                            onPressed: () {
+                              setState(() {
+                                _searchController.clear();
+                              });
+                            },
+                          )
+                        ]
                       : null,
                   onChanged: (_) => setState(() {}),
+                  elevation: WidgetStateProperty.all(1),
                 ),
               ),
-              const SizedBox(width: 10),
-              ComboBox<String>(
-                value: _filterStatus,
-                items: const [
-                  ComboBoxItem(value: "All", child: Text("Status: All")),
-                  ComboBoxItem(value: "2xx", child: Text("Status: 2xx")),
-                  ComboBoxItem(value: "Error", child: Text("Status: Error")),
-                  ComboBoxItem(value: "Waiting", child: Text("Status: Waiting")),
+              const SizedBox(width: 12),
+              Wrap(
+                spacing: 6,
+                children: [
+                  for (var status in ["All", "2xx", "Error", "Waiting"])
+                    FilterChip(
+                      label: Text(status),
+                      selected: _filterStatus == status,
+                      onSelected: (_) => setState(() => _filterStatus = status),
+                    ),
                 ],
-                onChanged: (val) {
-                  if (val != null) {
-                    setState(() {
-                      _filterStatus = val;
-                    });
-                  }
-                },
               ),
-              const Spacer(),
-              Button(
+              const SizedBox(width: 12),
+              IconButton.filledTonal(
+                tooltip: "Clear Requests",
                 onPressed: widget.onClear,
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(FluentIcons.delete, size: 12),
-                    SizedBox(width: 4),
-                    Text("Clear"),
-                  ],
-                ),
+                icon: const Icon(Icons.delete_outline_rounded, size: 20),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 10),
         Expanded(
           child: widget.logs.isEmpty
-              ? const Center(child: Text("No network logs"))
+              ? Center(
+                  child: Text(
+                    "No network activity recorded",
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                )
               : Row(
                   children: [
                     Expanded(
@@ -584,23 +583,35 @@ class _NetworkViewState extends State<NetworkView> {
                                 final isSuccess = log.value.statusCode != null &&
                                     log.value.statusCode! >= 200 &&
                                     log.value.statusCode! < 300;
-                                final statusColor = log.value.statusCode == null
-                                    ? Colors.orange
-                                    : (isSuccess ? Colors.green : Colors.red);
 
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 4),
-                                  child: ListTile.selectable(
-                                    selected: isSelected,
-                                    selectionMode: ListTileSelectionMode.none,
+                                final statusColor = log.value.statusCode == null
+                                    ? Colors.amber
+                                    : (isSuccess ? Colors.green : theme.colorScheme.error);
+
+                                return Card(
+                                  elevation: isSelected ? 2 : 0,
+                                  color: isSelected
+                                      ? theme.colorScheme.primaryContainer.withOpacity(0.4)
+                                      : theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    side: BorderSide(
+                                      color: isSelected
+                                          ? theme.colorScheme.primary
+                                          : theme.colorScheme.outlineVariant.withOpacity(0.4),
+                                    ),
+                                  ),
+                                  margin: const EdgeInsets.only(bottom: 6),
+                                  child: ListTile(
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                     leading: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                       decoration: BoxDecoration(
-                                        color: statusColor.withOpacity(0.15),
-                                        borderRadius: BorderRadius.circular(4),
+                                        color: statusColor.withOpacity(0.2),
+                                        borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Text(
-                                        log.value.statusCode == null ? "WAIT" : log.value.statusCode.toString(),
+                                        log.value.statusCode?.toString() ?? "WAIT",
                                         style: TextStyle(
                                           color: statusColor,
                                           fontWeight: FontWeight.bold,
@@ -611,20 +622,20 @@ class _NetworkViewState extends State<NetworkView> {
                                     title: Text(
                                       "${log.value.method.toUpperCase()} ${log.value.url.split('/').last.isEmpty ? log.value.url : log.value.url.split('/').last}",
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                                      style: theme.textTheme.titleSmall?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                     subtitle: Text(
                                       log.value.url,
                                       overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(fontSize: 11, color: Colors.grey[400]),
+                                      style: theme.textTheme.bodySmall?.copyWith(
+                                        color: theme.colorScheme.onSurfaceVariant,
+                                      ),
                                     ),
-                                    onPressed: () {
+                                    onTap: () {
                                       setState(() {
-                                        if (_selectLogKey == log.key) {
-                                          _selectLogKey = "";
-                                          return;
-                                        }
-                                        _selectLogKey = log.key;
+                                        _selectLogKey = _selectLogKey == log.key ? "" : log.key;
                                       });
                                     },
                                   ),
@@ -632,7 +643,7 @@ class _NetworkViewState extends State<NetworkView> {
                               },
                             ),
                     ),
-                    const Divider(direction: Axis.vertical),
+                    const VerticalDivider(width: 1),
                     Expanded(
                       flex: 3,
                       child: _selectLogKey.isNotEmpty && _selectLog != null
@@ -640,30 +651,36 @@ class _NetworkViewState extends State<NetworkView> {
                               padding: const EdgeInsets.all(12),
                               children: [
                                 Card(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const Text("URL", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                                      const SizedBox(height: 4),
-                                      SelectableText(_selectLog!.url, style: const TextStyle(fontSize: 13)),
-                                      const SizedBox(height: 10),
-                                      Row(
-                                        children: [
-                                          const Text("Method: ", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                                          SelectableText(_selectLog!.method, style: const TextStyle(fontSize: 13)),
-                                          const SizedBox(width: 20),
-                                          const Text("Status: ", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                                          SelectableText(_selectLog!.statusCode?.toString() ?? "waiting", style: const TextStyle(fontSize: 13)),
-                                        ],
-                                      ),
-                                    ],
+                                  elevation: 1,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text("URL", style: theme.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.bold)),
+                                        const SizedBox(height: 4),
+                                        SelectableText(_selectLog!.url, style: theme.textTheme.bodyMedium),
+                                        const SizedBox(height: 12),
+                                        Row(
+                                          children: [
+                                            Text("Method: ", style: theme.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.bold)),
+                                            SelectableText(_selectLog!.method, style: theme.textTheme.bodyMedium),
+                                            const SizedBox(width: 24),
+                                            Text("Status: ", style: theme.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.bold)),
+                                            SelectableText(_selectLog!.statusCode?.toString() ?? "waiting", style: theme.textTheme.bodyMedium),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 8),
-                                if (_selectLog!.requestHeaders != null && _selectLog!.requestHeaders!.isNotEmpty) ...[
-                                  Expander(
-                                    header: const Text("Request Headers", style: TextStyle(fontWeight: FontWeight.bold)),
-                                    content: Column(
+                                if (_selectLog!.requestHeaders != null && _selectLog!.requestHeaders!.isNotEmpty)
+                                  _buildExpanderCard(
+                                    theme,
+                                    title: "Request Headers",
+                                    child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         for (var header in _selectLog!.requestHeaders!.entries)
@@ -674,22 +691,20 @@ class _NetworkViewState extends State<NetworkView> {
                                       ],
                                     ),
                                   ),
-                                  const SizedBox(height: 8),
-                                ],
-                                if (_selectLog!.requestBody != null && _selectLog!.requestBody.toString().isNotEmpty) ...[
-                                  Expander(
-                                    header: const Text("Request Body", style: TextStyle(fontWeight: FontWeight.bold)),
-                                    content: SelectableText(
+                                if (_selectLog!.requestBody != null && _selectLog!.requestBody.toString().isNotEmpty)
+                                  _buildExpanderCard(
+                                    theme,
+                                    title: "Request Body",
+                                    child: SelectableText(
                                       _selectLog!.requestBody.toString(),
                                       style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
                                     ),
                                   ),
-                                  const SizedBox(height: 8),
-                                ],
-                                if (_selectLog!.responseHeaders != null && _selectLog!.responseHeaders!.isNotEmpty) ...[
-                                  Expander(
-                                    header: const Text("Response Headers", style: TextStyle(fontWeight: FontWeight.bold)),
-                                    content: Column(
+                                if (_selectLog!.responseHeaders != null && _selectLog!.responseHeaders!.isNotEmpty)
+                                  _buildExpanderCard(
+                                    theme,
+                                    title: "Response Headers",
+                                    child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         for (var header in _selectLog!.responseHeaders!.entries)
@@ -700,26 +715,48 @@ class _NetworkViewState extends State<NetworkView> {
                                       ],
                                     ),
                                   ),
-                                  const SizedBox(height: 8),
-                                ],
-                                Expander(
+                                _buildExpanderCard(
+                                  theme,
+                                  title: "Response Body",
                                   initiallyExpanded: true,
-                                  header: const Text("Response Body", style: TextStyle(fontWeight: FontWeight.bold)),
-                                  content: SelectableText(
+                                  child: SelectableText(
                                     _selectLog!.responseBody ?? "",
                                     style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
                                   ),
                                 ),
                               ],
                             )
-                          : const Center(
-                              child: Text("Select a request to view details"),
+                          : Center(
+                              child: Text(
+                                "Select a request to view details",
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
                             ),
                     ),
                   ],
                 ),
         )
       ],
+    );
+  }
+
+  Widget _buildExpanderCard(ThemeData theme, {required String title, required Widget child, bool initiallyExpanded = false}) {
+    return Card(
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
+      ),
+      child: ExpansionTile(
+        initiallyExpanded: initiallyExpanded,
+        title: Text(title, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+        childrenPadding: const EdgeInsets.all(12),
+        expandedCrossAxisAlignment: CrossAxisAlignment.start,
+        children: [child],
+      ),
     );
   }
 }
@@ -736,7 +773,6 @@ class DebugView extends StatefulWidget {
 }
 
 class _DebugViewState extends State<DebugView> {
-  // 方法列表
   final Map<String, String> _methods = {
     "latest(page: number)": "Get latest data form search page",
     "search(keyword: string, page: number, filter: map)":
@@ -752,10 +788,8 @@ class _DebugViewState extends State<DebugView> {
     language: json,
   );
 
-  // 是否等待接收数据
   bool _isLoading = false;
 
-  // 执行方法
   void execute() async {
     _isLoading = true;
     final method = _controller.text;
@@ -781,9 +815,16 @@ class _DebugViewState extends State<DebugView> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     if (widget.selectedExtension == null) {
-      return const Center(
-        child: Text("No extension selected, please select an extension first"),
+      return Center(
+        child: Text(
+          "No extension selected, please select an extension first",
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
       );
     }
 
@@ -791,21 +832,24 @@ class _DebugViewState extends State<DebugView> {
       children: [
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.all(12),
             children: [
               for (var method in _methods.entries)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: ListTile.selectable(
+                Card(
+                  elevation: 0,
+                  margin: const EdgeInsets.only(bottom: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: theme.colorScheme.outlineVariant.withOpacity(0.4)),
+                  ),
+                  child: ListTile(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     title: Text(
                       method.key,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                      style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                    subtitle: Text(method.value, style: TextStyle(fontSize: 11, color: Colors.grey[400])),
-                    onSelectionChange: (value) {
-                      if (!value) {
-                        return;
-                      }
+                    subtitle: Text(method.value, style: theme.textTheme.bodySmall),
+                    onTap: () {
                       setState(() {
                         _controller.text = 'extension.${method.key}';
                       });
@@ -815,7 +859,7 @@ class _DebugViewState extends State<DebugView> {
             ],
           ),
         ),
-        const Divider(direction: Axis.vertical),
+        const VerticalDivider(width: 1),
         Expanded(
           flex: 3,
           child: Padding(
@@ -826,53 +870,53 @@ class _DebugViewState extends State<DebugView> {
                 Row(
                   children: [
                     Expanded(
-                      child: TextBox(
-                        placeholder: "e.g., extension.latest(1)",
+                      child: TextField(
                         controller: _controller,
+                        decoration: InputDecoration(
+                          hintText: "e.g., extension.latest(1)",
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Button(
-                      onPressed: _isLoading
-                          ? null
-                          : () {
-                              execute();
-                            },
-                      child: _isLoading
-                          ? const ProgressRing(strokeWidth: 2)
-                          : const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(FluentIcons.play, size: 12),
-                                SizedBox(width: 4),
-                                Text("Execute"),
-                              ],
-                            ),
+                    const SizedBox(width: 12),
+                    FilledButton.icon(
+                      onPressed: _isLoading ? null : execute,
+                      icon: _isLoading
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.play_arrow_rounded, size: 18),
+                      label: const Text("Execute"),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                const Text("Execution Result", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                const SizedBox(height: 16),
+                Text("Execution Result", style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: material.MaterialApp(
-                      debugShowCheckedModeBanner: false,
-                      home: material.Scaffold(
-                        backgroundColor: const Color(0xFF272822),
-                        body: CodeTheme(
-                          data: CodeThemeData(
-                            styles: monokaiSublimeTheme,
-                          ),
-                          child: SingleChildScrollView(
-                            padding: const EdgeInsets.all(12),
-                            child: CodeField(
-                              controller: _resultController,
-                              textStyle: const TextStyle(
-                                fontSize: 13,
-                                fontFamily: 'monospace',
-                              ),
+                  child: Card(
+                    elevation: 0,
+                    color: const Color(0xFF272822),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: CodeTheme(
+                        data: CodeThemeData(
+                          styles: monokaiSublimeTheme,
+                        ),
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(12),
+                          child: CodeField(
+                            controller: _resultController,
+                            textStyle: const TextStyle(
+                              fontSize: 13,
+                              fontFamily: 'monospace',
                             ),
                           ),
                         ),
