@@ -108,5 +108,5 @@ class ExtensionLogTile extends StatelessWidget {
 }
 
 extension on ColorScheme {
-  Color get surfaceContainerBorder => surfaceContainerHighest;
+  Color get surfaceContainerBorder => surfaceVariant;
 }

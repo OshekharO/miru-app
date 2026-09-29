@@ -189,7 +189,7 @@ class _ExtensionDebugWindowState extends State<ExtensionDebugWindow> {
             SizedBox(
               width: 220,
               child: DropdownButtonFormField<Extension>(
-                initialValue: _selectedExtension,
+                value: _selectedExtension,
                 isExpanded: true,
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -376,7 +376,7 @@ class _ConsoleViewState extends State<ConsoleView> {
                         ]
                       : null,
                   onChanged: (_) => setState(() {}),
-                  elevation: WidgetStateProperty.all(1),
+                  elevation: MaterialStateProperty.all(1),
                 ),
               ),
               const SizedBox(width: 12),
@@ -534,7 +534,7 @@ class _NetworkViewState extends State<NetworkView> {
                         ]
                       : null,
                   onChanged: (_) => setState(() {}),
-                  elevation: WidgetStateProperty.all(1),
+                  elevation: MaterialStateProperty.all(1),
                 ),
               ),
               const SizedBox(width: 12),
@@ -592,7 +592,7 @@ class _NetworkViewState extends State<NetworkView> {
                                   elevation: isSelected ? 2 : 0,
                                   color: isSelected
                                       ? theme.colorScheme.primaryContainer.withOpacity(0.4)
-                                      : theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                                      : theme.colorScheme.surfaceVariant.withOpacity(0.3),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                     side: BorderSide(
