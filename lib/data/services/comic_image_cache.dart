@@ -4,6 +4,7 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+
 /// 漫画图片的磁盘缓存工具。
 ///
 /// 复用 `extended_image` 的磁盘缓存目录与命名规则
@@ -104,9 +105,23 @@ class ComicImageCache {
       // 先写临时文件再 rename，避免写到一半被杀进程留下半张图，
       // 让阅读器把坏文件当缓存命中。
       final temp = File('${file.path}.part');
-      await temp.writeAsBytes(bytes, flush: true);
-      await temp.rename(file.path);
-      return true;
+      try {
+        await temp.writeAsBytes(bytes, flush: true);
+        if (file.existsSync()) {
+          try {
+            await file.delete();
+          } catch (_) {}
+        }
+        await temp.rename(file.path);
+        return true;
+      } catch (e) {
+        if (temp.existsSync()) {
+          try {
+            await temp.delete();
+          } catch (_) {}
+        }
+        rethrow;
+      }
     } catch (e) {
       debugPrint('comic cache download failed: $url $e');
       return false;

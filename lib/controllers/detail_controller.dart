@@ -445,6 +445,7 @@ class DetailPageController extends GetxController {
   @override
   void onClose() {
     scrollController.dispose();
+    _flyoutController.dispose();
     Get.find<MainController>().setActions([]);
     super.onClose();
   }
