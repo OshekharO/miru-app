@@ -882,6 +882,9 @@ class ComicController extends ReaderController<ExtensionMangaWatch> {
       pageController.value.jumpToPage(page);
       return;
     }
+    try {
+      pageController.value.dispose();
+    } catch (_) {}
     pageController.value = ExtendedPageController(initialPage: page);
   }
 
@@ -982,6 +985,9 @@ class ComicController extends ReaderController<ExtensionMangaWatch> {
     ComicCacheConfigStore.revision.removeListener(_onCacheConfigChanged);
     _positionThrottle?.cancel();
     cacheService.dispose();
+    try {
+      pageController.value.dispose();
+    } catch (_) {}
     // 保存历史与同步进度都可能因存储/网络不可用而失败，
     // 关闭流程绝不能被异常中断（否则会卡住阅读器退出）。
     unawaited(_saveStateOnClose());

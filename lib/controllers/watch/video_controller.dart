@@ -565,76 +565,83 @@ class VideoPlayerController extends GetxController {
 
   // 获取画质
   getQuality() async {
-    final url = watchData!.url;
-    final headers = watchData!.headers;
-    logger.info(url);
-    final response = await dio.get(
-      url,
-      options: Options(
-        headers: headers,
-        responseType: ResponseType.stream,
-      ),
-    );
-
-    // 请求判断 content-type 是否为 m3u8
-    final contentType = response.headers.value('content-type')?.toLowerCase();
-    if (contentType == null ||
-        !contentType.contains('mpegurl') &&
-            !contentType.contains('m3u8') &&
-            !contentType.contains('mp2t')) {
-      logger.info('not m3u8');
-      return;
-    }
-
-    // 接收数据到变量
-    final completer = Completer<String>();
-
-    final stream = response.data.stream;
-    final buffer = StringBuffer();
-
-    stream.listen(
-      (data) {
-        buffer.write(utf8.decode(data));
-      },
-      onDone: () {
-        final m3u8Content = buffer.toString();
-        completer.complete(m3u8Content);
-      },
-      onError: (error) {
-        completer.completeError(error);
-      },
-    );
-
-    final m3u8Content = await completer.future;
-    if (m3u8Content.isEmpty) {
-      return;
-    }
-    late HlsPlaylist playlist;
     try {
-      playlist = await HlsPlaylistParser.create().parseString(
-        response.realUri,
-        m3u8Content,
-      );
-    } on ParserException catch (e) {
-      logger.severe(e);
-      return;
-    }
-
-    if (playlist is HlsMasterPlaylist) {
-      final urlList = playlist.mediaPlaylistUrls
-          .map(
-            (e) => e.toString(),
-          )
-          .toList();
-      final resolution = playlist.variants.map(
-        (it) => "${it.format.width}x${it.format.height}",
-      );
-      qualityMap.addAll(
-        Map.fromIterables(
-          resolution,
-          urlList,
+      final url = watchData!.url;
+      final headers = watchData!.headers;
+      logger.info(url);
+      final response = await dio.get(
+        url,
+        options: Options(
+          headers: headers,
+          responseType: ResponseType.stream,
         ),
       );
+
+      // 请求判断 content-type 是否为 m3u8
+      final contentType = response.headers.value('content-type')?.toLowerCase();
+      if (contentType == null ||
+          !contentType.contains('mpegurl') &&
+              !contentType.contains('m3u8') &&
+              !contentType.contains('mp2t')) {
+        logger.info('not m3u8');
+        return;
+      }
+
+      // 接收数据到变量
+      final completer = Completer<String>();
+
+      final stream = response.data.stream;
+      final buffer = StringBuffer();
+
+      stream.listen(
+        (data) {
+          buffer.write(utf8.decode(data));
+        },
+        onDone: () {
+          if (!completer.isCompleted) {
+            completer.complete(buffer.toString());
+          }
+        },
+        onError: (error) {
+          if (!completer.isCompleted) {
+            completer.completeError(error);
+          }
+        },
+      );
+
+      final m3u8Content = await completer.future;
+      if (m3u8Content.isEmpty) {
+        return;
+      }
+      late HlsPlaylist playlist;
+      try {
+        playlist = await HlsPlaylistParser.create().parseString(
+          response.realUri,
+          m3u8Content,
+        );
+      } on ParserException catch (e) {
+        logger.severe(e);
+        return;
+      }
+
+      if (playlist is HlsMasterPlaylist) {
+        final urlList = playlist.mediaPlaylistUrls
+            .map(
+              (e) => e.toString(),
+            )
+            .toList();
+        final resolution = playlist.variants.map(
+          (it) => "${it.format.width}x${it.format.height}",
+        );
+        qualityMap.addAll(
+          Map.fromIterables(
+            resolution,
+            urlList,
+          ),
+        );
+      }
+    } catch (e) {
+      logger.warning('getQuality error: $e');
     }
   }
 

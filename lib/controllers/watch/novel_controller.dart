@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:get/get.dart';
 import 'package:miru_app/models/index.dart';
 import 'package:miru_app/controllers/watch/reader_controller.dart';
@@ -70,9 +72,11 @@ class NovelController extends ReaderController<ExtensionFikushonWatch> {
     itemPositionsListener.itemPositions.removeListener(_onPositionChange);
     if (super.watchData.value != null) {
       final totalProgress = watchData.value!.content.length.toString();
-      super.addHistory(
-        positions.value.toString(),
-        totalProgress,
+      unawaited(
+        super.addHistory(
+          positions.value.toString(),
+          totalProgress,
+        ),
       );
     }
     super.onClose();
