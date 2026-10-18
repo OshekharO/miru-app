@@ -588,28 +588,14 @@ class VideoPlayerController extends GetxController {
       }
 
       // 接收数据到变量
-      final completer = Completer<String>();
-
-      final stream = response.data.stream;
-      final buffer = StringBuffer();
-
-      stream.listen(
-        (data) {
-          buffer.write(utf8.decode(data));
-        },
-        onDone: () {
-          if (!completer.isCompleted) {
-            completer.complete(buffer.toString());
-          }
-        },
-        onError: (error) {
-          if (!completer.isCompleted) {
-            completer.completeError(error);
-          }
-        },
-      );
-
-      final m3u8Content = await completer.future;
+      String m3u8Content = '';
+      try {
+        final stream = response.data.stream;
+        m3u8Content = await utf8.decoder.bind(stream).join();
+      } catch (e) {
+        logger.severe('Error reading m3u8 stream: $e');
+        return;
+      }
       if (m3u8Content.isEmpty) {
         return;
       }

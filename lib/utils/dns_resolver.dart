@@ -125,7 +125,10 @@ class DohInterceptor extends Interceptor {
           providerKey: dnsSetting.toString(),
         );
         if (resolvedIp != null && resolvedIp.isNotEmpty) {
-          options.headers['Host'] ??= host;
+          final existingHost = options.headers['Host'] ?? options.headers['host'];
+          if (existingHost == null) {
+            options.headers['Host'] = host;
+          }
           if (options.path.startsWith('http://') ||
               options.path.startsWith('https://')) {
             final uri = Uri.parse(options.path);
