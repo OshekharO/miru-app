@@ -52,9 +52,7 @@ final router = GoRouter(
           path: '/favorites',
           builder: (context, state) => _animation(
             FavoritesPage(
-              type: ExtensionType.values[int.parse(
-                state.uri.queryParameters['type']!,
-              )],
+              type: ExtensionType.values[int.tryParse(state.uri.queryParameters['type'] ?? '0') ?? 0],
             ),
           ),
         ),
@@ -103,9 +101,7 @@ final router = GoRouter(
           path: '/settings/anilist_more',
           builder: (context, state) => _animation(
             AnilistMorePage(
-              anilistType: AnilistType.values[int.parse(
-                state.uri.queryParameters['type']!,
-              )],
+              anilistType: AnilistType.values[int.tryParse(state.uri.queryParameters['type'] ?? '0') ?? 0],
             ),
           ),
         ),

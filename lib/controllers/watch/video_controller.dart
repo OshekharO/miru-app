@@ -347,7 +347,7 @@ class VideoPlayerController extends GetxController {
             history.episodeId == index.value &&
             history.episodeGroupId == episodeGroupId) {
           _isAutoSeekPosition = true;
-          player.seek(Duration(seconds: int.parse(history.progress)));
+          player.seek(Duration(seconds: int.tryParse(history.progress) ?? 0));
           sendMessage(Message(Text('video.resume-last-playback'.i18n)));
         }
       }),
@@ -828,9 +828,9 @@ class VideoPlayerController extends GetxController {
     final positionParser = PositionParser(dlnaPosition);
     final absTimeArr = positionParser.AbsTime.split(":");
     final absTime = Duration(
-      hours: int.parse(absTimeArr[0]),
-      minutes: int.parse(absTimeArr[1]),
-      seconds: int.parse(absTimeArr[2]),
+      hours: int.tryParse(absTimeArr[0]) ?? 0,
+      minutes: int.tryParse(absTimeArr[1]) ?? 0,
+      seconds: int.tryParse(absTimeArr[2]) ?? 0,
     );
     position.value = absTime;
     positionParser.TrackDurationInt;

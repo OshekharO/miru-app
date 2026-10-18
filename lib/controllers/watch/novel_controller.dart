@@ -63,7 +63,7 @@ class NovelController extends ReaderController<ExtensionFikushonWatch> {
           history.episodeId != index.value) {
         return;
       }
-      positions.value = int.parse(history.progress);
+      positions.value = int.tryParse(history.progress) ?? 0;
     });
   }
 
