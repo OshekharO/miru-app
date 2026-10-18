@@ -105,7 +105,7 @@ class _NumberTileDialogState extends State<NumberTileDialog> {
                       ),
                       FilledButton(
                         onPressed: () {
-                          widget.onChange(double.parse(_controller.text));
+                          widget.onChange(double.tryParse(_controller.text) ?? 0.0);
                           Navigator.pop(context);
                         },
                         child: Text("common.confirm".i18n),

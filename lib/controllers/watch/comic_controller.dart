@@ -267,7 +267,7 @@ class ComicController extends ReaderController<ExtensionMangaWatch> {
           history.episodeId != index.value) {
         return;
       }
-      currentPage.value = int.parse(history.progress);
+      currentPage.value = int.tryParse(history.progress) ?? 0;
       _jumpPage(currentPage.value);
     });
     super.onInit();

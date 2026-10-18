@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:dynamic_color/dynamic_color.dart';
@@ -29,14 +30,19 @@ void main(List<String> args) async {
       logger.severe("", details.exception, details.stack);
     };
 
+    PlatformDispatcher.instance.onError = (error, stack) {
+      logger.severe("Unhandled platform error", error, stack);
+      return true;
+    };
+
     WidgetsFlutterBinding.ensureInitialized();
 
     // 多窗口
     if (args.firstOrNull == 'multi_window') {
-      final windowId = int.parse(args[1]);
-      final arguments = args[2].isEmpty
-          ? const {}
-          : jsonDecode(args[2]) as Map<String, dynamic>;
+      final windowId = args.length > 1 ? (int.tryParse(args[1]) ?? 0) : 0;
+      final arguments = args.length > 2 && args[2].isNotEmpty
+          ? jsonDecode(args[2]) as Map<String, dynamic>
+          : const <String, dynamic>{};
 
       Map windows = {
         "debug": ExtensionDebugWindow(
@@ -59,7 +65,10 @@ void main(List<String> args) async {
     if (!Platform.isAndroid) {
       await windowManager.ensureInitialized();
       final sizeArr = MiruStorage.getSetting(SettingKey.windowSize).split(",");
-      final size = Size(double.parse(sizeArr[0]), double.parse(sizeArr[1]));
+      final size = Size(
+        sizeArr.isNotEmpty ? (double.tryParse(sizeArr[0]) ?? 1280.0) : 1280.0,
+        sizeArr.length > 1 ? (double.tryParse(sizeArr[1]) ?? 720.0) : 720.0,
+      );
       WindowOptions windowOptions = WindowOptions(
         size: size,
         center: true,
@@ -71,8 +80,8 @@ void main(List<String> args) async {
         if (position != null) {
           final offsetArr = position.split(",");
           final offset = Offset(
-            double.parse(offsetArr[0]),
-            double.parse(offsetArr[1]),
+            offsetArr.isNotEmpty ? (double.tryParse(offsetArr[0]) ?? 0.0) : 0.0,
+            offsetArr.length > 1 ? (double.tryParse(offsetArr[1]) ?? 0.0) : 0.0,
           );
           await windowManager.setPosition(
             offset,
@@ -89,7 +98,7 @@ void main(List<String> args) async {
 
     runApp(const MainApp());
   }, (error, stack) {
-    logger.severe("", error, stack);
+    logger.severe("runZonedGuarded error", error, stack);
   });
 }
 
