@@ -16,11 +16,12 @@ class BTDialogController extends GetxController {
   final _mainController = Get.find<MainController>();
   late final isRuning = _mainController.btServerisRunning;
   late final version = _mainController.btServerVersion;
+  Worker? _worker;
 
   @override
   void onInit() {
     super.onInit();
-    ever(
+    _worker = ever(
       isRuning,
       (callback) {
         hasUpdate.value = version.value != remoteVersion.value;
@@ -30,6 +31,12 @@ class BTDialogController extends GetxController {
       isInstalled.value = await BTServerUtils.isInstalled();
       remoteVersion.value = await BTServerUtils.getRemoteVersion();
     });
+  }
+
+  @override
+  void onClose() {
+    _worker?.dispose();
+    super.onClose();
   }
 
   downloadOrUpgradeServer(BuildContext context) async {

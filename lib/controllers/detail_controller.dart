@@ -1,3 +1,4 @@
+import 'package:miru_app/utils/log.dart';
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:convert';
@@ -205,11 +206,15 @@ class DetailPageController extends GetxController {
 
   getDetail() async {
     if (_miruDetail != null) {
-      detail = ExtensionDetail.fromJson(
-        Map<String, dynamic>.from(
-          jsonDecode(_miruDetail!.data),
-        ),
-      );
+      try {
+        detail = ExtensionDetail.fromJson(
+          Map<String, dynamic>.from(
+            jsonDecode(_miruDetail!.data),
+          ),
+        );
+      } catch (e) {
+        logger.warning('Failed to parse cached detail data: $e');
+      }
       getRemoteDeatil();
     } else {
       await getRemoteDeatil();
