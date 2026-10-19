@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -71,31 +72,43 @@ class DnsResolver {
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        final data = response.data;
-        final Map<String, dynamic> jsonMap =
-            data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data);
-        final answers = jsonMap['Answer'] as List<dynamic>?;
-        if (answers != null && answers.isNotEmpty) {
-          for (final answer in answers) {
-            final type = answer['type'];
-            final ip = answer['data']?.toString();
-            // Type 1 corresponds to DNS A record (IPv4)
-            if ((type == 1 || type == '1') &&
-                ip != null &&
-                InternetAddress.tryParse(ip) != null) {
-              int ttl = 300;
-              if (answer['TTL'] is int) {
-                ttl = answer['TTL'];
-              } else if (answer['TTL'] != null) {
-                ttl = int.tryParse(answer['TTL'].toString()) ?? 300;
-              }
-              if (ttl < 60) ttl = 60;
+        final dynamic data = response.data;
+        Map<String, dynamic>? jsonMap;
+        if (data is Map) {
+          jsonMap = Map<String, dynamic>.from(data);
+        } else if (data is String) {
+          try {
+            final decoded = jsonDecode(data);
+            if (decoded is Map) {
+              jsonMap = Map<String, dynamic>.from(decoded);
+            }
+          } catch (_) {}
+        }
 
-              _cache[cacheKey] = DnsCacheEntry(
-                ip,
-                DateTime.now().add(Duration(seconds: ttl)),
-              );
-              return ip;
+        if (jsonMap != null) {
+          final answers = jsonMap['Answer'] as List<dynamic>?;
+          if (answers != null && answers.isNotEmpty) {
+            for (final answer in answers) {
+              final type = answer['type'];
+              final ip = answer['data']?.toString();
+              // Type 1 corresponds to DNS A record (IPv4)
+              if ((type == 1 || type == '1') &&
+                  ip != null &&
+                  InternetAddress.tryParse(ip) != null) {
+                int ttl = 300;
+                if (answer['TTL'] is int) {
+                  ttl = answer['TTL'];
+                } else if (answer['TTL'] != null) {
+                  ttl = int.tryParse(answer['TTL'].toString()) ?? 300;
+                }
+                if (ttl < 60) ttl = 60;
+
+                _cache[cacheKey] = DnsCacheEntry(
+                  ip,
+                  DateTime.now().add(Duration(seconds: ttl)),
+                );
+                return ip;
+              }
             }
           }
         }
@@ -127,7 +140,11 @@ class DohInterceptor extends Interceptor {
         if (resolvedIp != null && resolvedIp.isNotEmpty) {
           final existingHost = options.headers['Host'] ?? options.headers['host'];
           if (existingHost == null) {
-            options.headers['Host'] = host;
+            final portStr = (options.uri.hasPort &&
+                    options.uri.port != (options.uri.scheme == 'https' ? 443 : 80))
+                ? ':${options.uri.port}'
+                : '';
+            options.headers['Host'] = '$host$portStr';
           }
           if (options.path.startsWith('http://') ||
               options.path.startsWith('https://')) {
@@ -139,7 +156,9 @@ class DohInterceptor extends Interceptor {
             options.baseUrl = uri.replace(host: resolvedIp).toString();
           } else {
             final uri = options.uri;
-            options.path = uri.replace(host: resolvedIp).toString();
+            if (uri.hasAuthority) {
+              options.path = uri.replace(host: resolvedIp).toString();
+            }
           }
         }
       }

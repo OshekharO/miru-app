@@ -42,19 +42,34 @@ class MiruRequest {
   }
 
   static refreshProxy() {
-    String proxy = "";
+    String proxy = "DIRECT";
     final type = MiruStorage.getSetting(SettingKey.proxyType);
-    if (type == "DIRECT") {
-      proxy = type;
+    final rawProxy = MiruStorage.getSetting(SettingKey.proxy)?.toString().trim() ?? '';
+
+    if (type == "DIRECT" || type == null || rawProxy.isEmpty) {
+      proxy = "DIRECT";
     } else {
-      proxy = '$type ${MiruStorage.getSetting(SettingKey.proxy)}';
+      proxy = '$type $rawProxy';
     }
 
-    if (!_isInitialized) {
-      SocksProxy.initProxy(proxy: proxy);
-      return;
+    try {
+      if (!_isInitialized) {
+        SocksProxy.initProxy(proxy: proxy);
+        return;
+      }
+      SocksProxy.setProxy(proxy);
+    } catch (e) {
+      // Fallback to DIRECT if proxy settings fail
+      if (proxy != "DIRECT") {
+        try {
+          if (!_isInitialized) {
+            SocksProxy.initProxy(proxy: "DIRECT");
+          } else {
+            SocksProxy.setProxy("DIRECT");
+          }
+        } catch (_) {}
+      }
     }
-    SocksProxy.setProxy(proxy);
   }
 
   static Future<void> cleanCookie(String url) async {
@@ -62,30 +77,46 @@ class MiruRequest {
   }
 
   static Future<void> setCookie(String cookies, String url) async {
-    final uri = Uri.parse(url);
-    final hostParts = uri.host.split('.');
+    if (url.isEmpty || cookies.trim().isEmpty) return;
+    Uri? uri = Uri.tryParse(url);
+    if (uri == null || uri.host.isEmpty) return;
+
+    final host = uri.host;
+    final hostParts = host.split('.');
     final rootDomain = hostParts.length >= 2
         ? hostParts.sublist(hostParts.length - 2).join('.')
-        : uri.host;
-    final rootDomainUri = Uri.parse('${uri.scheme}://$rootDomain');
+        : host;
+    final scheme = uri.scheme.isNotEmpty ? uri.scheme : 'https';
+    final rootDomainUri = Uri.parse('$scheme://$rootDomain');
+    final targetUri = Uri.parse('$scheme://$host');
 
-    final cookieList = cookies.split(';');
-    for (final cookieStr in cookieList) {
-      final trimmed = cookieStr.trim();
+    // Handle both "key=value; key2=value2" and Set-Cookie directives separated by newline or semicolon
+    final items = cookies.split(RegExp(r'[\r\n;]+'));
+    for (final item in items) {
+      final trimmed = item.trim();
       if (trimmed.isEmpty) continue;
-      final cookie = Cookie.fromSetCookieValue(trimmed);
-      cookie.domain = rootDomain;
-      cookie.path = "/";
-      await _cookieJar.saveFromResponse(
-        rootDomainUri,
-        [cookie],
-      );
-      if (uri != rootDomainUri) {
-        await _cookieJar.saveFromResponse(
-          uri,
-          [cookie],
-        );
+
+      // Ignore attributes if splitting by semicolon resulted in standalone directives
+      final lower = trimmed.toLowerCase();
+      if (lower.startsWith('path=') ||
+          lower.startsWith('domain=') ||
+          lower.startsWith('expires=') ||
+          lower.startsWith('max-age=') ||
+          lower.startsWith('samesite=') ||
+          lower == 'secure' ||
+          lower == 'httponly') {
+        continue;
       }
+
+      try {
+        final cookie = Cookie.fromSetCookieValue(trimmed);
+        cookie.domain = rootDomain;
+        cookie.path = "/";
+        await _cookieJar.saveFromResponse(rootDomainUri, [cookie]);
+        if (targetUri != rootDomainUri) {
+          await _cookieJar.saveFromResponse(targetUri, [cookie]);
+        }
+      } catch (_) {}
     }
   }
 
