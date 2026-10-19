@@ -151,39 +151,55 @@ class _ExtensionPageState extends State<ExtensionPage> {
     showPlatformDialog(
       context: context,
       title: 'extension.error-dialog'.i18n,
-      maxWidth: 540,
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final e in c.errors.entries)
-              PlatformWidget(
-                androidWidget: Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: Padding(
+      maxWidth: 600,
+      content: SizedBox(
+        width: double.maxFinite,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final e in c.errors.entries)
+                PlatformWidget(
+                  androidWidget: Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .errorContainer
+                          .withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .error
+                            .withOpacity(0.3),
+                      ),
+                    ),
                     padding: const EdgeInsets.all(12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            const Icon(
-                              Icons.warning_amber_rounded,
-                              color: Colors.orange,
-                              size: 18,
+                            Icon(
+                              Icons.error_outline_rounded,
+                              color: Theme.of(context).colorScheme.error,
+                              size: 20,
                             ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 path.basename(e.key),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
+                                  color: Theme.of(context).colorScheme.error,
                                 ),
                               ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.copy, size: 16),
+                              icon: const Icon(Icons.copy_rounded, size: 18),
+                              tooltip: 'common.copy'.i18n,
                               onPressed: () {
                                 Clipboard.setData(
                                   ClipboardData(text: e.value),
@@ -196,75 +212,119 @@ class _ExtensionPageState extends State<ExtensionPage> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 6),
-                        SelectableText(
-                          e.value,
-                          style: TextStyle(
-                            fontSize: 12,
+                        const SizedBox(height: 8),
+                        Container(
+                          width: double.infinity,
+                          constraints: const BoxConstraints(maxHeight: 180),
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
                             color: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.color
-                                ?.withOpacity(0.8),
+                                .colorScheme
+                                .surface
+                                .withOpacity(0.6),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: SingleChildScrollView(
+                            child: SelectableText(
+                              e.value,
+                              style: TextStyle(
+                                fontFamily: 'monospace',
+                                fontSize: 12,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.color
+                                    ?.withOpacity(0.9),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  desktopWidget: Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: fluent.FluentTheme.of(context)
+                          .resources
+                          .cardBackgroundFillColorDefault,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: fluent.Colors.red.normal.withOpacity(0.4),
+                      ),
+                    ),
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              fluent.FluentIcons.error_badge,
+                              color: fluent.Colors.red.normal,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                path.basename(e.key),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: fluent.Colors.red.normal,
+                                ),
+                              ),
+                            ),
+                            fluent.Tooltip(
+                              message: 'common.copy'.i18n,
+                              child: fluent.IconButton(
+                                icon: const Icon(fluent.FluentIcons.copy,
+                                    size: 14),
+                                onPressed: () {
+                                  Clipboard.setData(
+                                    ClipboardData(text: e.value),
+                                  );
+                                  showPlatformSnackbar(
+                                    context: context,
+                                    content: 'common.copy-success'.i18n,
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          width: double.infinity,
+                          constraints: const BoxConstraints(maxHeight: 180),
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: fluent.FluentTheme.of(context)
+                                .resources
+                                .solidBackgroundFillColorBase,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: SingleChildScrollView(
+                            child: SelectableText(
+                              e.value,
+                              style: TextStyle(
+                                fontFamily: 'Consolas',
+                                fontSize: 12,
+                                color: fluent.FluentTheme.of(context)
+                                    .typography
+                                    .body
+                                    ?.color
+                                    ?.withOpacity(0.9),
+                              ),
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
-                desktopWidget: fluent.Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            fluent.FluentIcons.warning,
-                            color: fluent.Colors.orange,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              path.basename(e.key),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                          fluent.IconButton(
-                            icon: const Icon(fluent.FluentIcons.copy, size: 14),
-                            onPressed: () {
-                              Clipboard.setData(
-                                ClipboardData(text: e.value),
-                              );
-                              showPlatformSnackbar(
-                                context: context,
-                                content: 'common.copy-success'.i18n,
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      SelectableText(
-                        e.value,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: fluent.FluentTheme.of(context)
-                              .typography
-                              .body
-                              ?.color
-                              ?.withOpacity(0.8),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
       actions: [
