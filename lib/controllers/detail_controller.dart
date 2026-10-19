@@ -166,10 +166,10 @@ class DetailPageController extends GetxController {
       await getDetail();
       await getTMDBDetail();
       await getHistory();
-      isLoading.value = false;
     } catch (e) {
       error.value = e.toString();
-      rethrow;
+    } finally {
+      isLoading.value = false;
     }
   }
 
@@ -255,7 +255,9 @@ class DetailPageController extends GetxController {
           severity: fluent.InfoBarSeverity.error,
         );
       }
-      rethrow;
+      if (detail == null) {
+        rethrow;
+      }
     }
   }
 
