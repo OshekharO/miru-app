@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
+import 'package:webview_all/webview_all.dart';
 
 class AnilistWebViewPage extends StatefulWidget {
   const AnilistWebViewPage({
@@ -14,11 +14,32 @@ class AnilistWebViewPage extends StatefulWidget {
 }
 
 class _AnilistWebViewPageState extends State<AnilistWebViewPage> {
-  late String url = widget.url;
+  late final WebViewController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (url) {
+            if (url.contains("access_token")) {
+              final uri = Uri.tryParse(url);
+              if (uri != null) {
+                debugPrint(uri.host);
+              }
+              Get.back(result: url);
+            }
+          },
+        ),
+      )
+      ..loadRequest(Uri.parse(widget.url));
+  }
 
   @override
   void dispose() {
-    CookieManager.instance().deleteCookies(url: WebUri(widget.url));
+    WebViewCookieManager().clearCookies();
     super.dispose();
   }
 
@@ -28,16 +49,8 @@ class _AnilistWebViewPageState extends State<AnilistWebViewPage> {
       appBar: AppBar(
         title: const Text("Anilist Login"),
       ),
-      body: InAppWebView(
-        initialUrlRequest: URLRequest(
-          url: WebUri(widget.url),
-        ),
-        onLoadStart: (controller, url) async {
-          if (url != null && url.toString().contains("access_token")) {
-            debugPrint(url.host);
-            Get.back(result: url.toString());
-          }
-        },
+      body: WebViewWidget(
+        controller: _controller,
       ),
     );
   }

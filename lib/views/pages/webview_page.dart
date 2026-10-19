@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart' as inapp;
 import 'package:miru_app/data/services/extension_service.dart';
 import 'package:miru_app/utils/miru_storage.dart';
 import 'package:miru_app/utils/request.dart';
-import 'package:webview_cookie_manager/webview_cookie_manager.dart';
+import 'package:webview_all/webview_all.dart';
 
 class WebViewPage extends StatefulWidget {
   const WebViewPage({
@@ -24,10 +23,58 @@ class _WebViewPageState extends State<WebViewPage> {
   late String url = widget.url.startsWith('http://') || widget.url.startsWith('https://')
       ? widget.url
       : widget.extensionRuntime.extension.webSite + widget.url;
-  final cookieManager = WebviewCookieManager();
+  final cookieManager = WebViewCookieManager();
   late Uri loadUrl = Uri.parse(url);
   bool _isSaving = false;
-  inapp.InAppWebViewController? _webViewController;
+  late final WebViewController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    final userAgent = widget.userAgent ?? MiruStorage.getUASetting();
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setUserAgent(userAgent)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (url) {
+            if (!mounted) return;
+            final uri = Uri.tryParse(url);
+            if (uri != null) {
+              setState(() {
+                loadUrl = uri;
+              });
+              _setCookie();
+            }
+          },
+          onPageFinished: (url) async {
+            if (!mounted) return;
+            final uri = Uri.tryParse(url);
+            if (uri != null) {
+              setState(() {
+                loadUrl = uri;
+              });
+              await _setCookie();
+            }
+          },
+          onUrlChange: (change) async {
+            if (!mounted) return;
+            final changeUrl = change.url;
+            if (changeUrl != null) {
+              final uri = Uri.tryParse(changeUrl);
+              if (uri != null) {
+                if (!mounted) return;
+                setState(() {
+                  loadUrl = uri;
+                });
+                await _setCookie();
+              }
+            }
+          },
+        ),
+      )
+      ..loadRequest(loadUrl);
+  }
 
   Future<void> _setCookie() async {
     if (_isSaving) return;
@@ -43,34 +90,23 @@ class _WebViewPageState extends State<WebViewPage> {
 
       for (final queryUrl in urlsToQuery) {
         if (queryUrl.isEmpty) continue;
+        final uri = Uri.tryParse(queryUrl);
+        if (uri == null) continue;
 
-        // 1. Get cookies via webview_cookie_manager
         try {
-          final cookies = await cookieManager.getCookies(queryUrl);
+          final cookies = await cookieManager.getCookies(domain: uri);
           for (final c in cookies) {
             mergedCookies[c.name] = c.value;
-          }
-        } catch (_) {}
-
-        // 2. Get cookies via inappwebview native CookieManager
-        try {
-          final inappManager = inapp.CookieManager.instance();
-          final webUri = inapp.WebUri(queryUrl);
-          final nativeCookies = await inappManager.getCookies(url: webUri);
-          for (final c in nativeCookies) {
-            mergedCookies[c.name] = c.value.toString();
           }
         } catch (_) {}
       }
 
       try {
-        final rawUa = await _webViewController?.evaluateJavascript(source: 'navigator.userAgent');
-        if (rawUa != null) {
-          final ua = rawUa.toString().replaceAll('"', '').trim();
-          if (ua.isNotEmpty) {
-            widget.extensionRuntime.setUserAgent(ua);
-            debugPrint('Synced User-Agent for WebView: $ua');
-          }
+        final rawUa = await _controller.runJavaScriptReturningResult('navigator.userAgent');
+        final ua = rawUa.toString().replaceAll('"', '').trim();
+        if (ua.isNotEmpty) {
+          widget.extensionRuntime.setUserAgent(ua);
+          debugPrint('Synced User-Agent for WebView: $ua');
         }
       } catch (_) {}
 
@@ -125,42 +161,8 @@ class _WebViewPageState extends State<WebViewPage> {
             ),
           ],
         ),
-        body: inapp.InAppWebView(
-          onWebViewCreated: (controller) {
-            _webViewController = controller;
-          },
-          initialUrlRequest: inapp.URLRequest(
-            url: inapp.WebUri(url),
-          ),
-          initialSettings: inapp.InAppWebViewSettings(
-            userAgent: widget.userAgent ?? MiruStorage.getUASetting(),
-            javaScriptEnabled: true,
-            domStorageEnabled: true,
-          ),
-          onLoadStart: (controller, url) {
-            if (url != null) {
-              setState(() {
-                loadUrl = url;
-              });
-              _setCookie();
-            }
-          },
-          onLoadStop: (controller, url) async {
-            if (url != null) {
-              setState(() {
-                loadUrl = url;
-              });
-              await _setCookie();
-            }
-          },
-          onUpdateVisitedHistory: (controller, url, isReload) async {
-            if (url != null) {
-              setState(() {
-                loadUrl = url;
-              });
-              await _setCookie();
-            }
-          },
+        body: WebViewWidget(
+          controller: _controller,
         ),
       ),
     );
