@@ -21,9 +21,9 @@ class MiruRequest {
   static Future<void> ensureInitialized() async {
     dio = Dio(
       BaseOptions(
-        connectTimeout: const Duration(seconds: 15),
-        receiveTimeout: const Duration(seconds: 15),
-        sendTimeout: const Duration(seconds: 15),
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+        sendTimeout: const Duration(seconds: 30),
       ),
     );
     dio.httpClientAdapter = IOHttpClientAdapter(
