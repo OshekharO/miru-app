@@ -1494,10 +1494,11 @@ packages:
   webview_all:
     dependency: "direct main"
     description:
-      name: webview_all
-      sha256: "100cb840d0f60896238c254de08b8abeeedda28fe066755962cdaeb76666edfb"
-      url: "https://pub.dev"
-    source: hosted
+      path: webview_all
+      ref: HEAD
+      resolved-ref: b9eac11506d62b17272c4477b5473ea99061347b
+      url: "https://github.com/abandoft/webview_all"
+    source: git
     version: "1.4.4"
   webview_all_android:
     dependency: transitive

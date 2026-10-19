@@ -44,7 +44,10 @@ dependencies:
   url_launcher: ^6.1.11
   window_manager: ^0.3.7
   cookie_jar: ^4.0.8
-  webview_all: ^1.4.4
+  webview_all:
+    git:
+      url: https://github.com/abandoft/webview_all
+      path: webview_all
   flutter_windows_webview:
     git:
       url: https://github.com/MiaoMint/flutter_windows_webview
