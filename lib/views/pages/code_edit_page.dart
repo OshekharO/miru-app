@@ -95,17 +95,21 @@ class _CodeEditPageState extends State<CodeEditPage> {
   }
 
   Future<void> _init() async {
-    final dir = ExtensionUtils.extensionsDir;
-    final file = File('$dir/${widget.extension.package}.js');
-    if (await file.exists()) {
-      final content = await file.readAsString();
-      controller.text = content;
-      _initialText = content;
-      if (mounted) {
-        setState(() {
-          _isModified = false;
-        });
+    try {
+      final dir = ExtensionUtils.extensionsDir;
+      final file = File('$dir/${widget.extension.package}.js');
+      if (await file.exists()) {
+        final content = await file.readAsString();
+        controller.text = content;
+        _initialText = content;
+        if (mounted) {
+          setState(() {
+            _isModified = false;
+          });
+        }
       }
+    } catch (_) {
+      // Ignored if directory or storage is uninitialized (e.g. in widget tests)
     }
   }
 

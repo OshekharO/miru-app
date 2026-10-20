@@ -114,21 +114,17 @@ class _VideoPlayerDesktopControlsState
                         _c.subtitleBackgroundOpacity.value,
                       ),
                     );
-                    _subtitleViewKey.currentState?.textAlign =
-                        _c.subtitleTextAlign.value;
-                    _subtitleViewKey.currentState?.style = textStyle;
-                    _subtitleViewKey.currentState?.padding =
-                        EdgeInsets.fromLTRB(
-                      16.0,
-                      0.0,
-                      16.0,
-                      _showControls ? 110.0 : 20.0,
-                    );
                     return SubtitleView(
                       controller: _c.videoController,
                       configuration: SubtitleViewConfiguration(
                         style: textStyle,
                         textAlign: _c.subtitleTextAlign.value,
+                        padding: EdgeInsets.fromLTRB(
+                          16.0,
+                          0.0,
+                          16.0,
+                          _showControls ? 110.0 : 20.0,
+                        ),
                       ),
                       key: _subtitleViewKey,
                     );

@@ -89,9 +89,9 @@ void main() {
     );
   }
 
-  const kPreload = 'Preload following chapters (n)';
-  const kChapterInterval = 'Chapter cache interval (l, seconds)';
-  const kImageInterval = 'Image cache interval (m, seconds)';
+  const kPreload = 'Preload following chapters';
+  const kChapterInterval = 'Chapter cache interval (seconds)';
+  const kImageInterval = 'Image cache interval (seconds)';
   const kEnabled = 'Enable comic cache';
   const kCacheOnRead = 'Cache while reading';
   const kSeamless = 'Seamless webtoon chapter switching';
