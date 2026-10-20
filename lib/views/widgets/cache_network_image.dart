@@ -6,7 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
+import 'package:gal/gal.dart';
 import 'package:miru_app/utils/i18n.dart';
 import 'package:miru_app/utils/request.dart';
 import 'package:miru_app/views/widgets/messenger.dart';
@@ -127,18 +127,21 @@ class _ThumnailPageState extends State<_ThumnailPage> {
       ),
     );
     if (Platform.isAndroid) {
-      final result = await ImageGallerySaverPlus.saveImage(
-        res.data,
-        name: fileName,
-      );
-      if (mounted) {
-        final msg = result['isSuccess'] == true
-            ? 'common.save-success'.i18n
-            : result['errorMessage'];
-        showPlatformSnackbar(
-          context: context,
-          content: msg,
-        );
+      try {
+        await Gal.putImageBytes(res.data, name: fileName);
+        if (mounted) {
+          showPlatformSnackbar(
+            context: context,
+            content: 'common.save-success'.i18n,
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          showPlatformSnackbar(
+            context: context,
+            content: e.toString(),
+          );
+        }
       }
       return;
     }
