@@ -43,7 +43,7 @@ def _keyPassword = System.getenv("KEY_PASSWORD") ?: keystoreProperties.getProper
 
 android {
     namespace "miru.miaomint"
-    compileSdkVersion 34
+    compileSdkVersion 36
     ndkVersion flutter.ndkVersion
 
     compileOptions {
