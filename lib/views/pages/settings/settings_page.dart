@@ -80,7 +80,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     if (key.isEmpty) {
                       return 'common.unset'.i18n;
                     }
-                    return key.replaceAll(RegExp(r"."), '*');
+                    return '*' * key.length;
                   },
                   onChanged: (value) {
                     MiruStorage.setSetting(SettingKey.tmdbKey, value);

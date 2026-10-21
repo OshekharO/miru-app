@@ -76,11 +76,22 @@ class DatabaseService {
   }
 
   // 历史记录
-  static Future<List<History>> getHistorysByType({ExtensionType? type}) async {
+  static Future<List<History>> getHistorysByType({
+    ExtensionType? type,
+    int? limit,
+  }) async {
     if (type == null) {
-      return db.historys.where().sortByDateDesc().findAll();
+      final query = db.historys.where().sortByDateDesc();
+      if (limit != null) {
+        return query.limit(limit).findAll();
+      }
+      return query.findAll();
     }
-    return db.historys.filter().typeEqualTo(type).sortByDateDesc().findAll();
+    final query = db.historys.filter().typeEqualTo(type).sortByDateDesc();
+    if (limit != null) {
+      return query.limit(limit).findAll();
+    }
+    return query.findAll();
   }
 
   /// 测试注入点：不依赖 Isar 即可驱动「恢复上次阅读位置」这条链路。

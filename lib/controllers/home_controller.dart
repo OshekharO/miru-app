@@ -16,7 +16,7 @@ class HomePageController extends GetxController {
   refreshHistory() async {
     resents.clear();
     resents.addAll(
-      await DatabaseService.getHistorysByType(),
+      await DatabaseService.getHistorysByType(limit: 20),
     );
   }
 

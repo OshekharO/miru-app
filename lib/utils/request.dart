@@ -11,6 +11,8 @@ import 'package:miru_app/utils/miru_storage.dart';
 late final Dio dio;
 
 class MiruRequest {
+  static final RegExp _cookieSplitRegExp = RegExp(r'[\r\n;]+');
+
   static final _cookieJar = PersistCookieJar(
     ignoreExpires: true,
     storage: FileStorage("${MiruDirectory.getDirectory}/.cookies/"),
@@ -91,7 +93,7 @@ class MiruRequest {
     final targetUri = Uri.parse('$scheme://$host');
 
     // Handle both "key=value; key2=value2" and Set-Cookie directives separated by newline or semicolon
-    final items = cookies.split(RegExp(r'[\r\n;]+'));
+    final items = cookies.split(_cookieSplitRegExp);
     for (final item in items) {
       final trimmed = item.trim();
       if (trimmed.isEmpty) continue;
