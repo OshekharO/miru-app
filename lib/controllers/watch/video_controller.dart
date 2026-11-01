@@ -184,6 +184,7 @@ class VideoPlayerController extends GetxController {
   Timer? _dlnaTimer;
   Timer? _switchQualityTimer;
   final List<StreamSubscription> _subscriptions = [];
+  final List<Worker> _workers = [];
 
   @override
   void onInit() async {
@@ -227,39 +228,41 @@ class VideoPlayerController extends GetxController {
     doubleTapSeekSeconds.value =
         MiruStorage.getSetting(SettingKey.doubleTapSeekDuration) ?? 10;
 
-    ever(subtitleFontSize, (callback) {
-      MiruStorage.setSetting(SettingKey.subtitleFontSize, callback);
-    });
-    ever(subtitleFontColor, (callback) {
-      MiruStorage.setSetting(
-        SettingKey.subtitleFontColor,
-        callback.value,
-      );
-    });
-    ever(subtitleFontWeight, (callback) {
-      MiruStorage.setSetting(
-        SettingKey.subtitleFontWeight,
-        callback == FontWeight.bold ? 'bold' : 'normal',
-      );
-    });
-    ever(subtitleBackgroundColor, (callback) {
-      MiruStorage.setSetting(
-        SettingKey.subtitleBackgroundColor,
-        callback.value,
-      );
-    });
-    ever(subtitleBackgroundOpacity, (callback) {
-      MiruStorage.setSetting(
-        SettingKey.subtitleBackgroundOpacity,
-        callback,
-      );
-    });
-    ever(subtitleTextAlign, (callback) {
-      MiruStorage.setSetting(
-        SettingKey.subtitleTextAlign,
-        callback.index,
-      );
-    });
+    _workers.addAll([
+      ever(subtitleFontSize, (callback) {
+        MiruStorage.setSetting(SettingKey.subtitleFontSize, callback);
+      }),
+      ever(subtitleFontColor, (callback) {
+        MiruStorage.setSetting(
+          SettingKey.subtitleFontColor,
+          callback.value,
+        );
+      }),
+      ever(subtitleFontWeight, (callback) {
+        MiruStorage.setSetting(
+          SettingKey.subtitleFontWeight,
+          callback == FontWeight.bold ? 'bold' : 'normal',
+        );
+      }),
+      ever(subtitleBackgroundColor, (callback) {
+        MiruStorage.setSetting(
+          SettingKey.subtitleBackgroundColor,
+          callback.value,
+        );
+      }),
+      ever(subtitleBackgroundOpacity, (callback) {
+        MiruStorage.setSetting(
+          SettingKey.subtitleBackgroundOpacity,
+          callback,
+        );
+      }),
+      ever(subtitleTextAlign, (callback) {
+        MiruStorage.setSetting(
+          SettingKey.subtitleTextAlign,
+          callback.index,
+        );
+      }),
+    ]);
   }
 
   void _configureNetworkProperties() {
@@ -281,21 +284,27 @@ class VideoPlayerController extends GetxController {
     _configureNetworkProperties();
 
     // 切换剧集
-    ever(index, (callback) {
-      play();
-    });
+    _workers.add(
+      ever(index, (callback) {
+        play();
+      }),
+    );
 
     // 切换倍速
-    ever(currentSpeed, (callback) {
-      player.setRate(callback);
-    });
+    _workers.add(
+      ever(currentSpeed, (callback) {
+        player.setRate(callback);
+      }),
+    );
 
     // 显示剧集列表
-    ever(showSidebar, (callback) {
-      if (!showSidebar.value) {
-        isOpenSidebar.value = false;
-      }
-    });
+    _workers.add(
+      ever(showSidebar, (callback) {
+        if (!showSidebar.value) {
+          isOpenSidebar.value = false;
+        }
+      }),
+    );
 
     // 自动切换下一集
     _subscriptions.add(
@@ -440,6 +449,11 @@ class VideoPlayerController extends GetxController {
     if (!Get.isRegistered<VideoPlayerController>(tag: title)) {
       return;
     }
+    // 保存上一集进度（若有正在播放且有进度），并重置自动定位标志以便新一集恢复进度
+    try {
+      await _saveHistory();
+    } catch (_) {}
+    _isAutoSeekPosition = false;
     player.stop();
     isGettingWatchData.value = true;
     try {
@@ -897,6 +911,10 @@ class VideoPlayerController extends GetxController {
       sub.cancel();
     }
     _subscriptions.clear();
+    for (final worker in _workers) {
+      worker.dispose();
+    }
+    _workers.clear();
     player.pause();
     try {
       await _saveHistory();

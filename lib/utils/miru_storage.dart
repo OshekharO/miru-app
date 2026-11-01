@@ -77,17 +77,20 @@ class MiruStorage {
     });
 
     // 修改所有 miruDetail 的 tmdbId 字段为本地的 TMDB id
+    // 将 TMDB tmdbID -> id 映射构建为哈希表，从 O(N*M) 次数据库查询优化为 O(1) 内存查找
+    final tmdbIdMap = <int, int>{};
+    for (final tmdb in tmdbList) {
+      tmdbIdMap[tmdb.tmdbID] = tmdb.id;
+    }
     final miruList = await database.miruDetails.where().findAll();
     database.writeTxn(() async {
       for (final miru in miruList) {
-        final tmdb = await database.tMDBs
-            .where()
-            .filter()
-            .tmdbIDEqualTo(miru.tmdbID!)
-            .findFirst();
-        if (tmdb != null) {
-          miru.tmdbID = tmdb.id;
-          await database.miruDetails.put(miru);
+        if (miru.tmdbID != null) {
+          final localId = tmdbIdMap[miru.tmdbID!];
+          if (localId != null) {
+            miru.tmdbID = localId;
+            await database.miruDetails.put(miru);
+          }
         }
       }
     });
