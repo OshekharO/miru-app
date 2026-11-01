@@ -21,6 +21,9 @@ import 'package:path/path.dart' as path;
 class ExtensionUtils {
   // Pre-compiled RegExp for parsing extension metadata header comments
   static final RegExp _extensionHeaderRegExp = RegExp(r'@(\w+)\s+(.*)');
+  // Pre-compiled RegExp for parsing GitHub repository URLs in normalizeRepoUrl
+  static final RegExp _githubRepoRegex =
+      RegExp(r'^https?://github\.com/([^/]+)/([^/]+)(?:/tree/([^/]+))?');
   static Map<String, ExtensionService> runtimes = {};
   static Map<String, String> extensionErrorMap = {};
 
@@ -268,9 +271,7 @@ class ExtensionUtils {
     if (url.endsWith('/')) {
       url = url.substring(0, url.length - 1);
     }
-    final githubMatch =
-        RegExp(r'^https?://github\.com/([^/]+)/([^/]+)(?:/tree/([^/]+))?')
-            .firstMatch(url);
+    final githubMatch = _githubRepoRegex.firstMatch(url);
     if (githubMatch != null) {
       final owner = githubMatch.group(1);
       final repo = githubMatch.group(2);

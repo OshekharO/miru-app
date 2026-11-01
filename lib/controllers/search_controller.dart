@@ -9,6 +9,7 @@ class SearchPageController extends GetxController {
   final search = ''.obs;
   final searchResultList = <SearchResult>[].obs;
   String _randomKey = "";
+  Worker? _searchWorker;
   int get finishCount =>
       searchResultList.where((element) => element.completed).length;
   bool needRefresh = true;
@@ -17,11 +18,18 @@ class SearchPageController extends GetxController {
 
   @override
   void onInit() {
-    ever(search, (callback) {
+    _searchWorker = ever(search, (callback) {
       _randomKey = DateTime.now().millisecondsSinceEpoch.toString();
       getResult(_randomKey);
     });
     super.onInit();
+  }
+
+  @override
+  void onClose() {
+    _searchWorker?.dispose();
+    _searchWorker = null;
+    super.onClose();
   }
 
   getRuntime({ExtensionType? type}) {
